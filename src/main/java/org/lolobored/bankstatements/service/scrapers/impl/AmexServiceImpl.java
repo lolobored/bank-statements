@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -34,24 +35,24 @@ public class AmexServiceImpl implements AmexService {
 
     @Override
     public List<Statement> downloadStatements(WebDriver webDriver, Bank bank, String downloadDir) throws InterruptedException, IOException, ParseException {
-
+        List<Statement> statements = new ArrayList<>();
         WebDriverWait wait = new WebDriverWait(webDriver, bank.getWaitTime());
 
         /**
          * Delete the download directory
          */
-        File downloads= new File(downloadDir);
+        File downloads = new File(downloadDir);
         FileUtils.deleteDirectory(downloads);
         downloads.mkdirs();
 
         /**
          * Login to the main page
          */
-        logger.info("Connecting to "+ bank.getConnectionUrl());
+        logger.info("Connecting to " + bank.getConnectionUrl());
 
         webDriver.get(bank.getConnectionUrl());
 
-        logger.info("Connected to "+ bank.getConnectionUrl());
+        logger.info("Connected to " + bank.getConnectionUrl());
 
         /**
          * Look for the username
@@ -61,13 +62,13 @@ public class AmexServiceImpl implements AmexService {
         WebElement loginField = webDriver.findElement(By.id("eliloUserID"));
         loginField.sendKeys(bank.getUsername());
 
-        logger.info("Username field ["+ bank.getUsername()+"]");
+        logger.info("Username field [" + bank.getUsername() + "]");
 
         wait.until(ExpectedConditions.visibilityOf(webDriver.findElement(By.id("eliloPassword"))));
         WebElement passwordField = webDriver.findElement(By.id("eliloPassword"));
         passwordField.sendKeys(bank.getPassword());
 
-        logger.info("Password field ["+ bank.getPassword()+"]");
+        logger.info("Password field [" + bank.getPassword() + "]");
 
         /**
          * There might be a cookie confirmation
@@ -77,8 +78,7 @@ public class AmexServiceImpl implements AmexService {
             wait.until(ExpectedConditions.elementToBeClickable(webDriver.findElement(By.id("sprite-ContinueButton_EN"))));
             WebElement cookiesButton = webDriver.findElement(By.id("sprite-ContinueButton_EN"));
             cookiesButton.click();
-        }
-        catch (Exception err){
+        } catch (Exception err) {
             logger.warn("No cookies window found");
         }
 
@@ -89,7 +89,7 @@ public class AmexServiceImpl implements AmexService {
         wait.until(ExpectedConditions.elementToBeClickable(webDriver.findElement(By.id("loginSubmit"))));
         WebElement loginButton = webDriver.findElement(By.id("loginSubmit"));
         loginButton.submit();
-        Thread.sleep(1000* bank.getWaitTime());
+        Thread.sleep(1000 * bank.getWaitTime());
 
         /**
          * Now let's go to the statements page
@@ -106,8 +106,7 @@ public class AmexServiceImpl implements AmexService {
             wait.until(ExpectedConditions.elementToBeClickable(webDriver.findElement(By.id("sprite-ContinueButton_EN"))));
             WebElement cookiesButton = webDriver.findElement(By.id("sprite-ContinueButton_EN"));
             cookiesButton.click();
-        }
-        catch (Exception err){
+        } catch (Exception err) {
             logger.warn("No cookies window found");
         }
 
@@ -118,41 +117,57 @@ public class AmexServiceImpl implements AmexService {
         csvRadio.click();
 
         /**
-         * Select the single account
+         * Select the accounts
          */
-        WebElement accountRadio = webDriver.findElement(By.id("selectCard10"));
-        accountRadio.click();
+        List<WebElement> cardsDiv = webDriver.findElements(By.id("outer_inside"));
 
-        /**
-         * Now there might be multiple period
-         * we can download
-         * Ideally we need to select everything possible.
-         * The buttons are named radioid+ sequential
-         * Iterate through those.
-         */
-        int periodId=0;
-        try {
-            while (true) {
-                String period = StringUtils.leftPad(String.valueOf(periodId), 2, "0");
-                WebElement periodButton = webDriver.findElement(By.id("radioid" + period));
-                periodId++;
-                periodButton.click();
+        List<WebElement> accountRadios = cardsDiv.get(1).findElements(By.className("selectCardRadio"));
+        List<WebElement> accountNames = cardsDiv.get(1).findElements(By.className("imagedetails"));
+
+        for (int i=0; i< accountRadios.size(); i++) {
+            WebElement accountRadio = accountRadios.get(i);
+            if (!accountRadio.isDisplayed()){
+                continue;
             }
+            /**
+             * Select the account
+             */
+            accountRadio.click();
+
+            String imagedetails = accountNames.get(i).getText().trim();
+            String accountName= StringUtils.substringAfterLast(imagedetails, "\n");
+            /**
+             * Now there might be multiple period
+             * we can download
+             * Ideally we need to select everything possible.
+             * The buttons are named radioid+ sequential
+             * Iterate through those.
+             */
+            int periodId = 0;
+            try {
+                while (true) {
+                    String period = StringUtils.leftPad(String.valueOf(periodId), 2, "0");
+                    WebElement periodButton = webDriver.findElement(By.id("radioid" + period));
+                    periodId++;
+                    if (!periodButton.isSelected()) {
+                        periodButton.click();
+                    }
+                }
+            } catch (Exception err) {
+                logger.info("Last button hit. Total periods taken into account: " + (periodId));
+            }
+
+            /**
+             * finally download the csv file
+             */
+            WebElement downloadButton = webDriver.findElement(By.id("myBlueButton1"));
+            wait.until(ExpectedConditions.elementToBeClickable(downloadButton));
+            Actions actions = new Actions(webDriver);
+            actions.moveToElement(downloadButton).click().perform();
+
+            String csvContent = FileUtility.readDownloadedFile(downloads, bank.getWaitTime());
+            statements.add(amexCSVConversionService.convertCSVToTransactions(accountName, Statement.CREDIT_CARD, csvContent));
         }
-        catch(Exception err){
-            logger.info("Last button hit. Total periods taken into account: "+(periodId));
-        }
-
-        /**
-         * finally download the csv file
-         */
-        WebElement downloadButton = webDriver.findElement(By.id("myBlueButton1"));
-        wait.until(ExpectedConditions.elementToBeClickable(downloadButton));
-        Actions actions = new Actions(webDriver);
-        actions.moveToElement(downloadButton).click().perform();
-
-        String csvContent = FileUtility.readDownloadedFile(downloads, bank.getWaitTime());
-        return List.of(amexCSVConversionService.convertCSVToTransactions(bank.getAccounts().get(0).getAccountId(), Statement.CREDIT_CARD, csvContent));
-
+        return statements;
     }
 }

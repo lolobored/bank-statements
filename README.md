@@ -54,11 +54,6 @@ java -jar bank-statements-1.0-SNAPSHOT.jar --json=<path to the json file> --mont
 java -jar bank-statements-1.0-SNAPSHOT.jar --json=<path to the json file> --date=1980-01-28 --output=~/Downloads
 ```
 
-## Limitations
-### AMEX
-
-The AMEX scraping is dedicated to my specific needs: I have only one account at AMEX. This would need to be refined for other needs.
-
 ## JSON File
 
 A sample of the JSON file defining the configuration per bank can be found in src/main/resources.
@@ -77,11 +72,15 @@ At the bank level the parameters are:
 | statementsDirectory | Only used for Revolut where we cannot scrape any website. The directory where Revolut statements will have been downloaded. Note that it will delete those from the directory |
 | accounts | The list of accounts. See below for the structure of an account. |
 
-Each bank can have one or multiple accounts. The structure of an account is the following:
+Each bank can have 0 to multiple accounts. 
+Referencing the accounts is not mandatory. The account number and account type (credit card or debit/savings) are automatically scraped from the webpages.
+Now this is only to automatically add a suffix to the account number in the ofx so that the importation is made easier in Banktivity.
+
+The structure of an account is the following:
 
 | Name | Description |
 | ---- | ----------- |
-| accountId | The account ID which will be used to feed the OFX file. Note that sometimes the banks are not indicating it in the CSV file. For AMEX, these accounts id will be set automatically (I have only one account at AMEX |
+| accountId | The account ID which would need to be suffixed by a banktivity suffix on 4 letters |
 | banktivitySuffix | When importing an OFX into banktivity, banktivity displays only the 4 last characters of the account number. To make it easier, I added a suffix to the account id in the OFX so that I can see in a single glance which account is which. Do not fill if you don't want this feature. |
 
 ```json
@@ -112,7 +111,7 @@ Each bank can have one or multiple accounts. The structure of an account is the 
     "waitTime": 5,
     "accounts": [
       {
-        "accountId": "12345678900123",
+        "accountId": "XXX-16241",
         "banktivitySuffix": "amex"
       }
     ]
@@ -159,4 +158,18 @@ Each bank can have one or multiple accounts. The structure of an account is the 
   }
 ]
 ```
+
+## Account naming & type
+
+When creating the OFX file, the utility automatically fetches the account number and information from the website.
+Note that distinction between credit card and debit / saving is important as it is required for producing an accurate OFX (Credit cards info are in different layouts).
+
+The way to do so is following this method:
+
+| Bank | Account Name | Account type |
+| ---- | ------------ | ------------ |
+| Metrobank | Account name is fetched from the webpage, just after logging in. Each account is inside a block containing its sort code and its account number | Account type are deducted from the icon of the account. An icon of a card (C) represent a credit card. Anything else is considered as a debit / saving |
+| AMEX | Account name is fetched from the download statement CSV page by browsing into the different accounts that are available there | AMEX is always Credit Card |
+| Revolut | Account name is fetched from the name of the CSV as being downloaded from the mobile app. It should be something like "Revolut-GBP-Statement*.csv" for a GBP account. Account name will be revolut-gbp (lower case) | Revolut is only DEBIT |
+| Credit Mutuel | Account name is fetched directly from the name of the CSV which is named with the account number | Credit Mutuel is french there's no credit card there so DEBIT |
 
