@@ -7,7 +7,7 @@ This Java application was designed for automatically scraping my account stateme
 * AMEX (UK): https://www.americanexpress.com/uk
 * Metrobank (UK): https://www.metrobankonline.co.uk
 
-In addition it automatically converts as well Revolut statements.
+In addition it automatically converts as well Revolut (https://www.revolut.com) statements.
 
 This became a necessity when Banktivity and its provider (Yodlee) decided without any common sense to **not** implement PSD2 and Open Banking standards in an account management software.
 
