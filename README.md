@@ -59,10 +59,6 @@ java -jar bank-statements-1.0-SNAPSHOT.jar --json=<path to the json file> --date
 
 The AMEX scraping is dedicated to my specific needs: I have only one account at AMEX. This would need to be refined for other needs.
 
-### Metrobank
-
-The Metrobank scraping is dedicated to my specific needs: I have 2 account at Metro and the second one is a Credit Card one. This would need to be refined for other needs.
-
 ## JSON File
 
 A sample of the JSON file defining the configuration per bank can be found in src/main/resources.
@@ -85,7 +81,7 @@ Each bank can have one or multiple accounts. The structure of an account is the 
 
 | Name | Description |
 | ---- | ----------- |
-| accountId | The account ID which will be used to feed the OFX file. Note that sometimes the banks are not indicating it in the CSV file. For AMEX and Metro, these accounts id will be set automatically (I have only one account at AMEX and 2 at metro, first one is a debit, second one is a credit card) |
+| accountId | The account ID which will be used to feed the OFX file. Note that sometimes the banks are not indicating it in the CSV file. For AMEX, these accounts id will be set automatically (I have only one account at AMEX |
 | banktivitySuffix | When importing an OFX into banktivity, banktivity displays only the 4 last characters of the account number. To make it easier, I added a suffix to the account id in the OFX so that I can see in a single glance which account is which. Do not fill if you don't want this feature. |
 
 ```json

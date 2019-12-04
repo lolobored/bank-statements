@@ -105,43 +105,50 @@ public class MetroServiceImpl implements MetroService {
         /**
          * Go to the first account page and download the statements for the last 30 tx
          */
-        wait.until(ExpectedConditions.visibilityOf(webDriver.findElement(By.id("QUE_0936EF1D3ED8C8E961071"))));
-        WebElement singleAccountNumber = webDriver.findElement(By.id("QUE_0936EF1D3ED8C8E961071"));
-        String accountNumber = singleAccountNumber.getText();
-        wait.until(ExpectedConditions.visibilityOf(webDriver.findElement(By.id("BUT_0936EF1D3ED8C8E961603"))));
-        WebElement singleAccount = webDriver.findElement(By.id("BUT_0936EF1D3ED8C8E961603"));
-        singleAccount.sendKeys(Keys.RETURN);
-        wait.until(ExpectedConditions.visibilityOf(webDriver.findElement(By.id("BUT_81752B75369FA043129962"))));
-        WebElement download = webDriver.findElement(By.id("BUT_81752B75369FA043129962"));
-        download.sendKeys(Keys.RETURN);
+        List<WebElement> accountBlocks = webDriver.findElements(By.xpath("/html/body/form[1]/div[4]/div[3]/div[1]/div[2]/div[1]/div[1]/div/div[2]/div/div/div/div[1]/header"));
+        List<Statement> statements= new ArrayList<>();
 
-        String csvContent = FileUtility.readDownloadedFile(downloads, bank.getWaitTime());
-        List<Statement> statements = new ArrayList<>();
-        statements.add(metroCSVConversionService.convertCSVToTransactions(accountNumber, Statement.DEBIT_ACCOUNT, csvContent));
+        List<String> accounts= new ArrayList<>();
+        List<String> accountTypes= new ArrayList<>();
+        List<String> linkIds= new ArrayList<>();
 
-        /**
-         * Go back home
-         */
-        wait.until(ExpectedConditions.elementToBeClickable(webDriver.findElement(By.id("BUT_AA76E5E393F0103923812"))));
-        WebElement returnUrl = webDriver.findElement(By.id("BUT_AA76E5E393F0103923812"));
-        returnUrl.sendKeys(Keys.RETURN);
+        for (WebElement accountBlock : accountBlocks) {
+            String accountNumber = accountBlock.findElement(By.xpath("div[2]/div/div[2]/div[1]/div[2]/div/div/div[3]/div/span")).getText();
+            WebElement accountIcon = accountBlock.findElement(By.xpath("div[1]/div/div/div/div/span"));
+            WebElement link = accountBlock.findElement(By.xpath("div[2]/div/div[1]/div[1]/div[1]/div[1]/div/div/div[1]/div/a"));
+            String accountType;
+            if (accountIcon.getAttribute("data-icon").equals("C")){
+                accountType= Statement.CREDIT_CARD;
 
-        /**
-         * Go to the second account page and download the statements for the last 30 tx
-         */
-        wait.until(ExpectedConditions.visibilityOf(webDriver.findElement(By.id("QUE_A87DD6BF85540DA4642875"))));
-        singleAccountNumber = webDriver.findElement(By.id("QUE_A87DD6BF85540DA4642875"));
-        accountNumber = singleAccountNumber.getText();
-        wait.until(ExpectedConditions.visibilityOf(webDriver.findElement(By.id("BUT_A87DD6BF85540DA4642870"))));
-        singleAccount = webDriver.findElement(By.id("BUT_A87DD6BF85540DA4642870"));
-        singleAccount.sendKeys(Keys.RETURN);
-        wait.until(ExpectedConditions.elementToBeClickable(webDriver.findElement(By.id("BUT_81752B75369FA043129962"))));
-        download = webDriver.findElement(By.id("BUT_81752B75369FA043129962"));
-        download.sendKeys(Keys.RETURN);
+            }
+            else {
+                accountType= Statement.DEBIT_ACCOUNT;
+            }
 
-        csvContent = FileUtility.readDownloadedFile(downloads, bank.getWaitTime());
-        statements.add(metroCSVConversionService.convertCSVToTransactions(accountNumber, Statement.CREDIT_CARD, csvContent));
+            accountTypes.add(accountType);
+            linkIds.add(link.getAttribute("id"));
+            accounts.add(accountNumber);
+        }
+        // iterate through links
+        for (int i=0; i< linkIds.size(); i++){
+            String linkId = linkIds.get(i);
+            WebElement link = webDriver.findElement(By.id(linkId));
+            link.sendKeys(Keys.RETURN);
+            wait.until(ExpectedConditions.visibilityOf(webDriver.findElement(By.id("BUT_81752B75369FA043129962"))));
+            WebElement download = webDriver.findElement(By.id("BUT_81752B75369FA043129962"));
+            download.sendKeys(Keys.RETURN);
+            String csvContent = FileUtility.readDownloadedFile(downloads, bank.getWaitTime());
+            statements.add(metroCSVConversionService.convertCSVToTransactions(accounts.get(i),
+                    accountTypes.get(i), csvContent));
 
+            /**
+             * Go back home
+             */
+            wait.until(ExpectedConditions.elementToBeClickable(webDriver.findElement(By.id("BUT_AA76E5E393F0103923812"))));
+            WebElement returnUrl = webDriver.findElement(By.id("BUT_AA76E5E393F0103923812"));
+            returnUrl.sendKeys(Keys.RETURN);
+
+        }
         return statements;
     }
 
