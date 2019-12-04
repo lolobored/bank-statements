@@ -86,9 +86,24 @@ public class BankStatementsApplication implements ApplicationRunner {
             startingDate= LocalDate.now();
             startingDate= startingDate.withDayOfMonth(1);
         }
+        else if (args.containsOption("month")) {
+            startingDate= LocalDate.now();
+            startingDate= startingDate.minusDays(30);
+        }
+        else if (args.containsOption("date")) {
+            logger.info("Initial date ["+args.getOptionValues("date").get(0)+"]");
+            try {
+                startingDate= LocalDate.parse(args.getOptionValues("date").get(0));
+            }
+            catch (Exception err){
+                logger.error("Date parameter is supposed to be using the format yyyy-MM-dd");
+                System.exit(-1);
+            }
+        }
 
         File outputDirectory= new File(args.getOptionValues("output").get(0));
         String jsonFilePath = args.getOptionValues("json").get(0);
+        logger.info("JSON file ["+new File(jsonFilePath).getAbsolutePath()+"]");
         if (!new File(jsonFilePath).exists()){
             logger.error("JSON file does not exists at ["+jsonFilePath+"]");
             System.exit(-1);

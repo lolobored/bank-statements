@@ -32,6 +32,7 @@ Running the software only requires to run the jar file with the appropriate opti
 * output: defines where the merged OFX file will be created. The merged file will be named "downloaded.ofx"
 * monthly: an optional parameter allowing to use only transactions whose value date is from the start of the current month
 * month: an optional parameter allowing to use only transactions whose value date is 30-days earlier than today
+* date: an optional parameter allowing to download all the transactions available from that date using a pattern yyyy-MM-dd
 
 If none of the last parameter is used, all the transactions will be downloaded.
 
@@ -47,6 +48,10 @@ java -jar bank-statements-1.0-SNAPSHOT.jar --json=<path to the json file> --mont
 * Downloading all the transactions available from 30-days ago into the user Downloads directory:
 ```
 java -jar bank-statements-1.0-SNAPSHOT.jar --json=<path to the json file> --month --output=~/Downloads
+```
+* Downloading all the transactions available from the 28th of January 1980 into the user Downloads directory:
+```
+java -jar bank-statements-1.0-SNAPSHOT.jar --json=<path to the json file> --date=1980-01-28 --output=~/Downloads
 ```
 
 ## Limitations
