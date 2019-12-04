@@ -1,0 +1,73 @@
+[
+  {
+    "name": "metro",
+    "connectionUrl": "https://personal.metrobankonline.co.uk/MetroBankRetail",
+    "username": "fake.user",
+    "password": "fake.password",
+    "securityPin": "535452435",
+    "waitTime": 5,
+    "accounts": [
+      {
+        "accountId": "32432432",
+        "banktivitySuffix": "metr"
+      },
+      {
+        "accountId": "23453532",
+        "banktivitySuffix": "metr"
+      }
+    ]
+  },
+  {
+    "name": "amex",
+    "connectionUrl": "https://global.americanexpress.com/login?inav=iNavLnkLog",
+    "username": "fake.user",
+    "password": "fake.password",
+    "waitTime": 5,
+    "accounts": [
+      {
+        "accountId": "12345678900123",
+        "banktivitySuffix": "amex"
+      }
+    ]
+  },
+  {
+    "name": "credit mutuel",
+    "connectionUrl": "https://www.creditmutuel.fr/fr/authentification.html",
+    "username": "3543532421",
+    "password": "3423rfewdfaf",
+    "waitTime": 5,
+    "accounts": [
+      {
+        "accountId": "4352432423",
+        "banktivitySuffix": "cmeu"
+      },
+      {
+        "accountId": "3534643234",
+        "banktivitySuffix": "cmch"
+      },
+      {
+        "accountId": "325346573",
+        "banktivitySuffix": "ccel"
+      }
+    ]
+  },
+  {
+    "name": "revolut",
+    "statementsDirectory": "/Users/username/OneDrive/revolut-statements",
+    "waitTime": 5,
+    "accounts": [
+      {
+        "accountId": "revolut-gbp",
+        "banktivitySuffix": "rgbp"
+      },
+      {
+        "accountId": "revolut-eur",
+        "banktivitySuffix": "reur"
+      },
+      {
+        "accountId": "revolut-chf",
+        "banktivitySuffix": "rchf"
+      }
+    ]
+  }
+]

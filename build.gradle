@@ -1,0 +1,27 @@
+plugins {
+    id 'java'
+    id "io.franzbecker.gradle-lombok" version "3.2.0"
+    id 'org.springframework.boot' version '2.2.1.RELEASE'
+}
+
+group 'org.lolobored'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+
+sourceCompatibility = 11
+
+dependencies {
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter', version: '2.2.1.RELEASE'
+    compile group: 'org.projectlombok', name: 'lombok', version: '1.16.20'
+    compile group: 'org.seleniumhq.selenium', name: 'selenium-java', version: '3.141.59'
+    compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.9'
+    compile group: 'commons-io', name: 'commons-io', version: '2.6'
+    compile group: 'io.github.bonigarcia', name: 'webdrivermanager', version: '3.7.1'
+    compile group: 'com.opencsv', name: 'opencsv', version: '5.0'
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.10.1'
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.10.1'
+}
