@@ -29,6 +29,9 @@ dependencies {
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.10.1'
 }
 
+release{
+    afterReleaseBuild.dependsOn publish
+}
 publishing {
     repositories {
         maven {
