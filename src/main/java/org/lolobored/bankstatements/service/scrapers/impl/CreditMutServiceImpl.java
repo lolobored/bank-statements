@@ -24,7 +24,7 @@ import java.util.List;
 @Service
 public class CreditMutServiceImpl implements CreditMutService {
 
-    private Logger logger = LoggerFactory.getLogger(CreditMutService.class);
+    private Logger logger = LoggerFactory.getLogger(CreditMutServiceImpl.class);
 
     @Autowired
     private CreditMutCSVConversionService creditMutCSVConversionService;
