@@ -39,19 +39,19 @@ If none of the last parameter is used, all the transactions will be downloaded.
 Example of usage:
 * Downloading all the transactions available into the user Downloads directory:
 ```
-java -jar bank-statements-1.0-SNAPSHOT.jar --json=<path to the json file> --output=~/Downloads
+java -jar bank-statements-<VERSION>.jar --json=<path to the json file> --output=~/Downloads
 ```
 * Downloading all the transactions available from the 1st of this month into the user Downloads directory:
 ```
-java -jar bank-statements-1.0-SNAPSHOT.jar --json=<path to the json file> --monthly --output=~/Downloads
+java -jar bank-statements-<VERSION>.jar --json=<path to the json file> --monthly --output=~/Downloads
 ```
 * Downloading all the transactions available from 30-days ago into the user Downloads directory:
 ```
-java -jar bank-statements-1.0-SNAPSHOT.jar --json=<path to the json file> --month --output=~/Downloads
+java -jar bank-statements-<VERSION>.jar --json=<path to the json file> --month --output=~/Downloads
 ```
 * Downloading all the transactions available from the 28th of January 1980 into the user Downloads directory:
 ```
-java -jar bank-statements-1.0-SNAPSHOT.jar --json=<path to the json file> --date=1980-01-28 --output=~/Downloads
+java -jar bank-statements-<VERSION>.jar --json=<path to the json file> --date=1980-01-28 --output=~/Downloads
 ```
 
 ## JSON File
