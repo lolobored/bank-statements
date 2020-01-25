@@ -91,7 +91,7 @@ public class BankStatementsApplication implements ApplicationRunner {
         }
         if (args.containsOption("days")) {
             LocalDate comparableDate= LocalDate.now();
-            comparableDate= comparableDate.minusDays(Integer.parseInt(args.getOptionValues("date").get(0)));
+            comparableDate= comparableDate.minusDays(Integer.parseInt(args.getOptionValues("days").get(0)));
             if (comparableDate.isAfter(startingDate)){
                 startingDate= comparableDate;
             }
