@@ -55,7 +55,7 @@ java -jar bank-statements-<VERSION>.jar --json=<path to the json file> --date=19
 ```
 * Downloading all the transactions available from the 1st of January 1980 and from the last 30 days into the user Downloads directory:
 ```
-java -jar bank-statements-<VERSION>.jar --json=<path to the json file> --date=1980-01-28 --days 30 --output=~/Downloads
+java -jar bank-statements-<VERSION>.jar --json=<path to the json file> --date=1980-01-28 --days=30 --output=~/Downloads
 ```
 
 ## JSON File
