@@ -74,10 +74,12 @@ public class CreditMutServiceImpl implements CreditMutService {
         WebElement loginButton = webDriver.findElement(By.cssSelector("#login-submit > a"));
         loginButton.sendKeys(Keys.RETURN);
 
+        Thread.sleep(15000);
+
         /**
-         * Now let's go to the download page as soon as we can see logout
+         * Now let's go to the download page as soon as we can see the download button (after confirming by  mobile)
          */
-        wait.until(ExpectedConditions.elementToBeClickable(webDriver.findElement(By.id("ei_tpl_ident_logout_title"))));
+        wait.until(ExpectedConditions.elementToBeClickable(webDriver.findElement(By.id("I0:s2.A3:C2:triggerLink"))));
         webDriver.navigate().to("https://www.creditmutuel.fr/fr/banque/compte/telechargement.cgi");
         /**
          * Select a CSV type of download
