@@ -83,17 +83,33 @@ public class BankStatementsApplication implements ApplicationRunner {
          * if just for this month
          */
         if (args.containsOption("monthly")) {
-            startingDate= LocalDate.now();
-            startingDate= startingDate.withDayOfMonth(1);
+            LocalDate comparableDate= LocalDate.now();
+            comparableDate= comparableDate.withDayOfMonth(1);
+            if (comparableDate.isAfter(startingDate)){
+                startingDate= comparableDate;
+            }
         }
-        else if (args.containsOption("month")) {
-            startingDate= LocalDate.now();
-            startingDate= startingDate.minusDays(30);
+        if (args.containsOption("days")) {
+            LocalDate comparableDate= LocalDate.now();
+            comparableDate= comparableDate.minusDays(Integer.parseInt(args.getOptionValues("date").get(0)));
+            if (comparableDate.isAfter(startingDate)){
+                startingDate= comparableDate;
+            }
         }
-        else if (args.containsOption("date")) {
+        if (args.containsOption("month")) {
+            LocalDate comparableDate= LocalDate.now();
+            comparableDate= comparableDate.minusDays(30);
+            if (comparableDate.isAfter(startingDate)){
+                startingDate= comparableDate;
+            }
+        }
+        if (args.containsOption("date")) {
             logger.info("Initial date ["+args.getOptionValues("date").get(0)+"]");
             try {
-                startingDate= LocalDate.parse(args.getOptionValues("date").get(0));
+                LocalDate comparableDate= LocalDate.parse(args.getOptionValues("date").get(0));
+                if (comparableDate.isAfter(startingDate)){
+                    startingDate= comparableDate;
+                }
             }
             catch (Exception err){
                 logger.error("Date parameter is supposed to be using the format yyyy-MM-dd");
