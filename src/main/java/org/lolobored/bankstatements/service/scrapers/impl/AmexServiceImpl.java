@@ -89,7 +89,9 @@ public class AmexServiceImpl implements AmexService {
         wait.until(ExpectedConditions.elementToBeClickable(webDriver.findElement(By.id("loginSubmit"))));
         WebElement loginButton = webDriver.findElement(By.id("loginSubmit"));
         loginButton.submit();
-        Thread.sleep(1000 * bank.getWaitTime());
+
+
+        wait.until(ExpectedConditions.elementToBeClickable(By.className("btn-block")));
 
         /**
          * Now let's go to the statements page
