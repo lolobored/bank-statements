@@ -88,7 +88,7 @@ public class MetroServiceImpl implements MetroService {
         for (int i=1; i<4; i++){
             setPasswordEntries(webDriver, wait, i, bank.getPassword());
         }
-        Thread.sleep(1000* bank.getWaitTime());
+        //Thread.sleep(1000* bank.getWaitTime());
         // validate the form
         wait.until(ExpectedConditions.elementToBeClickable(webDriver.findElement(By.id("BUT_757E5CE63630B7EB51350"))));
         loginButton = webDriver.findElement(By.id("BUT_757E5CE63630B7EB51350"));
@@ -103,7 +103,18 @@ public class MetroServiceImpl implements MetroService {
         button.sendKeys(Keys.RETURN);
 
         /**
-         * Go to the first account page and download the statements for the last 30 tx
+         * There might be a pop up sometimes with a finish button
+         */
+        try {
+            wait.until(ExpectedConditions.elementToBeClickable(webDriver.findElement(By.id("BUT_2AA03D92C0DCF9481393455"))));
+            WebElement cookiesButton = webDriver.findElement(By.id("BUT_2AA03D92C0DCF9481393455"));
+            cookiesButton.click();
+        } catch (Exception err) {
+            logger.warn("No cookies window found");
+        }
+
+        /**
+         * Go to the first account page and download the statements for the last 30 txs
          */
         List<WebElement> accountBlocks = webDriver.findElements(By.xpath("/html/body/form[1]/div[4]/div[3]/div[1]/div[2]/div[1]/div[1]/div/div[2]/div/div/div/div[1]/header"));
         List<Statement> statements= new ArrayList<>();
