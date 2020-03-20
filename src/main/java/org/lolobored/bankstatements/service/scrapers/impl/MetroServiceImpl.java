@@ -95,23 +95,23 @@ public class MetroServiceImpl implements MetroService {
         loginButton.sendKeys(Keys.RETURN);
 
         /**
+         * There might be a pop up sometimes with a finish button
+         */
+        try {
+            wait.until(ExpectedConditions.elementToBeClickable(webDriver.findElement(By.id("BUT_2AA03D92C0DCF9481393455"))));
+            WebElement cookiesButton = webDriver.findElement(By.id("BUT_2AA03D92C0DCF9481393455"));
+            cookiesButton.sendKeys(Keys.RETURN);
+        } catch (Exception err) {
+            logger.warn("No coronavirus window found");
+        }
+
+        /**
          * New page is just a confirmation form
          * Pass over it
          */
         wait.until(ExpectedConditions.elementToBeClickable(webDriver.findElement(By.id("BUT_02D66B31BAAF4F15580719"))));
         WebElement button = webDriver.findElement(By.id("BUT_02D66B31BAAF4F15580719"));
         button.sendKeys(Keys.RETURN);
-
-        /**
-         * There might be a pop up sometimes with a finish button
-         */
-        try {
-            wait.until(ExpectedConditions.elementToBeClickable(webDriver.findElement(By.id("BUT_2AA03D92C0DCF9481393455"))));
-            WebElement cookiesButton = webDriver.findElement(By.id("BUT_2AA03D92C0DCF9481393455"));
-            cookiesButton.click();
-        } catch (Exception err) {
-            logger.warn("No cookies window found");
-        }
 
         /**
          * Go to the first account page and download the statements for the last 30 txs
