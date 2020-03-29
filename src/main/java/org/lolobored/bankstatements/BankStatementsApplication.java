@@ -45,6 +45,8 @@ public class BankStatementsApplication implements ApplicationRunner {
     @Autowired
     private RevolutService revolutService;
     @Autowired
+    private CommBankService commBankService;
+    @Autowired
     private StatementsFilterService statementsFilterService;
 
     @Autowired
@@ -54,6 +56,7 @@ public class BankStatementsApplication implements ApplicationRunner {
     private final static String CREDIT_MUT="credit mutuel";
     private final static String AMEX="amex";
     private final static String REVOLUT="revolut";
+    private final static String COMM_BANK="comm bank";
 
     private Logger logger = LoggerFactory.getLogger(BankStatementsApplication.class);
 
@@ -174,6 +177,9 @@ public class BankStatementsApplication implements ApplicationRunner {
                         break;
                     case REVOLUT:
                         bankGenericService = revolutService;
+                        break;
+                    case COMM_BANK:
+                        bankGenericService = commBankService;
                         break;
                 }
                 if (bankGenericService!= null) {

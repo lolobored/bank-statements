@@ -6,6 +6,7 @@ This Java application was designed for automatically scraping my account stateme
 * Credit Mutuel (FR): https://www.creditmutuel.fr
 * AMEX (UK): https://www.americanexpress.com/uk
 * Metrobank (UK): https://www.metrobankonline.co.uk
+* Comm Bank (AU): https://www.commbank.com.au
 
 In addition it automatically converts as well Revolut (https://www.revolut.com) statements.
 
@@ -142,6 +143,23 @@ The structure of an account is the following:
     ]
   },
   {
+    "name": "comm bank",
+    "connectionUrl": "https://www.my.commbank.com.au/netbank/Logon/Logon.aspx",
+    "username": "11111111",
+    "password": "lffesacne,",
+    "waitTime": 10,
+    "accounts": [
+      {
+        "accountId": "22222222",
+        "banktivitySuffix": "cbcu"
+      },
+      {
+        "accountId": "33333333",
+        "banktivitySuffix": "cbsa"
+      }
+    ]
+  },
+  {
     "name": "revolut",
     "statementsDirectory": "/Users/username/OneDrive/revolut-statements",
     "waitTime": 5,
@@ -175,5 +193,6 @@ The way to do so is following this method:
 | Metrobank | Account name is fetched from the webpage, just after logging in. Each account is inside a block containing its sort code and its account number | Account type are deducted from the icon of the account. An icon of a card (C) represent a credit card. Anything else is considered as a debit / saving |
 | AMEX | Account name is fetched from the download statement CSV page by browsing into the different accounts that are available there | AMEX is always Credit Card |
 | Revolut | Account name is fetched from the name of the CSV as being downloaded from the mobile app. It should be something like "Revolut-GBP-Statement*.csv" for a GBP account. Account name will be revolut-gbp (lower case) | Revolut is only DEBIT |
+| Comm Bank AUD | Account number is fetched from the webpage, just after logging in. Each account is inside a block containing its sort code and its account number | Account Type is set to DEBIT |
 | Credit Mutuel | Account name is fetched directly from the name of the CSV which is named with the account number | Credit Mutuel is french there's no credit card there so DEBIT |
 
