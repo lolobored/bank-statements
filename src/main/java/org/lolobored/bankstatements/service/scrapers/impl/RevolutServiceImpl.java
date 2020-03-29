@@ -44,12 +44,13 @@ public class RevolutServiceImpl implements RevolutService {
             // list the files
             Collection<File> statementFiles = FileUtils.listFiles(statementsDirectory, new String[]{"csv"}, false);
             for (File statement : statementFiles) {
-                FileUtils.moveFileToDirectory(statement, tempDirectory, true);
-                String fileName = FileUtility.getDownloadedFilename(tempDirectory, bank.getWaitTime());
-                String csv = FileUtility.readDownloadedFile(tempDirectory, bank.getWaitTime());
-                String accountName= StringUtils.substringBefore(fileName, "-Statement").toLowerCase();
-                statements.add(revolutCSVConversionService.convertCSVToTransactions(accountName, Statement.DEBIT_ACCOUNT, csv));
-
+                if (statement.getName().startsWith("Revolut-")) {
+                    FileUtils.moveFileToDirectory(statement, tempDirectory, true);
+                    String fileName = FileUtility.getDownloadedFilename(tempDirectory, bank.getWaitTime());
+                    String csv = FileUtility.readDownloadedFile(tempDirectory, bank.getWaitTime());
+                    String accountName = StringUtils.substringBefore(fileName, "-Statement").toLowerCase();
+                    statements.add(revolutCSVConversionService.convertCSVToTransactions(accountName, Statement.DEBIT_ACCOUNT, csv));
+                }
             }
         }
         return statements;
