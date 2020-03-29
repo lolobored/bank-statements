@@ -75,7 +75,7 @@ public class AmexServiceImpl implements AmexService {
          * panel preventing to click on the buttons
          */
         try {
-            wait.until(ExpectedConditions.elementToBeClickable(webDriver.findElement(By.id("sprite-ContinueButton_EN"))));
+            wait.until(ExpectedConditions.elementToBeClickable(By.id("sprite-ContinueButton_EN")));
             WebElement cookiesButton = webDriver.findElement(By.id("sprite-ContinueButton_EN"));
             cookiesButton.click();
         } catch (Exception err) {
@@ -86,7 +86,7 @@ public class AmexServiceImpl implements AmexService {
          * Find the login button
          * on the form and hit it
          */
-        wait.until(ExpectedConditions.elementToBeClickable(webDriver.findElement(By.id("loginSubmit"))));
+        wait.until(ExpectedConditions.elementToBeClickable(By.id("loginSubmit")));
         WebElement loginButton = webDriver.findElement(By.id("loginSubmit"));
         loginButton.submit();
 
@@ -105,7 +105,7 @@ public class AmexServiceImpl implements AmexService {
          * panel preventing to click on the buttons
          */
         try {
-            wait.until(ExpectedConditions.elementToBeClickable(webDriver.findElement(By.id("sprite-ContinueButton_EN"))));
+            wait.until(ExpectedConditions.elementToBeClickable(By.id("sprite-ContinueButton_EN")));
             WebElement cookiesButton = webDriver.findElement(By.id("sprite-ContinueButton_EN"));
             cookiesButton.click();
         } catch (Exception err) {

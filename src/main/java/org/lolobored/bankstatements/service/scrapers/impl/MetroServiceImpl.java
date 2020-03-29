@@ -56,7 +56,7 @@ public class MetroServiceImpl implements MetroService {
          * panel preventing to click on the buttons
          */
         try {
-            wait.until(ExpectedConditions.elementToBeClickable(webDriver.findElement(By.id("js-mbCookieNotice-button"))));
+            wait.until(ExpectedConditions.elementToBeClickable(By.id("js-mbCookieNotice-button")));
             WebElement cookiesButton = webDriver.findElement(By.id("js-mbCookieNotice-button"));
             cookiesButton.click();
         }
@@ -65,7 +65,7 @@ public class MetroServiceImpl implements MetroService {
         }
 
         // find button and click
-        wait.until(ExpectedConditions.elementToBeClickable(webDriver.findElement(By.id("BUT_E8BAE60B5EFF4C8248304"))));
+        wait.until(ExpectedConditions.elementToBeClickable(By.id("BUT_E8BAE60B5EFF4C8248304")));
         WebElement loginButton = webDriver.findElement(By.id("BUT_E8BAE60B5EFF4C8248304"));
         loginButton.click();
 
@@ -90,7 +90,7 @@ public class MetroServiceImpl implements MetroService {
         }
         //Thread.sleep(1000* bank.getWaitTime());
         // validate the form
-        wait.until(ExpectedConditions.elementToBeClickable(webDriver.findElement(By.id("BUT_757E5CE63630B7EB51350"))));
+        wait.until(ExpectedConditions.elementToBeClickable(By.id("BUT_757E5CE63630B7EB51350")));
         loginButton = webDriver.findElement(By.id("BUT_757E5CE63630B7EB51350"));
         loginButton.sendKeys(Keys.RETURN);
 
@@ -98,7 +98,7 @@ public class MetroServiceImpl implements MetroService {
          * There might be a pop up sometimes with a finish button
          */
         try {
-            wait.until(ExpectedConditions.elementToBeClickable(webDriver.findElement(By.id("BUT_2AA03D92C0DCF9481393455"))));
+            wait.until(ExpectedConditions.elementToBeClickable(By.id("BUT_2AA03D92C0DCF9481393455")));
             WebElement cookiesButton = webDriver.findElement(By.id("BUT_2AA03D92C0DCF9481393455"));
             cookiesButton.sendKeys(Keys.RETURN);
         } catch (Exception err) {
@@ -109,7 +109,7 @@ public class MetroServiceImpl implements MetroService {
          * New page is just a confirmation form
          * Pass over it
          */
-        wait.until(ExpectedConditions.elementToBeClickable(webDriver.findElement(By.id("BUT_02D66B31BAAF4F15580719"))));
+        wait.until(ExpectedConditions.elementToBeClickable(By.id("BUT_02D66B31BAAF4F15580719")));
         WebElement button = webDriver.findElement(By.id("BUT_02D66B31BAAF4F15580719"));
         button.sendKeys(Keys.RETURN);
 
@@ -155,7 +155,7 @@ public class MetroServiceImpl implements MetroService {
             /**
              * Go back home
              */
-            wait.until(ExpectedConditions.elementToBeClickable(webDriver.findElement(By.id("BUT_AA76E5E393F0103923812"))));
+            wait.until(ExpectedConditions.elementToBeClickable(By.id("BUT_AA76E5E393F0103923812")));
             WebElement returnUrl = webDriver.findElement(By.id("BUT_AA76E5E393F0103923812"));
             returnUrl.sendKeys(Keys.RETURN);
 
