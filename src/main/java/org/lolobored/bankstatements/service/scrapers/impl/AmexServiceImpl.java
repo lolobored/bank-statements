@@ -55,6 +55,18 @@ public class AmexServiceImpl implements AmexService {
         logger.info("Connected to " + bank.getConnectionUrl());
 
         /**
+         * There might be a cookie confirmation
+         * panel preventing to click on the buttons
+         */
+        try {
+            wait.until(ExpectedConditions.elementToBeClickable(By.id("sprite-AcceptButton_EN")));
+            WebElement cookiesButton = webDriver.findElement(By.id("sprite-AcceptButton_EN"));
+            cookiesButton.click();
+        } catch (Exception err) {
+            logger.warn("No cookies window found");
+        }
+
+        /**
          * Look for the username
          * and password
          */
@@ -69,18 +81,6 @@ public class AmexServiceImpl implements AmexService {
         passwordField.sendKeys(bank.getPassword());
 
         logger.info("Password field [" + bank.getPassword() + "]");
-
-        /**
-         * There might be a cookie confirmation
-         * panel preventing to click on the buttons
-         */
-        try {
-            wait.until(ExpectedConditions.elementToBeClickable(By.id("sprite-AcceptButton_EN")));
-            WebElement cookiesButton = webDriver.findElement(By.id("sprite-AcceptButton_EN"));
-            cookiesButton.click();
-        } catch (Exception err) {
-            logger.warn("No cookies window found");
-        }
 
         /**
          * Find the login button
