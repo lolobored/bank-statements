@@ -2,6 +2,7 @@ package org.lolobored.bankstatements.service.scrapers.impl;
 
 import lombok.Data;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.lolobored.bankstatements.model.Statement;
 import org.lolobored.bankstatements.model.config.Account;
 import org.lolobored.bankstatements.model.config.Bank;
@@ -81,28 +82,41 @@ public class CommBankServiceImpl implements CommBankService {
         loginButton.sendKeys(Keys.RETURN);
 
         // wait until the webpage is rendered
-        wait.until(ExpectedConditions.elementToBeClickable(By.id("pbsTabMenuItem")));
+      //  wait.until(ExpectedConditions.elementToBeClickable(By.id("pbsTabMenuItem")));
 
 
-        List<WebElement> accountBlocks = webDriver.findElements(By.xpath("/html/body/form/div[4]/div/div[2]/div/div[2]/div[2]/div[1]/div/div/table/tbody/tr/td[1]/div/div[1]/a"));
+        List<WebElement> accountBlocks = webDriver.findElements(By.xpath("//*[@id=\"StartMainContent\"]/div/div[2]/div[1]/main/section[1]/div/div[1]/div"));
         List<CommBankAccount> accountsDetails = new ArrayList<>();
 
 
         for (WebElement accountBlock : accountBlocks) {
             CommBankAccount account= new CommBankAccount();
-            account.setUrl(accountBlock.getAttribute("href"));
+            String accountNumber= accountBlock.findElement(By.className("account-number")).getText();
+            accountNumber= StringUtils.substringAfter(accountNumber, " ");
+            accountNumber= accountNumber.replace(" ", "");
+            account.setAccountNumber(accountNumber);
+            logger.info("Collecting account number for account " + accountNumber);
+            // get action button
+            WebElement actionButton = accountBlock.findElement(By.className("options-button"));
+            actionButton.click();
+
+            // once clicked we can retrieve the url
+            List<WebElement> viewTxsLink = accountBlock.findElements(By.className("btn-action--subtle"));
+            for (WebElement viewTxLink : viewTxsLink) {
+                if ("View Transactions".equalsIgnoreCase(viewTxLink.getText())){
+                    String url= viewTxLink.getAttribute("href");
+                    account.setUrl(url);
+                    logger.info("Collecting URL for account details " + url);
+                    WebElement cancelButton = accountBlock.findElement(By.className("cancel-button"));
+                    cancelButton.click();
+                    break;
+                }
+            }
+
             account.setAccountType(Statement.DEBIT_ACCOUNT);
             accountsDetails.add(account);
-            logger.info("Collecting URL for account details " + accountBlock.getAttribute("href"));
-        }
 
-        List<WebElement> accountNumbers = webDriver.findElements(By.xpath("//html/body/form/div[4]/div/div[2]/div/div[2]/div[2]/div[1]/div/div/table/tbody/tr/td[3]/span/span"));
-        for (int i=0; i< accountNumbers.size(); i++){
-            String accountNumber= accountNumbers.get(i).getText().replace(" ", "");
-            accountsDetails.get(i).setAccountNumber(accountNumber);
-            logger.info("Collecting account number for account " + accountNumber);
         }
-
 
         for (CommBankAccount accountsDetail : accountsDetails) {
             webDriver.navigate().to(accountsDetail.getUrl());
