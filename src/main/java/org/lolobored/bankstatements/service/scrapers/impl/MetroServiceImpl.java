@@ -65,10 +65,9 @@ public class MetroServiceImpl implements MetroService {
         }
 
         // find button and click
-        wait.until(ExpectedConditions.elementToBeClickable(By.id("BUT_E8BAE60B5EFF4C8248304")));
-        WebElement loginButton = webDriver.findElement(By.id("BUT_E8BAE60B5EFF4C8248304"));
+        wait.until(ExpectedConditions.elementToBeClickable(By.className("ibid-btn")));
+        WebElement loginButton = webDriver.findElement(By.className("ibid-btn"));
         loginButton.click();
-
 
         /**
          * Let's wait for the second page to come in
@@ -166,7 +165,7 @@ public class MetroServiceImpl implements MetroService {
     private void setSecurityPinEntries(WebDriver webDriver, WebDriverWait wait, int passcodeNb, String securityPin){
         char[] arraySecurityPin = securityPin.toCharArray();
         // retrieve the number that is asked by the webpage
-        wait.until(ExpectedConditions.visibilityOf(webDriver.findElement(By.xpath("//*[@id=\"security-dropdowns\"]/div/div["+passcodeNb+"]/p"))));
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//*[@id=\"security-dropdowns\"]/div/div["+passcodeNb+"]/p")));
         WebElement passCode = webDriver.findElement(By.xpath("//*[@id=\"security-dropdowns\"]/div/div["+passcodeNb+"]/p"));
         int securityPinPos= Character.getNumericValue(passCode.getText().charAt(0));
         String idForCombo="char-";
