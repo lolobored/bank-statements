@@ -105,8 +105,8 @@ public class AmexServiceImpl implements AmexService {
          * panel preventing to click on the buttons
          */
         try {
-            wait.until(ExpectedConditions.elementToBeClickable(By.id("AcceptButton_EN")));
-            WebElement cookiesButton = webDriver.findElement(By.id("AcceptButton_EN"));
+            wait.until(ExpectedConditions.elementToBeClickable(By.id("sprite-AcceptButton_EN")));
+            WebElement cookiesButton = webDriver.findElement(By.id("sprite-AcceptButton_EN"));
             cookiesButton.click();
         } catch (Exception err) {
             logger.warn("No cookies window found");
