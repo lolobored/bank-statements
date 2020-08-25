@@ -20,7 +20,7 @@ import java.util.List;
 @Service
 public class AmexCSVConversionServiceImpl implements AmexCSVConversionService {
 
-    private static SimpleDateFormat amexCSVDate= new SimpleDateFormat("dd/MM/yyyy");
+    private static SimpleDateFormat amexCSVDate= new SimpleDateFormat("dd/MM/yy");
 
     @Override
     public Statement convertCSVToTransactions(String accountNumber, String accountType, String csv) throws ParseException {
@@ -33,8 +33,8 @@ public class AmexCSVConversionServiceImpl implements AmexCSVConversionService {
         List<AmexCsvLine> amexCSVLines = parseCSV(csv);
         for (AmexCsvLine amexCSVLine : amexCSVLines) {
             Transaction transaction = new Transaction();
-            transaction.setReference(amexCSVLine.getReference().trim().replace("Reference: ", ""));
-            transaction.setLabel(amexCSVLine.getLabel());
+            transaction.setReference(amexCSVLine.getReference().trim().replace("'", ""));
+            transaction.setLabel(amexCSVLine.getDescription());
             transaction.setDate(amexCSVDate.parse(amexCSVLine.getDate()));
             // credit
             if (amexCSVLine.getAmount().trim().startsWith("-")){
@@ -45,7 +45,7 @@ public class AmexCSVConversionServiceImpl implements AmexCSVConversionService {
             }
 
 
-            transaction.setAdditionalInformation(amexCSVLine.getAdditionalInfo());
+            transaction.setAdditionalInformation(amexCSVLine.getExtendedDetails());
             statement.addTransaction(transaction);
         }
         return statement;
@@ -57,6 +57,7 @@ public class AmexCSVConversionServiceImpl implements AmexCSVConversionService {
 
         Reader reader = new BufferedReader(new StringReader(csvContent.trim()));
         CsvToBean cb = new CsvToBeanBuilder(reader)
+                .withSkipLines(1)
                 .withSeparator(',')
                 .withType(AmexCsvLine.class)
                 .withMappingStrategy(ms)

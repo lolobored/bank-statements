@@ -78,19 +78,12 @@ public class MetroServiceImpl implements MetroService {
         /**
          * Retrieve and sets the security pin selectors
          */
-        for (int i=1; i<4; i++){
-            setSecurityPinEntries(webDriver, wait, i, bank.getSecurityPin());
-        }
-        /**
-         * Retrieve and sets the password text
-         */
-        for (int i=1; i<4; i++){
-            setPasswordEntries(webDriver, wait, i, bank.getPassword());
-        }
+        setSecurityPinEntries(webDriver, wait, bank.getSecurityPin(), bank.getPassword());
+
         //Thread.sleep(1000* bank.getWaitTime());
         // validate the form
-        wait.until(ExpectedConditions.elementToBeClickable(By.id("BUT_757E5CE63630B7EB51350")));
-        loginButton = webDriver.findElement(By.id("BUT_757E5CE63630B7EB51350"));
+        wait.until(ExpectedConditions.elementToBeClickable(By.className("ibid-btn")));
+        loginButton = webDriver.findElement(By.className("ibid-btn"));
         loginButton.sendKeys(Keys.RETURN);
 
         /**
@@ -162,41 +155,34 @@ public class MetroServiceImpl implements MetroService {
         return statements;
     }
 
-    private void setSecurityPinEntries(WebDriver webDriver, WebDriverWait wait, int passcodeNb, String securityPin){
+    private void setSecurityPinEntries(WebDriver webDriver, WebDriverWait wait, String securityPin, String password){
         char[] arraySecurityPin = securityPin.toCharArray();
-        // retrieve the number that is asked by the webpage
-        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//*[@id=\"security-dropdowns\"]/div/div["+passcodeNb+"]/p")));
-        WebElement passCode = webDriver.findElement(By.xpath("//*[@id=\"security-dropdowns\"]/div/div["+passcodeNb+"]/p"));
-        int securityPinPos= Character.getNumericValue(passCode.getText().charAt(0));
-        String idForCombo="char-";
-        switch (passcodeNb){
-            case 1:
-                idForCombo+="one";
-                break;
-            case 2:
-                idForCombo+="two";
-                break;
-            case 3:
-                idForCombo+="three";
-                break;
-        }
-        // set the value to the appropriate one:
-        wait.until(ExpectedConditions.visibilityOf(webDriver.findElement(By.id(idForCombo))));
-        new Select(webDriver.findElement(By.id(idForCombo))).selectByValue(String.valueOf(arraySecurityPin[securityPinPos-1]));
-    }
-
-    private void setPasswordEntries(WebDriver webDriver, WebDriverWait wait, int passwordNb, String password){
         char[] arrayPassword = password.toCharArray();
-        // retrieve the number that is asked by the webpage
-        wait.until(ExpectedConditions.visibilityOf(webDriver.findElement(By.xpath("//*[@id=\"p4_QUE_89907D559BB331AD501200\"]/div/div/div/div["+passwordNb+"]/p"))));
-        WebElement passwordFieldLabel = webDriver.findElement(By.xpath("//*[@id=\"p4_QUE_89907D559BB331AD501200\"]/div/div/div/div["+passwordNb+"]/p"));
-
-        int passwordPos= Integer.valueOf(passwordFieldLabel.getText().replaceAll("[^0-9]*", ""));
-
-        wait.until(ExpectedConditions.visibilityOf(webDriver.findElement(By.xpath("//*[@id=\"Pass" + passwordNb + "_QUE_89907D559BB331AD501200\"]"))));
-        WebElement passwordField = webDriver.findElement(By.xpath("//*[@id=\"Pass" + passwordNb + "_QUE_89907D559BB331AD501200\"]"));
-        passwordField.sendKeys(String.valueOf(arrayPassword[passwordPos-1]));
+        int passcodeNb=0;
+        int securityNb=0;
+        int iterations=1;
+        wait.until(ExpectedConditions.elementToBeClickable(By.className("seed-box")));
+        List<WebElement> seedboxes = webDriver.findElements(By.className("seed-box"));
+        for (WebElement seedbox : seedboxes) {
+            int securityPinPos = Integer.valueOf(seedbox.findElement(By.className("positions")).getText().replaceAll("[^0-9]*", ""));
+            if (iterations<=3) {
+               // retrieve the number that is asked by the webpage
+                WebElement passCode = seedbox.findElement(By.name("security" + securityNb++));
+                // set the value to the appropriate one:
+                new Select(passCode).selectByValue(String.valueOf(arraySecurityPin[securityPinPos - 1]));
+                iterations++;
+            }
+            else{
+                int passwordPos= Integer.valueOf(seedbox.findElement(By.className("positions")).getText().replaceAll("[^0-9]*", ""));
+                // retrieve the number that is asked by the webpage
+                WebElement passCode = seedbox.findElement(By.name("password" + passcodeNb++));
+                // set the value to the appropriate one:
+                passCode.sendKeys(String.valueOf(arrayPassword[passwordPos-1]));
+            }
+        }
     }
+
+
 
 
 }

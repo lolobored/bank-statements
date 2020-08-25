@@ -34,21 +34,25 @@ public class OfxConversionServiceImpl implements OfxConversionService {
             }
         }
 
-        ofx.append(getDebitHeader());
-        for (Statement statement : debitStatements) {
-            if (!statement.getTransactions().isEmpty()) {
-                ofx.append(getStatementDebitHeader(statement.getAccountNumber(), statement.getCurrency()));
-                generateTransactionsEntries(ofx, statement);
-                ofx.append(getStatementDebitTrailer());
+        if (!debitStatements.isEmpty()) {
+            ofx.append(getDebitHeader());
+            for (Statement statement : debitStatements) {
+                if (!statement.getTransactions().isEmpty()) {
+                    ofx.append(getStatementDebitHeader(statement.getAccountNumber(), statement.getCurrency()));
+                    generateTransactionsEntries(ofx, statement);
+                    ofx.append(getStatementDebitTrailer());
+                }
             }
         }
 
-        ofx.append(getCreditHeader());
-        for (Statement statement : creditStatements) {
-            if (!statement.getTransactions().isEmpty()) {
-                ofx.append(getStatementCreditHeader(statement.getAccountNumber(), statement.getCurrency()));
-                generateTransactionsEntries(ofx, statement);
-                ofx.append(getStatementCreditTrailer());
+        if (!creditStatements.isEmpty()) {
+            ofx.append(getCreditHeader());
+            for (Statement statement : creditStatements) {
+                if (!statement.getTransactions().isEmpty()) {
+                    ofx.append(getStatementCreditHeader(statement.getAccountNumber(), statement.getCurrency()));
+                    generateTransactionsEntries(ofx, statement);
+                    ofx.append(getStatementCreditTrailer());
+                }
             }
         }
         ofx.append(getTrailer());

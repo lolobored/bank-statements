@@ -8,6 +8,7 @@ import org.lolobored.bankstatements.service.conversion.AmexCSVConversionService;
 import org.lolobored.bankstatements.service.scrapers.AmexService;
 import org.lolobored.bankstatements.utils.FileUtility;
 import org.openqa.selenium.By;
+import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
@@ -55,18 +56,6 @@ public class AmexServiceImpl implements AmexService {
         logger.info("Connected to " + bank.getConnectionUrl());
 
         /**
-         * There might be a cookie confirmation
-         * panel preventing to click on the buttons
-         */
-        try {
-            wait.until(ExpectedConditions.elementToBeClickable(By.id("sprite-AcceptButton_EN")));
-            WebElement cookiesButton = webDriver.findElement(By.id("sprite-AcceptButton_EN"));
-            cookiesButton.click();
-        } catch (Exception err) {
-            logger.warn("No cookies window found");
-        }
-
-        /**
          * Look for the username
          * and password
          */
@@ -97,7 +86,7 @@ public class AmexServiceImpl implements AmexService {
          * Now let's go to the statements page
          */
 
-        webDriver.navigate().to("https://global.americanexpress.com/myca/intl/download/emea/download.do?request_type=&Face=en_GB&BPIndex=0&sorted_index=0&inav=gb_myca_pc_statement_export_statement_data");
+        webDriver.navigate().to("https://global.americanexpress.com/activity/search");
         wait = new WebDriverWait(webDriver, bank.getWaitTime());
 
         /**
@@ -113,62 +102,48 @@ public class AmexServiceImpl implements AmexService {
         }
 
         /**
-         * Select a CSV type of download
+         * Select the year
          */
-        WebElement csvRadio = webDriver.findElement(By.id("CSV"));
-        csvRadio.click();
+        wait.until(ExpectedConditions.elementToBeClickable(By.className("nav-link")));
+        List<WebElement> navLinks = webDriver.findElements(By.className("nav-link"));
+        for (WebElement navLink : navLinks) {
+            if ("View By Year".equalsIgnoreCase(navLink.getAttribute("title"))){
+                System.out.println("ici");
+                navLink.click();
+                // wait for the download button to appear
+                List<WebElement> yearNavLinks = navLink.findElement(By.xpath("./.."))
+                        .findElements(By.className("nav-link"));
+                // remove the original navlink
+                yearNavLinks.remove(navLink);
+                for (int i= 0; i< yearNavLinks.size(); i++) {
+                    // workaround to refresh the links
+                    yearNavLinks = navLink.findElement(By.xpath("./.."))
+                            .findElements(By.className("nav-link"));
+                    // remove the original navlink
+                    yearNavLinks.remove(navLink);
+                    WebElement yearNavLink = yearNavLinks.get(i);
+                    yearNavLink.click();
+                    wait.until(ExpectedConditions.elementToBeClickable(By.className("dls-icon-download")));
+                    WebElement download = webDriver.findElement(By.className("dls-icon-download"));
+                    download.sendKeys(Keys.RETURN);
 
-        /**
-         * Select the accounts
-         */
-        List<WebElement> cardsDiv = webDriver.findElements(By.id("outer_inside"));
+                    WebElement popup = webDriver.findElement(By.className("axp-activity-download__DownloadModal__downloadModal___2WSh8"));
 
-        List<WebElement> accountRadios = cardsDiv.get(1).findElements(By.className("selectCardRadio"));
-        List<WebElement> accountNames = cardsDiv.get(1).findElements(By.className("imagedetails"));
+                    WebElement csvDownloadButton = popup.findElement(By.id("axp-activity-download-body-selection-options-type_csv"));
+                    csvDownloadButton.click();
+                    WebElement includeAll= popup.findElement(By.id("axp-activity-download-body-checkbox-options-includeAll"));
+                    includeAll.click();
 
-        for (int i=0; i< accountRadios.size(); i++) {
-            WebElement accountRadio = accountRadios.get(i);
-            if (!accountRadio.isDisplayed()){
-                continue;
-            }
-            /**
-             * Select the account
-             */
-            accountRadio.click();
+                    download = popup.findElement(By.className("btn-primary"));
+                    download.click();
 
-            String imagedetails = accountNames.get(i).getText().trim();
-            String accountName= StringUtils.substringAfterLast(imagedetails, "\n");
-            /**
-             * Now there might be multiple period
-             * we can download
-             * Ideally we need to select everything possible.
-             * The buttons are named radioid+ sequential
-             * Iterate through those.
-             */
-            int periodId = 0;
-            try {
-                while (true) {
-                    String period = StringUtils.leftPad(String.valueOf(periodId), 2, "0");
-                    WebElement periodButton = webDriver.findElement(By.id("radioid" + period));
-                    periodId++;
-                    if (!periodButton.isSelected()) {
-                        periodButton.click();
-                    }
+                    String accountName = webDriver.findElement(By.className("axp-account-switcher__accountSwitcher__lastFive___1s6L_")).getText();
+
+                    String csvContent = FileUtility.readDownloadedFile(downloads, bank.getWaitTime());
+                    statements.add(amexCSVConversionService.convertCSVToTransactions(accountName, Statement.CREDIT_CARD, csvContent));
                 }
-            } catch (Exception err) {
-                logger.info("Last button hit. Total periods taken into account: " + (periodId));
+                break;
             }
-
-            /**
-             * finally download the csv file
-             */
-            WebElement downloadButton = webDriver.findElement(By.id("myBlueButton1"));
-            wait.until(ExpectedConditions.elementToBeClickable(downloadButton));
-            Actions actions = new Actions(webDriver);
-            actions.moveToElement(downloadButton).click().perform();
-
-            String csvContent = FileUtility.readDownloadedFile(downloads, bank.getWaitTime());
-            statements.add(amexCSVConversionService.convertCSVToTransactions(accountName, Statement.CREDIT_CARD, csvContent));
         }
         return statements;
     }
