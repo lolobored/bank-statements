@@ -72,6 +72,7 @@ At the bank level the parameters are:
 | connectionUrl | The url where the login page is for each bank |
 | username | The username for the login page |
 | password | The password the the login page |
+| securityCode | Only used in the case of amex where the card security code needs to provided at login |
 | securityPin | Only used in the case of metro where an 8 digits security pin is required |
 | waitTime | The maximum number of seconds before the scraping fails in a time-out. I would recommend 5 here |
 | statementsDirectory | Only used for Revolut where we cannot scrape any website. The directory where Revolut statements will have been downloaded. Note that it will delete those from the directory |
@@ -113,6 +114,7 @@ The structure of an account is the following:
     "connectionUrl": "https://global.americanexpress.com/login?inav=iNavLnkLog",
     "username": "fake.user",
     "password": "fake.password",
+    "securityCode": "0000",
     "waitTime": 5,
     "accounts": [
       {

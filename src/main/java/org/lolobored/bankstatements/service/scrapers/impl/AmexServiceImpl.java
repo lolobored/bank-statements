@@ -54,7 +54,7 @@ public class AmexServiceImpl implements AmexService {
         webDriver.get(bank.getConnectionUrl());
 
         logger.info("Connected to " + bank.getConnectionUrl());
-
+        Thread.sleep(5000);
         /**
          * Look for the username
          * and password
@@ -77,8 +77,12 @@ public class AmexServiceImpl implements AmexService {
          */
         wait.until(ExpectedConditions.elementToBeClickable(By.id("loginSubmit")));
         WebElement loginButton = webDriver.findElement(By.id("loginSubmit"));
-        loginButton.submit();
+        loginButton.sendKeys(Keys.RETURN);
 
+        wait.until(ExpectedConditions.elementToBeClickable(By.name("answer")));
+        WebElement answerEntry = webDriver.findElement(By.name("answer"));
+        answerEntry.sendKeys(bank.getSecurityCode());
+        answerEntry.sendKeys(Keys.RETURN);
 
         wait.until(ExpectedConditions.elementToBeClickable(By.className("btn-block")));
 
