@@ -7,10 +7,7 @@ import org.lolobored.bankstatements.model.Statement;
 import org.lolobored.bankstatements.service.conversion.AmexCSVConversionService;
 import org.lolobored.bankstatements.service.scrapers.AmexService;
 import org.lolobored.bankstatements.utils.FileUtility;
-import org.openqa.selenium.By;
-import org.openqa.selenium.Keys;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
+import org.openqa.selenium.*;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -79,10 +76,15 @@ public class AmexServiceImpl implements AmexService {
         WebElement loginButton = webDriver.findElement(By.id("loginSubmit"));
         loginButton.sendKeys(Keys.RETURN);
 
-        wait.until(ExpectedConditions.elementToBeClickable(By.name("answer")));
-        WebElement answerEntry = webDriver.findElement(By.name("answer"));
-        answerEntry.sendKeys(bank.getSecurityCode());
-        answerEntry.sendKeys(Keys.RETURN);
+        try {
+            wait.until(ExpectedConditions.elementToBeClickable(By.name("answer")));
+            WebElement answerEntry = webDriver.findElement(By.name("answer"));
+            answerEntry.sendKeys(bank.getSecurityCode());
+            answerEntry.sendKeys(Keys.RETURN);
+        }
+        catch (TimeoutException timeout){
+            logger.info("No additional window to enter security code");
+        }
 
         wait.until(ExpectedConditions.elementToBeClickable(By.className("btn-block")));
 
