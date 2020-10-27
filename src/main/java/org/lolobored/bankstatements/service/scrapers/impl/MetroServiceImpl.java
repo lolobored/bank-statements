@@ -47,7 +47,7 @@ public class MetroServiceImpl implements MetroService {
          * First go through the login page
          */
         webDriver.get(bank.getConnectionUrl());
-        wait.until(ExpectedConditions.visibilityOf(webDriver.findElement(By.id("USER_NAME"))));
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("USER_NAME")));
         WebElement loginField = webDriver.findElement(By.id("USER_NAME"));
         loginField.sendKeys(bank.getUsername());
 
@@ -137,7 +137,7 @@ public class MetroServiceImpl implements MetroService {
             String linkId = linkIds.get(i);
             WebElement link = webDriver.findElement(By.id(linkId));
             link.sendKeys(Keys.RETURN);
-            wait.until(ExpectedConditions.visibilityOf(webDriver.findElement(By.id("BUT_81752B75369FA043129962"))));
+            wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("BUT_81752B75369FA043129962")));
             WebElement download = webDriver.findElement(By.id("BUT_81752B75369FA043129962"));
             download.sendKeys(Keys.RETURN);
             String csvContent = FileUtility.readDownloadedFile(downloads, bank.getWaitTime());

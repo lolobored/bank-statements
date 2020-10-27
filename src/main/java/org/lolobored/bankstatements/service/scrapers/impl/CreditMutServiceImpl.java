@@ -54,13 +54,13 @@ public class CreditMutServiceImpl implements CreditMutService {
          * Look for the username
          * and password
          */
-        wait.until(ExpectedConditions.visibilityOf(webDriver.findElement(By.id("_userid"))));
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("_userid")));
         WebElement loginField = webDriver.findElement(By.id("_userid"));
         loginField.sendKeys(bank.getUsername());
 
         logger.info("Username field [" + bank.getUsername() + "]");
 
-        wait.until(ExpectedConditions.visibilityOf(webDriver.findElement(By.id("_pwduser"))));
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("_pwduser")));
         WebElement passwordField = webDriver.findElement(By.id("_pwduser"));
         passwordField.sendKeys(bank.getPassword());
 

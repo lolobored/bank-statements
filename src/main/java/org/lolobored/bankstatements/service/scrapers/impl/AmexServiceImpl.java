@@ -56,13 +56,13 @@ public class AmexServiceImpl implements AmexService {
          * Look for the username
          * and password
          */
-        wait.until(ExpectedConditions.visibilityOf(webDriver.findElement(By.id("eliloUserID"))));
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("eliloUserID")));
         WebElement loginField = webDriver.findElement(By.id("eliloUserID"));
         loginField.sendKeys(bank.getUsername());
 
         logger.info("Username field [" + bank.getUsername() + "]");
 
-        wait.until(ExpectedConditions.visibilityOf(webDriver.findElement(By.id("eliloPassword"))));
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("eliloPassword")));
         WebElement passwordField = webDriver.findElement(By.id("eliloPassword"));
         passwordField.sendKeys(bank.getPassword());
 

@@ -61,13 +61,13 @@ public class CommBankServiceImpl implements CommBankService {
          * Look for the username
          * and password
          */
-        wait.until(ExpectedConditions.visibilityOf(webDriver.findElement(By.id("txtMyClientNumber_field"))));
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("txtMyClientNumber_field")));
         WebElement loginField = webDriver.findElement(By.id("txtMyClientNumber_field"));
         loginField.sendKeys(bank.getUsername());
 
         logger.info("Username field [" + bank.getUsername() + "]");
 
-        wait.until(ExpectedConditions.visibilityOf(webDriver.findElement(By.id("txtMyPassword_field"))));
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("txtMyPassword_field")));
         WebElement passwordField = webDriver.findElement(By.id("txtMyPassword_field"));
         passwordField.sendKeys(bank.getPassword());
 
@@ -138,7 +138,7 @@ public class CommBankServiceImpl implements CommBankService {
 
             // wait up until the search was done
             logger.info("Waiting for the search to happen");
-            wait.until(ExpectedConditions.invisibilityOf(webDriver.findElement(By.id("ctl00_BodyPlaceHolder_lbSearch"))));
+            wait.until(ExpectedConditions.invisibilityOfElementLocated(By.id("ctl00_BodyPlaceHolder_lbSearch")));
             logger.info("Search done");
 
             wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//*[@id=\"ctl00_CustomFooterContentPlaceHolder_updatePanelExport1\"]/div/a")));
