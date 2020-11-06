@@ -136,7 +136,8 @@ public class AmexServiceImpl implements AmexService {
                     WebElement popup = webDriver.findElement(By.className("axp-activity-download__DownloadModal__downloadModal___2WSh8"));
 
                     WebElement csvDownloadButton = popup.findElement(By.id("axp-activity-download-body-selection-options-type_csv"));
-                    csvDownloadButton.click();
+                    Actions actions = new Actions(webDriver);
+                    actions.moveToElement(csvDownloadButton).click().perform();
                     WebElement includeAll= popup.findElement(By.id("axp-activity-download-body-checkbox-options-includeAll"));
                     includeAll.click();
 
