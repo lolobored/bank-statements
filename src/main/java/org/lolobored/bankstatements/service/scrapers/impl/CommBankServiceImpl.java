@@ -13,6 +13,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -122,7 +123,8 @@ public class CommBankServiceImpl implements CommBankService {
             webDriver.navigate().to(accountsDetail.getUrl());
             wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//*[@id=\"cba_advanced_search_trigger\"]/i")));
             WebElement advancedButton = webDriver.findElement(By.xpath("//*[@id=\"cba_advanced_search_trigger\"]/i"));
-            advancedButton.click();
+            Actions actions = new Actions(webDriver);
+            actions.moveToElement(advancedButton).click().perform();
 
             wait.until(ExpectedConditions.elementToBeClickable(By.id("ctl00_BodyPlaceHolder_ddlDateRange_field")));
             Select comboBoxPeriod = new Select(webDriver.findElement(By.id("ctl00_BodyPlaceHolder_ddlDateRange_field")));
@@ -135,7 +137,7 @@ public class CommBankServiceImpl implements CommBankService {
             logger.info("Search Button selected "+searchButton);
 
             wait.until(ExpectedConditions.elementToBeClickable(searchButton));
-            searchButton.sendKeys(Keys.RETURN);
+            searchButton.click();
 
             // wait up until the search was done
             logger.info("Waiting for the search to happen");
@@ -144,7 +146,8 @@ public class CommBankServiceImpl implements CommBankService {
 
             wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//*[@id=\"ctl00_CustomFooterContentPlaceHolder_updatePanelExport1\"]/div/a")));
             WebElement exportButton = webDriver.findElement(By.xpath("//*[@id=\"ctl00_CustomFooterContentPlaceHolder_updatePanelExport1\"]/div/a"));
-            exportButton.sendKeys(Keys.RETURN);
+            actions = new Actions(webDriver);
+            actions.moveToElement(exportButton).click().perform();
 
             wait.until(ExpectedConditions.elementToBeClickable(By.id("ctl00_CustomFooterContentPlaceHolder_ddlExportType1_field")));
             Select comboBoxExportFormat = new Select(webDriver.findElement(By.id("ctl00_CustomFooterContentPlaceHolder_ddlExportType1_field")));
@@ -152,7 +155,8 @@ public class CommBankServiceImpl implements CommBankService {
 
             wait.until(ExpectedConditions.elementToBeClickable(By.id("ctl00_CustomFooterContentPlaceHolder_lbExport1")));
             WebElement exportAction = webDriver.findElement(By.id("ctl00_CustomFooterContentPlaceHolder_lbExport1"));
-            exportAction.sendKeys(Keys.RETURN);
+            actions = new Actions(webDriver);
+            actions.moveToElement(exportAction).click().perform();
 
             String csvContent = FileUtility.readDownloadedFile(downloads, bank.getWaitTime());
             statements.add(commBankCSVConversionService.convertCSVToTransactions(accountsDetail.getAccountNumber(),
