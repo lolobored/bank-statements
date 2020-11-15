@@ -134,7 +134,7 @@ public class CommBankServiceImpl implements CommBankService {
             WebElement searchButton = webDriver.findElement(By.id("ctl00_BodyPlaceHolder_lbSearch"));
             logger.info("Search Button selected "+searchButton);
 
-            searchButton.sendKeys(Keys.RETURN);
+            searchButton.click();
 
             // wait up until the search was done
             logger.info("Waiting for the search to happen");
