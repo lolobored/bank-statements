@@ -135,7 +135,7 @@ public class CommBankServiceImpl implements CommBankService {
             logger.info("Search Button selected "+searchButton);
 
             wait.until(ExpectedConditions.elementToBeClickable(searchButton));
-            searchButton.click();
+            searchButton.sendKeys(Keys.RETURN);
 
             // wait up until the search was done
             logger.info("Waiting for the search to happen");
