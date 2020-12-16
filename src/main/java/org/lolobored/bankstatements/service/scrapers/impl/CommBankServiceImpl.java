@@ -118,43 +118,67 @@ public class CommBankServiceImpl implements CommBankService {
 
     for (CommBankAccount accountsDetail : accountsDetails) {
       webDriver.navigate().to(accountsDetail.getUrl());
-      wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//*[@id=\"cba_advanced_search_trigger\"]/i")));
-      WebElement advancedButton = webDriver.findElement(By.xpath("//*[@id=\"cba_advanced_search_trigger\"]/i"));
-      ((JavascriptExecutor) webDriver).executeScript("arguments[0].scrollIntoView(true);", advancedButton);
-      Actions actions = new Actions(webDriver);
-      actions.moveToElement(advancedButton).click().perform();
+      try {
+        // that would be the former layout
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//*[@id=\"cba_advanced_search_trigger\"]/i")));
+        WebElement advancedButton = webDriver.findElement(By.xpath("//*[@id=\"cba_advanced_search_trigger\"]/i"));
+        ((JavascriptExecutor) webDriver).executeScript("arguments[0].scrollIntoView(true);", advancedButton);
+        Actions actions = new Actions(webDriver);
+        actions.moveToElement(advancedButton).click().perform();
 
-      wait.until(ExpectedConditions.elementToBeClickable(By.id("ctl00_BodyPlaceHolder_ddlDateRange_field")));
-      Select comboBoxPeriod = new Select(webDriver.findElement(By.id("ctl00_BodyPlaceHolder_ddlDateRange_field")));
-      comboBoxPeriod.selectByVisibleText("Last 120 days");
-      logger.info("Selected " + comboBoxPeriod.getFirstSelectedOption().getText() + " for the period for transactions");
+        wait.until(ExpectedConditions.elementToBeClickable(By.id("ctl00_BodyPlaceHolder_ddlDateRange_field")));
+        Select comboBoxPeriod = new Select(webDriver.findElement(By.id("ctl00_BodyPlaceHolder_ddlDateRange_field")));
+        comboBoxPeriod.selectByVisibleText("Last 120 days");
+        logger.info("Selected " + comboBoxPeriod.getFirstSelectedOption().getText() + " for the period for transactions");
 
-      Thread.sleep(1000);
-      wait.until(ExpectedConditions.elementToBeClickable(By.id("ctl00_BodyPlaceHolder_lbSearch")));
-      WebElement searchButton = webDriver.findElement(By.id("ctl00_BodyPlaceHolder_lbSearch"));
-      logger.info("Search Button selected " + searchButton);
+        Thread.sleep(1000);
+        wait.until(ExpectedConditions.elementToBeClickable(By.id("ctl00_BodyPlaceHolder_lbSearch")));
+        WebElement searchButton = webDriver.findElement(By.id("ctl00_BodyPlaceHolder_lbSearch"));
+        logger.info("Search Button selected " + searchButton);
 
-      wait.until(ExpectedConditions.elementToBeClickable(searchButton));
-      Thread.sleep(1000);
-      searchButton.sendKeys(Keys.RETURN);
-      // wait up until the search was done
-      logger.info("Waiting for the search to happen");
-      wait.until(ExpectedConditions.invisibilityOfElementLocated(By.id("ctl00_BodyPlaceHolder_lbSearch")));
-      logger.info("Search done");
+        wait.until(ExpectedConditions.elementToBeClickable(searchButton));
+        Thread.sleep(1000);
+        searchButton.sendKeys(Keys.RETURN);
+        // wait up until the search was done
+        logger.info("Waiting for the search to happen");
+        wait.until(ExpectedConditions.invisibilityOfElementLocated(By.id("ctl00_BodyPlaceHolder_lbSearch")));
+        logger.info("Search done");
 
-      wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//*[@id=\"ctl00_CustomFooterContentPlaceHolder_updatePanelExport1\"]/div/a")));
-      WebElement exportButton = webDriver.findElement(By.xpath("//*[@id=\"ctl00_CustomFooterContentPlaceHolder_updatePanelExport1\"]/div/a"));
-      actions = new Actions(webDriver);
-      actions.moveToElement(exportButton).click().perform();
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//*[@id=\"ctl00_CustomFooterContentPlaceHolder_updatePanelExport1\"]/div/a")));
+        WebElement exportButton = webDriver.findElement(By.xpath("//*[@id=\"ctl00_CustomFooterContentPlaceHolder_updatePanelExport1\"]/div/a"));
+        actions = new Actions(webDriver);
+        actions.moveToElement(exportButton).click().perform();
 
-      wait.until(ExpectedConditions.elementToBeClickable(By.id("ctl00_CustomFooterContentPlaceHolder_ddlExportType1_field")));
-      Select comboBoxExportFormat = new Select(webDriver.findElement(By.id("ctl00_CustomFooterContentPlaceHolder_ddlExportType1_field")));
-      comboBoxExportFormat.selectByVisibleText("CSV (e.g. MS Excel)");
+        wait.until(ExpectedConditions.elementToBeClickable(By.id("ctl00_CustomFooterContentPlaceHolder_ddlExportType1_field")));
+        Select comboBoxExportFormat = new Select(webDriver.findElement(By.id("ctl00_CustomFooterContentPlaceHolder_ddlExportType1_field")));
+        comboBoxExportFormat.selectByVisibleText("CSV (e.g. MS Excel)");
 
-      wait.until(ExpectedConditions.elementToBeClickable(By.id("ctl00_CustomFooterContentPlaceHolder_lbExport1")));
-      WebElement exportAction = webDriver.findElement(By.id("ctl00_CustomFooterContentPlaceHolder_lbExport1"));
-      actions = new Actions(webDriver);
-      actions.moveToElement(exportAction).click().perform();
+        wait.until(ExpectedConditions.elementToBeClickable(By.id("ctl00_CustomFooterContentPlaceHolder_lbExport1")));
+        WebElement exportAction = webDriver.findElement(By.id("ctl00_CustomFooterContentPlaceHolder_lbExport1"));
+        actions = new Actions(webDriver);
+        actions.moveToElement(exportAction).click().perform();
+      }
+      catch (TimeoutException potentialNewTransaction){
+        // this is hopefully the new layout
+        // now the search box is not going so far away but just using the default for now
+        wait.until(ExpectedConditions.elementToBeClickable(By.id("export-link")));
+        WebElement exportButton = webDriver.findElement(By.id("export-link"));
+        ((JavascriptExecutor) webDriver).executeScript("arguments[0].scrollIntoView(true);", exportButton);
+        Actions actions = new Actions(webDriver);
+        actions.moveToElement(exportButton).click().perform();
+
+        // choose the CSV download option
+        WebElement csvButton = webDriver.findElement(By.id("export-format-type-CSV"));
+        ((JavascriptExecutor) webDriver).executeScript("arguments[0].scrollIntoView(true);", csvButton);
+        actions = new Actions(webDriver);
+        actions.moveToElement(csvButton).click().perform();
+
+        // click on the download button
+        WebElement downloadButton = webDriver.findElement(By.id("txnListExport-submit-btn"));
+        ((JavascriptExecutor) webDriver).executeScript("arguments[0].scrollIntoView(true);", downloadButton);
+        actions = new Actions(webDriver);
+        actions.moveToElement(downloadButton).click().perform();
+      }
 
       String csvContent = FileUtility.readDownloadedFile(downloads, bank.getWaitTime());
       statements.add(commBankCSVConversionService.convertCSVToTransactions(accountsDetail.getAccountNumber(),
