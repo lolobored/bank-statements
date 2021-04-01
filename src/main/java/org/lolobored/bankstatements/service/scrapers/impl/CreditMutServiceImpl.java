@@ -75,6 +75,12 @@ public class CreditMutServiceImpl implements CreditMutService {
         loginButton.sendKeys(Keys.RETURN);
 
         /**
+         * Validate the cookies
+         */
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//*[@id=\"cookieLBmainbuttons\"]/span/span[1]/span/a")));
+        WebElement cookieValidation = webDriver.findElement(By.xpath("//*[@id=\"cookieLBmainbuttons\"]/span/span[1]/span/a"));
+        cookieValidation.click();
+        /**
          * Now let's go to the download page as soon as we can see the download button (after confirming by  mobile)
          */
         wait.until(ExpectedConditions.elementToBeClickable(By.id("I0:s2.A3:C2:triggerLink")));
