@@ -4,7 +4,6 @@ import lombok.Data;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.lolobored.bankstatements.model.Statement;
-import org.lolobored.bankstatements.model.config.Account;
 import org.lolobored.bankstatements.model.config.Bank;
 import org.lolobored.bankstatements.service.conversion.CommBankCSVConversionService;
 import org.lolobored.bankstatements.service.scrapers.CommBankService;
@@ -84,8 +83,8 @@ public class CommBankServiceImpl implements CommBankService {
       wait.until(ExpectedConditions.elementToBeClickable(By.id("tt_prominenceButtonNo")));
       WebElement cookieButton = webDriver.findElement(By.id("tt_prominenceButtonNo"));
       cookieButton.sendKeys(Keys.RETURN);
+    } catch (TimeoutException donothing) {
     }
-    catch (TimeoutException donothing){}
 
     List<WebElement> accountBlocks = webDriver.findElements(By.xpath("//*[@id=\"StartMainContent\"]/div/div[2]/div[1]/main/section[1]/div/div[1]/div"));
     List<CommBankAccount> accountsDetails = new ArrayList<>();
@@ -161,8 +160,7 @@ public class CommBankServiceImpl implements CommBankService {
         WebElement exportAction = webDriver.findElement(By.id("ctl00_CustomFooterContentPlaceHolder_lbExport1"));
         actions = new Actions(webDriver);
         actions.moveToElement(exportAction).click().perform();
-      }
-      catch (TimeoutException potentialNewTransaction){
+      } catch (TimeoutException potentialNewTransaction) {
         // this is hopefully the new layout
         // now the search box is not going so far away but just using the default for now
         wait.until(ExpectedConditions.elementToBeClickable(By.id("export-link")));

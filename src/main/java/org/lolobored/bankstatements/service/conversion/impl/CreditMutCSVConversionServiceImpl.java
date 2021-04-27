@@ -22,44 +22,43 @@ import java.util.List;
 @Service
 public class CreditMutCSVConversionServiceImpl implements CreditMutCSVConversionService {
 
-    private static SimpleDateFormat amexCSVDate= new SimpleDateFormat("dd/MM/yyyy");
+  private static SimpleDateFormat amexCSVDate = new SimpleDateFormat("dd/MM/yyyy");
 
-    @Override
-    public Statement convertCSVToTransactions(String accountNumber, String accountType, String csv) throws ParseException {
+  @Override
+  public Statement convertCSVToTransactions(String accountNumber, String accountType, String csv) throws ParseException {
 
-        Statement statement = new Statement();
-        statement.setAccountNumber(accountNumber);
-        statement.setAccountType(accountType);
-        statement.setCurrency("GBP");
+    Statement statement = new Statement();
+    statement.setAccountNumber(accountNumber);
+    statement.setAccountType(accountType);
+    statement.setCurrency("GBP");
 
-        List<CreditMutCsvLine> creditMutCsvLines = parseCSV(csv);
-        for (CreditMutCsvLine creditMutCsvLine : creditMutCsvLines) {
-            Transaction transaction = new Transaction();
-            transaction.setLabel(creditMutCsvLine.getLabel());
-            transaction.setDate(amexCSVDate.parse(creditMutCsvLine.getValueDate()));
-            if (StringUtils.isEmpty(creditMutCsvLine.getMoneyIn())){
-                transaction.setAmount(new BigDecimal(creditMutCsvLine.getMoneyOut()));
-            }
-            else{
-                transaction.setAmount(new BigDecimal(creditMutCsvLine.getMoneyIn()));
-            }
-            statement.addTransaction(transaction);
-        }
-        return statement;
+    List<CreditMutCsvLine> creditMutCsvLines = parseCSV(csv);
+    for (CreditMutCsvLine creditMutCsvLine : creditMutCsvLines) {
+      Transaction transaction = new Transaction();
+      transaction.setLabel(creditMutCsvLine.getLabel());
+      transaction.setDate(amexCSVDate.parse(creditMutCsvLine.getValueDate()));
+      if (StringUtils.isEmpty(creditMutCsvLine.getMoneyIn())) {
+        transaction.setAmount(new BigDecimal(creditMutCsvLine.getMoneyOut()));
+      } else {
+        transaction.setAmount(new BigDecimal(creditMutCsvLine.getMoneyIn()));
+      }
+      statement.addTransaction(transaction);
     }
+    return statement;
+  }
 
-    private List<CreditMutCsvLine> parseCSV(String csvContent) {
-        ColumnPositionMappingStrategy ms = new ColumnPositionMappingStrategy();
-        ms.setType(CreditMutCsvLine.class);
+  private List<CreditMutCsvLine> parseCSV(String csvContent) {
+    ColumnPositionMappingStrategy ms = new ColumnPositionMappingStrategy();
+    ms.setType(CreditMutCsvLine.class);
 
-        Reader reader = new BufferedReader(new StringReader(csvContent.trim()));
-        CsvToBean cb = new CsvToBeanBuilder(reader)
-                .withSeparator(';')
-                .withSkipLines(1)
-                .withType(CreditMutCsvLine.class)
-                .withMappingStrategy(ms)
-                .build();
+    Reader reader = new BufferedReader(new StringReader(csvContent.trim()));
+    CsvToBean cb = new CsvToBeanBuilder(reader)
+            .withSeparator(';')
+            .withSkipLines(1)
+            .withType(CreditMutCsvLine.class)
+            .withMappingStrategy(ms)
+            .build();
 
-        return cb.parse();
-    }
+    return cb.parse();
+  }
 }

@@ -20,49 +20,48 @@ import java.util.List;
 @Service
 public class AmexCSVConversionServiceImpl implements AmexCSVConversionService {
 
-    private static SimpleDateFormat amexCSVDate= new SimpleDateFormat("dd/MM/yy");
+  private static SimpleDateFormat amexCSVDate = new SimpleDateFormat("dd/MM/yy");
 
-    @Override
-    public Statement convertCSVToTransactions(String accountNumber, String accountType, String csv) throws ParseException {
+  @Override
+  public Statement convertCSVToTransactions(String accountNumber, String accountType, String csv) throws ParseException {
 
-        Statement statement = new Statement();
-        statement.setAccountNumber(accountNumber);
-        statement.setAccountType(accountType);
-        statement.setCurrency("GBP");
+    Statement statement = new Statement();
+    statement.setAccountNumber(accountNumber);
+    statement.setAccountType(accountType);
+    statement.setCurrency("GBP");
 
-        List<AmexCsvLine> amexCSVLines = parseCSV(csv);
-        for (AmexCsvLine amexCSVLine : amexCSVLines) {
-            Transaction transaction = new Transaction();
-            transaction.setReference(amexCSVLine.getReference().trim().replace("'", ""));
-            transaction.setLabel(amexCSVLine.getDescription());
-            transaction.setDate(amexCSVDate.parse(amexCSVLine.getDate()));
-            // credit
-            if (amexCSVLine.getAmount().trim().startsWith("-")){
-                transaction.setAmount(new BigDecimal(amexCSVLine.getAmount().trim().substring(1)));
-            }
-            else{
-                transaction.setAmount(new BigDecimal("-"+amexCSVLine.getAmount().trim()));
-            }
+    List<AmexCsvLine> amexCSVLines = parseCSV(csv);
+    for (AmexCsvLine amexCSVLine : amexCSVLines) {
+      Transaction transaction = new Transaction();
+      transaction.setReference(amexCSVLine.getReference().trim().replace("'", ""));
+      transaction.setLabel(amexCSVLine.getDescription());
+      transaction.setDate(amexCSVDate.parse(amexCSVLine.getDate()));
+      // credit
+      if (amexCSVLine.getAmount().trim().startsWith("-")) {
+        transaction.setAmount(new BigDecimal(amexCSVLine.getAmount().trim().substring(1)));
+      } else {
+        transaction.setAmount(new BigDecimal("-" + amexCSVLine.getAmount().trim()));
+      }
 
 
-            transaction.setAdditionalInformation(amexCSVLine.getExtendedDetails());
-            statement.addTransaction(transaction);
-        }
-        return statement;
+      transaction.setAdditionalInformation(amexCSVLine.getExtendedDetails());
+      statement.addTransaction(transaction);
     }
+    return statement;
+  }
 
-    private List<AmexCsvLine> parseCSV(String csvContent) {
-        ColumnPositionMappingStrategy ms = new ColumnPositionMappingStrategy();
-        ms.setType(AmexCsvLine.class);
+  private List<AmexCsvLine> parseCSV(String csvContent) {
+    ColumnPositionMappingStrategy ms = new ColumnPositionMappingStrategy();
+    ms.setType(AmexCsvLine.class);
 
-        Reader reader = new BufferedReader(new StringReader(csvContent.trim()));
-        CsvToBean cb = new CsvToBeanBuilder(reader)
-                .withSkipLines(1)
-                .withSeparator(',')
-                .withType(AmexCsvLine.class)
-                .withMappingStrategy(ms)
-                .build();
+    Reader reader = new BufferedReader(new StringReader(csvContent.trim()));
+    CsvToBean cb = new CsvToBeanBuilder(reader)
+            .withSkipLines(1)
+            .withSeparator(',')
+            .withType(AmexCsvLine.class)
+            .withMappingStrategy(ms)
+            .build();
 
-        return cb.parse();
-    }
+    return cb.parse();
+  }
 }

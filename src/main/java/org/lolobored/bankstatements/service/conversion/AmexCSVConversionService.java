@@ -1,6 +1,6 @@
 package org.lolobored.bankstatements.service.conversion;
 
 
-public interface AmexCSVConversionService extends BankGenericCSVConversionService{
+public interface AmexCSVConversionService extends BankGenericCSVConversionService {
 
 }

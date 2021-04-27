@@ -5,5 +5,5 @@ import org.lolobored.bankstatements.model.Statement;
 import java.util.List;
 
 public interface OfxConversionService {
-    String convertStatementsToOfx(List<Statement> statements);
+  String convertStatementsToOfx(List<Statement> statements);
 }

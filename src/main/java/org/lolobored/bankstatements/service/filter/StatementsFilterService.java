@@ -7,5 +7,5 @@ import java.util.List;
 import java.util.Map;
 
 public interface StatementsFilterService {
-    List<Statement> filterStatements(List<Statement> statements, LocalDate startingDate, Map<String, String> accountReplacements);
+  List<Statement> filterStatements(List<Statement> statements, LocalDate startingDate, Map<String, String> accountReplacements);
 }

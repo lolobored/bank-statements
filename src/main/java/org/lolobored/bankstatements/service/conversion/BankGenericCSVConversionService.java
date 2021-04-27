@@ -5,5 +5,5 @@ import org.lolobored.bankstatements.model.Statement;
 import java.text.ParseException;
 
 public interface BankGenericCSVConversionService {
-    Statement convertCSVToTransactions(String accountNumber, String accountType, String csv) throws ParseException;
+  Statement convertCSVToTransactions(String accountNumber, String accountType, String csv) throws ParseException;
 }

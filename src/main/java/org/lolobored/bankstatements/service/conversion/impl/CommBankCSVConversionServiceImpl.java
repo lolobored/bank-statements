@@ -20,39 +20,39 @@ import java.util.List;
 @Service
 public class CommBankCSVConversionServiceImpl implements CommBankCSVConversionService {
 
-    private static SimpleDateFormat commBankCSVDate= new SimpleDateFormat("dd/MM/yyyy");
+  private static SimpleDateFormat commBankCSVDate = new SimpleDateFormat("dd/MM/yyyy");
 
-    @Override
-    public Statement convertCSVToTransactions(String accountNumber, String accountType, String csv) throws ParseException {
+  @Override
+  public Statement convertCSVToTransactions(String accountNumber, String accountType, String csv) throws ParseException {
 
-        Statement statement = new Statement();
-        statement.setAccountNumber(accountNumber);
-        statement.setAccountType(accountType);
-        statement.setCurrency("AUD");
+    Statement statement = new Statement();
+    statement.setAccountNumber(accountNumber);
+    statement.setAccountType(accountType);
+    statement.setCurrency("AUD");
 
-        List<CommBankCsvLine> commBankCSVLines = parseCSV(csv);
-        for (CommBankCsvLine commBankCSVLine : commBankCSVLines) {
-            Transaction transaction = new Transaction();
-            transaction.setLabel(commBankCSVLine.getLabel());
-            transaction.setDate(commBankCSVDate.parse(commBankCSVLine.getDate()));
-            transaction.setAmount(new BigDecimal(commBankCSVLine.getAmount().trim()));
+    List<CommBankCsvLine> commBankCSVLines = parseCSV(csv);
+    for (CommBankCsvLine commBankCSVLine : commBankCSVLines) {
+      Transaction transaction = new Transaction();
+      transaction.setLabel(commBankCSVLine.getLabel());
+      transaction.setDate(commBankCSVDate.parse(commBankCSVLine.getDate()));
+      transaction.setAmount(new BigDecimal(commBankCSVLine.getAmount().trim()));
 
-            statement.addTransaction(transaction);
-        }
-        return statement;
+      statement.addTransaction(transaction);
     }
+    return statement;
+  }
 
-    private List<CommBankCsvLine> parseCSV(String csvContent) {
-        ColumnPositionMappingStrategy ms = new ColumnPositionMappingStrategy();
-        ms.setType(CommBankCsvLine.class);
+  private List<CommBankCsvLine> parseCSV(String csvContent) {
+    ColumnPositionMappingStrategy ms = new ColumnPositionMappingStrategy();
+    ms.setType(CommBankCsvLine.class);
 
-        Reader reader = new BufferedReader(new StringReader(csvContent.trim()));
-        CsvToBean cb = new CsvToBeanBuilder(reader)
-                .withSeparator(',')
-                .withType(CommBankCsvLine.class)
-                .withMappingStrategy(ms)
-                .build();
+    Reader reader = new BufferedReader(new StringReader(csvContent.trim()));
+    CsvToBean cb = new CsvToBeanBuilder(reader)
+            .withSeparator(',')
+            .withType(CommBankCsvLine.class)
+            .withMappingStrategy(ms)
+            .build();
 
-        return cb.parse();
-    }
+    return cb.parse();
+  }
 }

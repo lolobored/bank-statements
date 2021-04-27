@@ -10,5 +10,5 @@ import java.util.List;
 
 public interface BankGenericService {
 
-    List<Statement> downloadStatements(WebDriver webDriver, Bank bank, String downloadDir) throws InterruptedException, IOException, ParseException;
+  List<Statement> downloadStatements(WebDriver webDriver, Bank bank, String downloadDir) throws InterruptedException, IOException, ParseException;
 }
