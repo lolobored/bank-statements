@@ -79,9 +79,13 @@ public class CommBankServiceImpl implements CommBankService {
     WebElement loginButton = webDriver.findElement(By.id("btnLogon_field"));
     loginButton.sendKeys(Keys.RETURN);
 
-    // wait until the webpage is rendered
-    //  wait.until(ExpectedConditions.elementToBeClickable(By.id("pbsTabMenuItem")));
-
+    // deal with the cookie
+    try {
+      wait.until(ExpectedConditions.elementToBeClickable(By.id("tt_prominenceButtonNo")));
+      WebElement cookieButton = webDriver.findElement(By.id("tt_prominenceButtonNo"));
+      cookieButton.sendKeys(Keys.RETURN);
+    }
+    catch (TimeoutException donothing){}
 
     List<WebElement> accountBlocks = webDriver.findElements(By.xpath("//*[@id=\"StartMainContent\"]/div/div[2]/div[1]/main/section[1]/div/div[1]/div"));
     List<CommBankAccount> accountsDetails = new ArrayList<>();
