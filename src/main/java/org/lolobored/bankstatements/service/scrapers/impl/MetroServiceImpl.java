@@ -65,8 +65,8 @@ public class MetroServiceImpl implements MetroService {
         }
 
         // find button and click
-        wait.until(ExpectedConditions.elementToBeClickable(By.className("ibid-btn")));
-        WebElement loginButton = webDriver.findElement(By.className("ibid-btn"));
+        wait.until(ExpectedConditions.elementToBeClickable(By.className("mat-flat-button")));
+        WebElement loginButton = webDriver.findElement(By.className("mat-flat-button"));
         loginButton.click();
 
         /**
@@ -82,8 +82,8 @@ public class MetroServiceImpl implements MetroService {
 
         //Thread.sleep(1000* bank.getWaitTime());
         // validate the form
-        wait.until(ExpectedConditions.elementToBeClickable(By.className("ibid-btn")));
-        loginButton = webDriver.findElement(By.className("ibid-btn"));
+        wait.until(ExpectedConditions.elementToBeClickable(By.className("continue")));
+        loginButton = webDriver.findElement(By.className("continue"));
         loginButton.sendKeys(Keys.RETURN);
 
         /**
@@ -157,28 +157,20 @@ public class MetroServiceImpl implements MetroService {
 
     private void setSecurityPinEntries(WebDriver webDriver, WebDriverWait wait, String securityPin, String password){
         char[] arraySecurityPin = securityPin.toCharArray();
-        char[] arrayPassword = password.toCharArray();
-        int passcodeNb=0;
         int securityNb=0;
-        int iterations=1;
-        wait.until(ExpectedConditions.elementToBeClickable(By.className("seed-box")));
-        List<WebElement> seedboxes = webDriver.findElements(By.className("seed-box"));
+
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.className("ib-password")));
+        WebElement passwordField = webDriver.findElement(By.className("ib-password"));
+        passwordField.sendKeys(password);
+
+        wait.until(ExpectedConditions.elementToBeClickable(By.className("ib-seed-cover")));
+        List<WebElement> seedboxes = webDriver.findElements(By.className("ib-seed-cover"));
         for (WebElement seedbox : seedboxes) {
-            int securityPinPos = Integer.valueOf(seedbox.findElement(By.className("positions")).getText().replaceAll("[^0-9]*", ""));
-            if (iterations<=3) {
-               // retrieve the number that is asked by the webpage
-                WebElement passCode = seedbox.findElement(By.name("security" + securityNb++));
-                // set the value to the appropriate one:
-                new Select(passCode).selectByValue(String.valueOf(arraySecurityPin[securityPinPos - 1]));
-                iterations++;
-            }
-            else{
-                int passwordPos= Integer.valueOf(seedbox.findElement(By.className("positions")).getText().replaceAll("[^0-9]*", ""));
-                // retrieve the number that is asked by the webpage
-                WebElement passCode = seedbox.findElement(By.name("password" + passcodeNb++));
-                // set the value to the appropriate one:
-                passCode.sendKeys(String.valueOf(arrayPassword[passwordPos-1]));
-            }
+            int securityPinPos = Integer.valueOf(seedbox.findElement(By.className("ib-seed-pos")).getText().replaceAll("[^0-9]*", ""));
+            // retrieve the number that is asked by the webpage
+            WebElement passCode = seedbox.findElement(By.name("security" + securityNb++));
+            // set the value to the appropriate one:
+            passCode.sendKeys(String.valueOf(arraySecurityPin[securityPinPos - 1]));
         }
     }
 
