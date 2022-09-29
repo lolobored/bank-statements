@@ -18,9 +18,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.awt.datatransfer.Clipboard;
 import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,7 +39,7 @@ public class CommBankServiceImpl implements CommBankService {
 
     List<Statement> statements = new ArrayList<>();
 
-    WebDriverWait wait = new WebDriverWait(webDriver, bank.getWaitTime());
+    WebDriverWait wait = new WebDriverWait(webDriver, Duration.ofSeconds(bank.getWaitTime()));
     /**
      * Delete the download directory
      */
@@ -86,7 +88,7 @@ public class CommBankServiceImpl implements CommBankService {
     } catch (TimeoutException donothing) {
     }
 
-    List<WebElement> accountBlocks = webDriver.findElements(By.xpath("//*[@id=\"StartMainContent\"]/div/div[2]/div[1]/main/section[1]/div/div[1]/div"));
+    List<WebElement> accountBlocks = webDriver.findElements(By.className("account-card"));
     List<CommBankAccount> accountsDetails = new ArrayList<>();
 
 
@@ -122,12 +124,13 @@ public class CommBankServiceImpl implements CommBankService {
     for (CommBankAccount accountsDetail : accountsDetails) {
       webDriver.navigate().to(accountsDetail.getUrl());
       try {
+        logger.info("Starting download for "+accountsDetail.getAccountNumber());
         // that would be the former layout
         wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//*[@id=\"cba_advanced_search_trigger\"]/i")));
         WebElement advancedButton = webDriver.findElement(By.xpath("//*[@id=\"cba_advanced_search_trigger\"]/i"));
         ((JavascriptExecutor) webDriver).executeScript("arguments[0].scrollIntoView(true);", advancedButton);
-        Actions actions = new Actions(webDriver);
-        actions.moveToElement(advancedButton).click().perform();
+        Actions actionsKeys = new Actions(webDriver);
+        actionsKeys.moveToElement(advancedButton).click().perform();
 
         wait.until(ExpectedConditions.elementToBeClickable(By.id("ctl00_BodyPlaceHolder_ddlDateRange_field")));
         Select comboBoxPeriod = new Select(webDriver.findElement(By.id("ctl00_BodyPlaceHolder_ddlDateRange_field")));
@@ -149,7 +152,7 @@ public class CommBankServiceImpl implements CommBankService {
 
         wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//*[@id=\"ctl00_CustomFooterContentPlaceHolder_updatePanelExport1\"]/div/a")));
         WebElement exportButton = webDriver.findElement(By.xpath("//*[@id=\"ctl00_CustomFooterContentPlaceHolder_updatePanelExport1\"]/div/a"));
-        actions = new Actions(webDriver);
+        Actions actions = new Actions(webDriver);
         actions.moveToElement(exportButton).click().perform();
 
         wait.until(ExpectedConditions.elementToBeClickable(By.id("ctl00_CustomFooterContentPlaceHolder_ddlExportType1_field")));
@@ -170,10 +173,10 @@ public class CommBankServiceImpl implements CommBankService {
         actions.moveToElement(exportButton).click().perform();
 
         // choose the CSV download option
-        WebElement csvButton = webDriver.findElement(By.id("export-format-type-CSV"));
+        WebElement exportFormatTypes = webDriver.findElement(By.id("export-format-type"));
+        WebElement csvButton = exportFormatTypes.findElement(By.id("export-format-type-CSV"));
         ((JavascriptExecutor) webDriver).executeScript("arguments[0].scrollIntoView(true);", csvButton);
-        actions = new Actions(webDriver);
-        actions.moveToElement(csvButton).click().perform();
+        ((JavascriptExecutor) webDriver).executeScript("arguments[0].click();", csvButton);
 
         // click on the download button
         WebElement downloadButton = webDriver.findElement(By.id("txnListExport-submit-btn"));

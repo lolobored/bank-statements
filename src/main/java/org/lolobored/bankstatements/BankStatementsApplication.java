@@ -142,7 +142,7 @@ public class BankStatementsApplication implements ApplicationRunner {
       chromePrefs.put("download.default_directory", downloads.toAbsolutePath().toString());
       options.setExperimentalOption("prefs", chromePrefs);
       capabilities.setCapability(ChromeOptions.CAPABILITY, options);
-      WebDriver webDriver = new ChromeDriver(capabilities);
+      WebDriver webDriver = new ChromeDriver(options);
 
       /**
        * Read configuration for the banks

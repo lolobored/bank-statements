@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,7 +32,7 @@ public class CreditMutServiceImpl implements CreditMutService {
 
   @Override
   public List<Statement> downloadStatements(WebDriver webDriver, Bank bank, String downloadDir) throws IOException, InterruptedException, ParseException {
-    WebDriverWait wait = new WebDriverWait(webDriver, bank.getWaitTime());
+    WebDriverWait wait = new WebDriverWait(webDriver, Duration.ofSeconds(bank.getWaitTime()));
     List<Statement> statements = new ArrayList<>();
 
     /**
