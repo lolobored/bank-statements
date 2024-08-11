@@ -16,16 +16,16 @@ public class FileUtility {
     Collection<File> files = null;
     long initialTime = System.currentTimeMillis();
     while (files == null || files.size() == 0) {
-      files = org.apache.commons.io.FileUtils.listFiles(downloads, new String[]{"csv"}, false);
+      files = org.apache.commons.io.FileUtils.listFiles(downloads, new String[]{"csv", "xls"}, false);
       long elapsedMilliSeconds = System.currentTimeMillis() - initialTime;
       if (waitTime * 1000 - elapsedMilliSeconds < 0) {
-        throw new IOException("No csv file was downloaded in " + waitTime + " sec");
+        throw new IOException("No csv or xsl file was downloaded in " + waitTime + " sec");
       }
       Thread.sleep(500);
     }
 
     if (files.size() != 1) {
-      throw new IOException("Only one csv file was supposed to be in the directory but instead [" + files.size() + "] were found");
+      throw new IOException("Only one csv or xsl file was supposed to be in the directory but instead [" + files.size() + "] were found");
     }
 
     return files.toArray(new File[0])[0].getName();

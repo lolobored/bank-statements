@@ -36,7 +36,6 @@ public class CommBankCSVConversionServiceImpl implements CommBankCSVConversionSe
       transaction.setLabel(commBankCSVLine.getLabel());
       transaction.setDate(commBankCSVDate.parse(commBankCSVLine.getDate()));
       transaction.setAmount(new BigDecimal(commBankCSVLine.getAmount().trim()));
-
       statement.addTransaction(transaction);
     }
     return statement;
