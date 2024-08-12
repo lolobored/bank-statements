@@ -2,11 +2,7 @@ package org.lolobored.bankstatements.service.scrapers.impl;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.poi.hssf.usermodel.HSSFSheet;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.ss.usermodel.Row;
 import org.lolobored.bankstatements.model.Statement;
-import org.lolobored.bankstatements.model.Transaction;
 import org.lolobored.bankstatements.model.config.Account;
 import org.lolobored.bankstatements.model.config.Bank;
 import org.lolobored.bankstatements.service.UOBXLSConversionService;
@@ -24,17 +20,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.time.Duration;
-import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 @Service
