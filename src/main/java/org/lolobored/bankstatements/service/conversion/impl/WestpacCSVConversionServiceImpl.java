@@ -23,11 +23,11 @@ public class WestpacCSVConversionServiceImpl implements WestpacCSVConversionServ
     private static SimpleDateFormat westpacCSVDate = new SimpleDateFormat("dd/MM/yyyy");
 
     @Override
-    public Statement convertCSVToTransactions(String accountNumber, String accountType, String csv) throws ParseException {
+    public Statement convertTableToTransactions(String accountNumber, String accountType, String csv) throws ParseException {
         Statement statement = new Statement();
         statement.setAccountNumber(accountNumber);
         statement.setAccountType(accountType);
-        statement.setCurrency("SGD");
+        statement.setCurrency("AUD");
 
         List<WestpacCSVLine> westpacCSVLines = parseCSV(csv);
 

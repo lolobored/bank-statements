@@ -23,7 +23,7 @@ public class AmexCSVConversionServiceImpl implements AmexCSVConversionService {
   private static SimpleDateFormat amexCSVDate = new SimpleDateFormat("dd/MM/yy");
 
   @Override
-  public Statement convertCSVToTransactions(String accountNumber, String accountType, String csv) throws ParseException {
+  public Statement convertTableToTransactions(String accountNumber, String accountType, String csv) throws ParseException {
 
     Statement statement = new Statement();
     statement.setAccountNumber(accountNumber);

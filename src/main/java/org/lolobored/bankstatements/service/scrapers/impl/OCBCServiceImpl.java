@@ -15,7 +15,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.swing.plaf.nimbus.State;
 import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
@@ -34,7 +33,6 @@ public class OCBCServiceImpl implements OCBCService {
     public List<Statement> downloadStatements(WebDriver webDriver, Bank bank, String downloadDir) throws InterruptedException, IOException, ParseException {
         List<Statement> statements = new ArrayList<>();
         WebDriverWait wait = new WebDriverWait(webDriver, Duration.ofSeconds(bank.getWaitTime()));
-        WebDriverWait waitSMS = new WebDriverWait(webDriver, Duration.ofSeconds(bank.getWaitSMSTime()));
         /**
          * Delete the download directory
          */
@@ -43,17 +41,17 @@ public class OCBCServiceImpl implements OCBCService {
         downloads.mkdirs();
 
         executeLogin(webDriver, wait, bank);
-        accessDownloadPage(webDriver, wait, waitSMS, bank, downloads);
-        downloadTransactions(webDriver, wait, waitSMS, bank, downloads);
+        accessDownloadPage(webDriver, wait);
+        downloadTransactions(webDriver, wait, bank);
         String csvContent = FileUtility.readDownloadedFile(downloads, bank.getWaitTime());
 
-        statements.add(ocbccsvConversionService.convertCSVToTransactions(bank.getAccounts().get(0).getAccountId(),
+        statements.add(ocbccsvConversionService.convertTableToTransactions(bank.getAccounts().get(0).getAccountId(),
                 Statement.DEBIT_ACCOUNT,
                 csvContent));
         return statements;
     }
 
-    private void downloadTransactions(WebDriver webDriver, WebDriverWait wait, WebDriverWait waitSMS, Bank bank, File downloads) throws InterruptedException {
+    private void downloadTransactions(WebDriver webDriver, WebDriverWait wait, Bank bank) throws InterruptedException {
         //Store the web element
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.className("mfeApp")));
         WebElement iframe = webDriver.findElement(By.className("mfeApp"));
@@ -74,9 +72,9 @@ public class OCBCServiceImpl implements OCBCService {
         csv.click();
     }
 
-    private void accessDownloadPage(WebDriver webDriver, WebDriverWait wait, WebDriverWait waitSMS, Bank bank, File downloads) {
+    private void accessDownloadPage(WebDriver webDriver, WebDriverWait wait) {
         // wait for the page to appear
-        waitSMS.until(ExpectedConditions.visibilityOfElementLocated(By.id("financial-oneview-tab")));
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("financial-oneview-tab")));
 
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.className("no-link")));
         WebElement viewAccounts = webDriver.findElement(By.className("no-link"));

@@ -1,6 +1,6 @@
 package org.lolobored.bankstatements.service.conversion;
 
 
-public interface RevolutCSVConversionService extends BankGenericCSVConversionService {
+public interface RevolutCSVConversionService extends BankGenericConversionService {
 
 }

@@ -18,7 +18,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.awt.datatransfer.Clipboard;
 import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
@@ -186,7 +185,7 @@ public class CommBankServiceImpl implements CommBankService {
       }
 
       String csvContent = FileUtility.readDownloadedFile(downloads, bank.getWaitTime());
-      statements.add(commBankCSVConversionService.convertCSVToTransactions(accountsDetail.getAccountNumber(),
+      statements.add(commBankCSVConversionService.convertTableToTransactions(accountsDetail.getAccountNumber(),
               accountsDetail.getAccountType(), csvContent));
     }
 

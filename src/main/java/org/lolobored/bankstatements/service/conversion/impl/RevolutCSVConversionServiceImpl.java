@@ -26,7 +26,7 @@ public class RevolutCSVConversionServiceImpl implements RevolutCSVConversionServ
   private static SimpleDateFormat yearFormat = new SimpleDateFormat("yyyy");
 
   @Override
-  public Statement convertCSVToTransactions(String accountNumber, String accountType, String csv) throws ParseException {
+  public Statement convertTableToTransactions(String accountNumber, String accountType, String csv) throws ParseException {
     String thisYear = yearFormat.format(new Date());
     List<RevolutCSVLine> csvLines = parseCSV(csv);
     String header = StringUtils.substringBefore(csv, "\n");

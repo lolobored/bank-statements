@@ -119,7 +119,7 @@ public class CreditMutServiceImpl implements CreditMutService {
       String accountNumber = FileUtility.getDownloadedFilename(downloads, bank.getWaitTime());
       accountNumber = accountNumber.replace(".csv", "");
       String csvContent = FileUtility.readDownloadedFile(downloads, bank.getWaitTime());
-      statements.add(creditMutCSVConversionService.convertCSVToTransactions(accountNumber, Statement.DEBIT_ACCOUNT, csvContent));
+      statements.add(creditMutCSVConversionService.convertTableToTransactions(accountNumber, Statement.DEBIT_ACCOUNT, csvContent));
 
       currentElementId++;
     }

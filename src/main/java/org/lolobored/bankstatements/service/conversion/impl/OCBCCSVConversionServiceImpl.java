@@ -23,7 +23,7 @@ public class OCBCCSVConversionServiceImpl implements OCBCCSVConversionService {
     private static SimpleDateFormat ocbcCSVDate = new SimpleDateFormat("dd/MM/yyyy");
 
     @Override
-    public Statement convertCSVToTransactions(String accountNumber, String accountType, String csv) throws ParseException {
+    public Statement convertTableToTransactions(String accountNumber, String accountType, String csv) throws ParseException {
         Statement statement = new Statement();
         statement.setAccountNumber(accountNumber);
         statement.setAccountType(accountType);

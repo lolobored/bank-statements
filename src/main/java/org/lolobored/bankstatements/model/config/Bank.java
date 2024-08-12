@@ -15,7 +15,6 @@ public class Bank {
   private String securityPin;
   private String connectionUrl;
   private int waitTime;
-  private int waitSMSTime;
   // for manually downloaded revolut statements
   private String statementsDirectory;
   private List<Account> accounts;

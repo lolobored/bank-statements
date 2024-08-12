@@ -49,7 +49,7 @@ public class RevolutServiceImpl implements RevolutService {
           String fileName = FileUtility.getDownloadedFilename(tempDirectory, bank.getWaitTime());
           String csv = FileUtility.readDownloadedFile(tempDirectory, bank.getWaitTime());
           String accountName = StringUtils.substringBefore(fileName, "-Statement").toLowerCase();
-          statements.add(revolutCSVConversionService.convertCSVToTransactions(accountName, Statement.DEBIT_ACCOUNT, csv));
+          statements.add(revolutCSVConversionService.convertTableToTransactions(accountName, Statement.DEBIT_ACCOUNT, csv));
         }
       }
     }

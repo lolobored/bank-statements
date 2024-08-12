@@ -47,7 +47,7 @@ public class WestpacServiceImpl implements WestpacService {
         fillDownloadPage(webDriver, wait);
 
         String csvContent = FileUtility.readDownloadedFile(downloads, bank.getWaitTime());
-        statements.add(westpacCSVConversionService.convertCSVToTransactions(bank.getAccounts().get(0).getAccountId(),
+        statements.add(westpacCSVConversionService.convertTableToTransactions(bank.getAccounts().get(0).getAccountId(),
                 Statement.CREDIT_CARD, csvContent));
         return statements;
     }

@@ -9,6 +9,7 @@ import org.lolobored.bankstatements.model.Statement;
 import org.lolobored.bankstatements.model.Transaction;
 import org.lolobored.bankstatements.model.config.Account;
 import org.lolobored.bankstatements.model.config.Bank;
+import org.lolobored.bankstatements.service.UOBXLSConversionService;
 import org.lolobored.bankstatements.service.scrapers.UOBService;
 import org.lolobored.bankstatements.utils.FileUtility;
 import org.openqa.selenium.By;
@@ -19,6 +20,7 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -39,12 +41,14 @@ import java.util.List;
 public class UOBServiceImpl implements UOBService {
     private Logger logger = LoggerFactory.getLogger(UOBServiceImpl.class);
 
+    @Autowired
+    private UOBXLSConversionService uobxlsConversionService;
+
     @Override
     public List<Statement> downloadStatements(WebDriver webDriver, Bank bank, String downloadDir) throws InterruptedException, IOException, ParseException {
         List<Statement> statements = new ArrayList<>();
 
         WebDriverWait wait = new WebDriverWait(webDriver, Duration.ofSeconds(bank.getWaitTime()));
-        WebDriverWait waitSMS = new WebDriverWait(webDriver, Duration.ofSeconds(bank.getWaitSMSTime()));
         /**
          * Delete the download directory
          */
@@ -53,13 +57,13 @@ public class UOBServiceImpl implements UOBService {
         downloads.mkdirs();
 
         executeLogin(webDriver, wait, bank);
-        return accessDownloadPage(webDriver, wait, waitSMS, bank, downloads);
+        return accessDownloadPage(webDriver, wait, bank, downloads);
 
     }
 
-    private List<Statement> accessDownloadPage(WebDriver webDriver, WebDriverWait wait, WebDriverWait waitSMS, Bank bank, File downloads) throws IOException, InterruptedException, ParseException {
+    private List<Statement> accessDownloadPage(WebDriver webDriver, WebDriverWait wait, Bank bank, File downloads) throws IOException, InterruptedException, ParseException {
         List<Statement> statements = new ArrayList<>();
-        waitSMS.until(ExpectedConditions.visibilityOfElementLocated(By.className("color-account")));
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.className("color-account")));
         List<WebElement> accounts = webDriver.findElements(By.className("color-account"));
         for (Account bankAccount : bank.getAccounts()) {
             boolean found = false;
@@ -67,13 +71,7 @@ public class UOBServiceImpl implements UOBService {
 
                 if (StringUtils.equalsIgnoreCase(bankAccount.getAccountId().trim(), account.getText().trim())) {
                     account.click();
-                    List<Transaction> transactions = downloadTransactions(webDriver, wait, waitSMS, bank, downloads);
-                    Statement statement = new Statement();
-                    statement.setAccountNumber(bankAccount.getAccountId());
-                    statement.setAccountType(Statement.DEBIT_ACCOUNT);
-                    statement.setCurrency("SGD");
-                    statement.setTransactions(transactions);
-                    statements.add(statement);
+                    statements.addAll(downloadTransactions(webDriver, wait, bank.getWaitTime(), bankAccount, downloads));
                     // going back
                     webDriver.findElement(By.className("uob-dashboard")).click();
                     found = true;
@@ -87,9 +85,9 @@ public class UOBServiceImpl implements UOBService {
         return statements;
     }
 
-    private List<Transaction> downloadTransactions(WebDriver webDriver, WebDriverWait wait, WebDriverWait waitSMS, Bank bank, File downloads) throws IOException, InterruptedException, ParseException {
+    private List<Statement> downloadTransactions(WebDriver webDriver, WebDriverWait wait, int waitTime, Account bankAccount, File downloads) throws IOException, InterruptedException, ParseException {
         DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-        List<Transaction> transactions = new ArrayList<>();
+        List<Statement> statements = new ArrayList<>();
 
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("frequency-account-summary")));
         WebElement frequency = webDriver.findElement(By.id("frequency-account-summary"));
@@ -98,8 +96,8 @@ public class UOBServiceImpl implements UOBService {
         WebElement download = webDriver.findElement(By.className("i-download2"));
         download.click();
 
-        String xlsFile = FileUtility.getDownloadedFilename(downloads, bank.getWaitTime());
-        transactions = getTransactions(downloads.getAbsolutePath() + "/" + xlsFile);
+        String xlsFile = FileUtility.getDownloadedFilename(downloads, waitTime);
+        statements.add(uobxlsConversionService.convertTableToTransactions(bankAccount.getAccountId(), Statement.DEBIT_ACCOUNT, downloads.getAbsolutePath()+"/"+xlsFile));
         FileUtils.deleteDirectory(downloads);
         downloads.mkdirs();
 
@@ -109,11 +107,11 @@ public class UOBServiceImpl implements UOBService {
         download = webDriver.findElement(By.className("i-download2"));
         download.click();
 
-        xlsFile = FileUtility.getDownloadedFilename(downloads, bank.getWaitTime());
-        transactions.addAll(getTransactions(downloads.getAbsolutePath() + "/" + xlsFile));
+        xlsFile = FileUtility.getDownloadedFilename(downloads, waitTime);
+        statements.add(uobxlsConversionService.convertTableToTransactions(bankAccount.getAccountId(), Statement.DEBIT_ACCOUNT, downloads.getAbsolutePath()+"/"+xlsFile));
         FileUtils.deleteDirectory(downloads);
         downloads.mkdirs();
-        return transactions;
+        return statements;
 
     }
 
@@ -150,35 +148,5 @@ public class UOBServiceImpl implements UOBService {
         wait.until(ExpectedConditions.elementToBeClickable(By.id("btnSubmit")));
         WebElement loginButton = webDriver.findElement(By.id("btnSubmit"));
         loginButton.sendKeys(Keys.RETURN);
-    }
-
-    private List<Transaction> getTransactions(String xlsPath) throws IOException, ParseException {
-        HSSFWorkbook workbook = new HSSFWorkbook(new FileInputStream(xlsPath));
-        List<Transaction> transactions = new ArrayList<>();
-        SimpleDateFormat dateFormatter = new SimpleDateFormat("dd MMM yyyy");
-        boolean transactionStarted = false;
-        HSSFSheet sheet = workbook.getSheetAt(0);
-        // browse up until row named "Transaction Date"
-        Iterator<Row> rowIterator = sheet.iterator();
-        while (rowIterator.hasNext()) {
-            Row row = rowIterator.next();
-            if (!transactionStarted) {
-                if ("Transaction Date".equals(row.getCell(0).getStringCellValue())) {
-                    transactionStarted = true;
-                }
-            } else {
-                Transaction tx = new Transaction();
-                String dateString = row.getCell(0).getStringCellValue();
-                tx.setDate(dateFormatter.parse(dateString));
-                tx.setLabel(row.getCell(1).getStringCellValue());
-                if (row.getCell(2).getNumericCellValue() > 0) {
-                    tx.setAmount(BigDecimal.valueOf(-row.getCell(2).getNumericCellValue()));
-                } else {
-                    tx.setAmount(BigDecimal.valueOf(row.getCell(3).getNumericCellValue()));
-                }
-                transactions.add(tx);
-            }
-        }
-        return transactions;
     }
 }

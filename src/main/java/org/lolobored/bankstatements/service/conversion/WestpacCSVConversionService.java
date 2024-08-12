@@ -1,4 +1,4 @@
 package org.lolobored.bankstatements.service.conversion;
 
-public interface WestpacCSVConversionService extends BankGenericCSVConversionService{
+public interface WestpacCSVConversionService extends BankGenericConversionService {
 }
