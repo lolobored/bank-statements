@@ -1,6 +1,6 @@
 package org.lolobored.bankstatements.service.conversion;
 
 
-public interface CommBankCSVConversionService extends BankGenericCSVConversionService {
+public interface CommBankCSVConversionService extends BankGenericConversionService {
 
 }

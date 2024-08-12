@@ -25,7 +25,7 @@ public class CreditMutCSVConversionServiceImpl implements CreditMutCSVConversion
   private static SimpleDateFormat amexCSVDate = new SimpleDateFormat("dd/MM/yyyy");
 
   @Override
-  public Statement convertCSVToTransactions(String accountNumber, String accountType, String csv) throws ParseException {
+  public Statement convertTableToTransactions(String accountNumber, String accountType, String csv) throws ParseException {
 
     Statement statement = new Statement();
     statement.setAccountNumber(accountNumber);

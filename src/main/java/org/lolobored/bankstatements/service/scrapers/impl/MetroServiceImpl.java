@@ -139,7 +139,7 @@ public class MetroServiceImpl implements MetroService {
       WebElement download = webDriver.findElement(By.id("BUT_81752B75369FA043129962"));
       download.sendKeys(Keys.RETURN);
       String csvContent = FileUtility.readDownloadedFile(downloads, bank.getWaitTime());
-      statements.add(metroCSVConversionService.convertCSVToTransactions(accounts.get(i),
+      statements.add(metroCSVConversionService.convertTableToTransactions(accounts.get(i),
               accountTypes.get(i), csvContent));
 
       /**

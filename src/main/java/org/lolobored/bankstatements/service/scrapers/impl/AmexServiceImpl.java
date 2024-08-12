@@ -145,7 +145,7 @@ public class AmexServiceImpl implements AmexService {
           String accountName = webDriver.findElement(By.className("axp-account-switcher__accountSwitcher__lastFive___1s6L_")).getText();
 
           String csvContent = FileUtility.readDownloadedFile(downloads, bank.getWaitTime());
-          statements.add(amexCSVConversionService.convertCSVToTransactions(accountName, Statement.CREDIT_CARD, csvContent));
+          statements.add(amexCSVConversionService.convertTableToTransactions(accountName, Statement.CREDIT_CARD, csvContent));
         }
         break;
       }

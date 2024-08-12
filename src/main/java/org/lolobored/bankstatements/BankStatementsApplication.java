@@ -47,6 +47,12 @@ public class BankStatementsApplication implements ApplicationRunner {
   @Autowired
   private CommBankService commBankService;
   @Autowired
+  private WestpacService westpacService;
+  @Autowired
+  private UOBService uobService;
+  @Autowired
+  private OCBCService ocbcService;
+  @Autowired
   private StatementsFilterService statementsFilterService;
 
   @Autowired
@@ -57,6 +63,9 @@ public class BankStatementsApplication implements ApplicationRunner {
   private final static String AMEX = "amex";
   private final static String REVOLUT = "revolut";
   private final static String COMM_BANK = "comm bank";
+  private final static String WESTPAC = "westpac";
+  private final static String UOB = "uob";
+  private final static String OCBC = "ocbc";
 
   private Logger logger = LoggerFactory.getLogger(BankStatementsApplication.class);
 
@@ -180,6 +189,15 @@ public class BankStatementsApplication implements ApplicationRunner {
             break;
           case COMM_BANK:
             bankGenericService = commBankService;
+            break;
+          case WESTPAC:
+            bankGenericService = westpacService;
+            break;
+          case UOB:
+            bankGenericService = uobService;
+            break;
+          case OCBC:
+            bankGenericService = ocbcService;
             break;
         }
         if (bankGenericService != null) {
