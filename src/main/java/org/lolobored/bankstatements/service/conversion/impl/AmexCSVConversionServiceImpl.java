@@ -39,8 +39,10 @@ public class AmexCSVConversionServiceImpl implements AmexCSVConversionService {
       // credit
       if (amexCSVLine.getAmount().trim().startsWith("-")) {
         transaction.setAmount(new BigDecimal(amexCSVLine.getAmount().trim().substring(1)));
+        transaction.setType(Transaction.CREDIT_TYPE);
       } else {
         transaction.setAmount(new BigDecimal("-" + amexCSVLine.getAmount().trim()));
+        transaction.setType(Transaction.DEBIT_TYPE);
       }
 
 

@@ -37,9 +37,11 @@ public class WestpacCSVConversionServiceImpl implements WestpacCSVConversionServ
             BigDecimal amount=BigDecimal.ZERO;
             if (westpacCSVLine.getCreditAmount().isEmpty()){
                 amount= BigDecimal.valueOf(Double.parseDouble("-"+westpacCSVLine.getDebitAmount().replace(",","")));
+                transaction.setType(Transaction.DEBIT_TYPE);
             }
             else{
                 amount= BigDecimal.valueOf(Double.parseDouble(westpacCSVLine.getCreditAmount().replace(",","")));
+                transaction.setType(Transaction.CREDIT_TYPE);
             }
             transaction.setAmount(amount);
             transaction.setLabel(westpacCSVLine.getNarrative().replace("\n"," ").replace("\r",""));

@@ -39,8 +39,10 @@ public class CreditMutCSVConversionServiceImpl implements CreditMutCSVConversion
       transaction.setDate(amexCSVDate.parse(creditMutCsvLine.getValueDate()));
       if (StringUtils.isEmpty(creditMutCsvLine.getMoneyIn())) {
         transaction.setAmount(new BigDecimal(creditMutCsvLine.getMoneyOut()));
+        transaction.setType(Transaction.DEBIT_TYPE);
       } else {
         transaction.setAmount(new BigDecimal(creditMutCsvLine.getMoneyIn()));
+        transaction.setType(Transaction.CREDIT_TYPE);
       }
       statement.addTransaction(transaction);
     }

@@ -3,6 +3,7 @@ package org.lolobored.bankstatements.service.conversion.impl;
 import com.opencsv.bean.ColumnPositionMappingStrategy;
 import com.opencsv.bean.CsvToBean;
 import com.opencsv.bean.CsvToBeanBuilder;
+import org.apache.commons.lang3.StringUtils;
 import org.lolobored.bankstatements.model.Statement;
 import org.lolobored.bankstatements.model.Transaction;
 import org.lolobored.bankstatements.model.csv.OCBCCSVLine;
@@ -42,7 +43,8 @@ public class OCBCCSVConversionServiceImpl implements OCBCCSVConversionService {
                 amount= BigDecimal.valueOf(Double.parseDouble(ocbccsvLine.getCreditAmount().replace(",","")));
             }
             transaction.setAmount(amount);
-            transaction.setLabel(ocbccsvLine.getDescription().replace("\n"," ").replace("\r",""));
+            transaction.setType(getTransactionType(ocbccsvLine.getDescription()));
+            transaction.setLabel(getDescription(ocbccsvLine.getDescription()));
             statement.addTransaction(transaction);
         }
         return statement;
@@ -61,5 +63,65 @@ public class OCBCCSVConversionServiceImpl implements OCBCCSVConversionService {
                 .build();
 
         return cb.parse();
+    }
+
+    private String getDescription(String description){
+        if (description.startsWith("FAST PAYMENT")){
+            description= StringUtils.substringAfter(description, "\n");
+            description= description.replaceAll(" +", " ");
+        }
+        else if (description.startsWith("DEBIT PURCHASE")){
+            description= StringUtils.substringAfter(description, "\n");
+            description= StringUtils.substringAfter(description, "xx-");
+            description= StringUtils.substringAfter(description, " ");
+            description= description.replaceAll(" +", " ");
+            description= description.replaceAll("[0-9]{2}/[0-9]{2}/[0-9]{2}$", "");
+        }
+        else if (description.startsWith("NETS QR")){
+            description= StringUtils.substringAfter(description, "\n");
+            description= description.replaceAll(" +", " ");
+        }
+        else if (description.startsWith("BONUS INTEREST")){
+            description= StringUtils.substringAfter(description, "\n");
+            description= description.replaceAll(" +", " ");
+        }
+        else if (description.startsWith("FUND TRANSFER")){
+            description= StringUtils.substringAfter(description, "\n");
+            description= description.replaceAll(" +", " ");
+        }
+        else if (description.startsWith("PAYMENT/TRANSFER")){
+            description= StringUtils.substringAfter(description, "\n");
+            description= description.replaceAll(" +", " ");
+        }
+        else if (description.startsWith("INTEREST CREDIT")){
+            description="Interests credit";
+        }
+
+        return description;
+    }
+
+    private String getTransactionType(String description){
+        if (description.startsWith("FAST PAYMENT")){
+            return Transaction.XFER_TYPE;
+        }
+        else if (description.startsWith("DEBIT PURCHASE")){
+            return Transaction.DEBIT_TYPE;
+        }
+        else if (description.startsWith("NETS QR")){
+            return Transaction.DEBIT_TYPE;
+        }
+        else if (description.startsWith("BONUS INTEREST")){
+            return Transaction.CREDIT_TYPE;
+        }
+        else if (description.startsWith("FUND TRANSFER")){
+            return Transaction.DEBIT_TYPE;
+        }
+        else if (description.startsWith("PAYMENT/TRANSFER")){
+            return Transaction.XFER_TYPE;
+        }
+        else if (description.startsWith("INTEREST CREDIT")){
+            return Transaction.CREDIT_TYPE;
+        }
+        return Transaction.DEBIT_TYPE;
     }
 }

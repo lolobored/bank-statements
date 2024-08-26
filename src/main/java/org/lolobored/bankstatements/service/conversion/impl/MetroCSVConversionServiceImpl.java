@@ -37,8 +37,10 @@ public class MetroCSVConversionServiceImpl implements MetroCSVConversionService 
       transaction.setDate(metroCSVDate.parse(metroCSVLine.getDate()));
       if (StringUtils.isEmpty(metroCSVLine.getMoneyIn()) || metroCSVLine.getMoneyIn().equals("0.00")) {
         transaction.setAmount(new BigDecimal("-" + metroCSVLine.getMoneyOut()));
+        transaction.setType(Transaction.DEBIT_TYPE);
       } else {
         transaction.setAmount(new BigDecimal(metroCSVLine.getMoneyIn()));
+        transaction.setType(Transaction.CREDIT_TYPE);
       }
       statement.addTransaction(transaction);
     }

@@ -63,11 +63,7 @@ public class OfxConversionServiceImpl implements OfxConversionService {
       ofx.append("\n" +
               "\t\t\t\t<STMTTRN>\n" +
               "\t\t\t\t\t<TRNTYPE>");
-      if (transaction.getAmount().compareTo(BigDecimal.ZERO) >= 0) {
-        ofx.append("CREDIT").append("\n");
-      } else {
-        ofx.append("DEBIT").append("\n");
-      }
+      ofx.append(transaction.getType()).append("\n");
       ofx.append("\t\t\t\t\t<DTPOSTED>").append(dateFormat.format(transaction.getDate())).append("\n");
       if (StringUtils.isNotEmpty(transaction.getReference())) {
         ofx.append("\t\t\t\t\t<FTID>").append(transaction.getReference()).append("\n");

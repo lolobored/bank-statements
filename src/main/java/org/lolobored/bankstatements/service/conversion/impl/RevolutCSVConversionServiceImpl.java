@@ -45,9 +45,11 @@ public class RevolutCSVConversionServiceImpl implements RevolutCSVConversionServ
 
       if (StringUtils.isNotEmpty(csvLine.getAmountIn())) {
         tx.setAmount(new BigDecimal(csvLine.getAmountIn().replace(",", "")));
+        tx.setType(Transaction.CREDIT_TYPE);
 
       } else {
         tx.setAmount(new BigDecimal("-" + csvLine.getAmountOut().replace(",", "")));
+        tx.setType(Transaction.DEBIT_TYPE);
       }
       tx.setLabel(csvLine.getReference());
       tx.setAdditionalInformation(csvLine.getCategory());

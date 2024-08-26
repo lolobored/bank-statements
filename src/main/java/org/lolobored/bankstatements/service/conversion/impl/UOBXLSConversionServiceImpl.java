@@ -47,8 +47,10 @@ public class UOBXLSConversionServiceImpl implements UOBXLSConversionService{
                 tx.setLabel(row.getCell(1).getStringCellValue());
                 if (row.getCell(2).getNumericCellValue() > 0) {
                     tx.setAmount(BigDecimal.valueOf(-row.getCell(2).getNumericCellValue()));
+                    tx.setType(Transaction.DEBIT_TYPE);
                 } else {
                     tx.setAmount(BigDecimal.valueOf(row.getCell(3).getNumericCellValue()));
+                    tx.setType(Transaction.CREDIT_TYPE);
                 }
                 transactions.add(tx);
             }
