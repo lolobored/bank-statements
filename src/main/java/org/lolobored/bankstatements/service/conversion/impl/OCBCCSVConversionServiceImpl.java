@@ -96,6 +96,10 @@ public class OCBCCSVConversionServiceImpl implements OCBCCSVConversionService {
         else if (description.startsWith("INTEREST CREDIT")){
             description="Interests credit";
         }
+        else if (description.startsWith("GIRO - SALARY")){
+            description= StringUtils.substringAfter(description, "\n");
+            description= description.replaceAll(" +", " ");
+        }
 
         return description;
     }
@@ -120,6 +124,9 @@ public class OCBCCSVConversionServiceImpl implements OCBCCSVConversionService {
             return Transaction.XFER_TYPE;
         }
         else if (description.startsWith("INTEREST CREDIT")){
+            return Transaction.CREDIT_TYPE;
+        }
+        else if (description.startsWith("GIRO - SALARY")){
             return Transaction.CREDIT_TYPE;
         }
         return Transaction.DEBIT_TYPE;
