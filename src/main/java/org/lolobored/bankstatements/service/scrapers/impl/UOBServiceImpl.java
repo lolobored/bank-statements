@@ -78,6 +78,7 @@ public class UOBServiceImpl implements UOBService {
     private List<Statement> downloadTransactions(WebDriver webDriver, WebDriverWait wait, int waitTime, Account bankAccount, File downloads) throws IOException, InterruptedException, ParseException {
         DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         List<Statement> statements = new ArrayList<>();
+        Statement currentStatement, previousStatement;
 
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("frequency-account-summary")));
         WebElement frequency = webDriver.findElement(By.id("frequency-account-summary"));
@@ -87,7 +88,7 @@ public class UOBServiceImpl implements UOBService {
         download.click();
 
         String xlsFile = FileUtility.getDownloadedFilename(downloads, waitTime);
-        statements.add(uobxlsConversionService.convertTableToTransactions(bankAccount.getAccountId(), Statement.DEBIT_ACCOUNT, downloads.getAbsolutePath()+"/"+xlsFile));
+        currentStatement= uobxlsConversionService.convertTableToTransactions(bankAccount.getAccountId(), Statement.DEBIT_ACCOUNT, downloads.getAbsolutePath()+"/"+xlsFile);
         FileUtils.deleteDirectory(downloads);
         downloads.mkdirs();
 
@@ -98,7 +99,9 @@ public class UOBServiceImpl implements UOBService {
         download.click();
 
         xlsFile = FileUtility.getDownloadedFilename(downloads, waitTime);
-        statements.add(uobxlsConversionService.convertTableToTransactions(bankAccount.getAccountId(), Statement.DEBIT_ACCOUNT, downloads.getAbsolutePath()+"/"+xlsFile));
+        previousStatement=uobxlsConversionService.convertTableToTransactions(bankAccount.getAccountId(), Statement.DEBIT_ACCOUNT, downloads.getAbsolutePath()+"/"+xlsFile);
+        currentStatement.getTransactions().addAll(previousStatement.getTransactions());
+        statements.add(currentStatement);
         FileUtils.deleteDirectory(downloads);
         downloads.mkdirs();
         return statements;
