@@ -43,7 +43,7 @@ public class OCBCCSVConversionServiceImpl implements OCBCCSVConversionService {
                 amount= BigDecimal.valueOf(Double.parseDouble(ocbccsvLine.getCreditAmount().replace(",","")));
             }
             transaction.setAmount(amount);
-            transaction.setType(getTransactionType(ocbccsvLine.getDescription()));
+            transaction.setType(getTransactionType(ocbccsvLine.getDescription(), amount));
             transaction.setLabel(getDescription(ocbccsvLine.getDescription()));
             statement.addTransaction(transaction);
         }
@@ -100,11 +100,15 @@ public class OCBCCSVConversionServiceImpl implements OCBCCSVConversionService {
             description= StringUtils.substringAfter(description, "\n");
             description= description.replaceAll(" +", " ");
         }
+        else if (description.startsWith("CASH REBATE")){
+            description= StringUtils.substringAfter(description, "\n");
+            description= description.replaceAll(" +", " ");
+        }
 
         return description;
     }
 
-    private String getTransactionType(String description){
+    private String getTransactionType(String description, BigDecimal amount){
         if (description.startsWith("FAST PAYMENT")){
             return Transaction.XFER_TYPE;
         }
@@ -127,6 +131,9 @@ public class OCBCCSVConversionServiceImpl implements OCBCCSVConversionService {
             return Transaction.CREDIT_TYPE;
         }
         else if (description.startsWith("GIRO - SALARY")){
+            return Transaction.CREDIT_TYPE;
+        }
+        else if (amount.compareTo(BigDecimal.ZERO) >0){
             return Transaction.CREDIT_TYPE;
         }
         return Transaction.DEBIT_TYPE;

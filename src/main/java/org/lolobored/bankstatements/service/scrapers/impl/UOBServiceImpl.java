@@ -31,6 +31,8 @@ import java.util.List;
 public class UOBServiceImpl implements UOBService {
     private Logger logger = LoggerFactory.getLogger(UOBServiceImpl.class);
 
+    private static int WAIT_TIME=3000;
+
     @Autowired
     private UOBXLSConversionService uobxlsConversionService;
 
@@ -60,6 +62,7 @@ public class UOBServiceImpl implements UOBService {
             for (WebElement account : accounts) {
 
                 if (StringUtils.equalsIgnoreCase(bankAccount.getAccountId().trim(), account.getText().trim())) {
+                    Thread.sleep(WAIT_TIME);
                     account.click();
                     statements.addAll(downloadTransactions(webDriver, wait, bank.getWaitTime(), bankAccount, downloads));
                     // going back
@@ -83,6 +86,7 @@ public class UOBServiceImpl implements UOBService {
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("frequency-account-summary")));
         WebElement frequency = webDriver.findElement(By.id("frequency-account-summary"));
         frequency.sendKeys("Current Month");
+        Thread.sleep(WAIT_TIME);
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.className("i-download2")));
         WebElement download = webDriver.findElement(By.className("i-download2"));
         download.click();
@@ -94,6 +98,7 @@ public class UOBServiceImpl implements UOBService {
 
         frequency = webDriver.findElement(By.id("frequency-account-summary"));
         frequency.sendKeys("Previous Month");
+        Thread.sleep(WAIT_TIME);
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.className("i-download2")));
         download = webDriver.findElement(By.className("i-download2"));
         download.click();

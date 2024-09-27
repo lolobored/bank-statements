@@ -8,6 +8,8 @@ This Java application was designed for automatically scraping my account stateme
 * AMEX (UK): https://www.americanexpress.com/uk
 * Metrobank (UK): https://www.metrobankonline.co.uk
 * Comm Bank (AU): https://www.commbank.com.au
+* UOB (SG): https://www.uob.com.sg
+* OCBC (SG): https//www.ocbc.com
 
 In addition it automatically converts as well Revolut (https://www.revolut.com) statements.
 
@@ -41,6 +43,10 @@ Running the software only requires to run the jar file with the appropriate opti
 * month: an optional parameter allowing to use only transactions whose value date is 30-days earlier than today
 * date: an optional parameter allowing to download all the transactions available from that date using a pattern
   yyyy-MM-dd
+* browser (optional): choose which browser to use to scrap the data:
+  * chrome
+  * firefox
+  * safari (wip)
 
 If none of the last parameter is used, all the transactions will be downloaded.
 

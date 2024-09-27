@@ -24,7 +24,7 @@ sourceCompatibility = 17
 
 dependencies {
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter', version: '3.3.2'
-  implementation group: 'org.seleniumhq.selenium', name: 'selenium-java', version: '4.23.1'
+  implementation group: 'org.seleniumhq.selenium', name: 'selenium-java', version: '4.25.0'
   implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.16.0'
   implementation group: 'commons-io', name: 'commons-io', version: '2.16.1'
   implementation group: 'org.apache.commons', name: 'commons-csv', version: '1.11.0'

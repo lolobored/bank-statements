@@ -13,7 +13,12 @@ import org.lolobored.bankstatements.service.scrapers.*;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.firefox.FirefoxOptions;
+import org.openqa.selenium.firefox.FirefoxProfile;
 import org.openqa.selenium.remote.DesiredCapabilities;
+import org.openqa.selenium.safari.SafariDriver;
+import org.openqa.selenium.safari.SafariOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +32,7 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.ParseException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -66,6 +72,11 @@ public class BankStatementsApplication implements ApplicationRunner {
   private final static String WESTPAC = "westpac";
   private final static String UOB = "uob";
   private final static String OCBC = "ocbc";
+
+  private final static int CHROME_BROWSER=0;
+  private final static int FIREFOX_BROWSER=1;
+  private final static int SAFARI_BROWSER=2;
+
 
   private Logger logger = LoggerFactory.getLogger(BankStatementsApplication.class);
 
@@ -136,22 +147,58 @@ public class BankStatementsApplication implements ApplicationRunner {
       System.exit(-1);
     }
 
+    int browserType=CHROME_BROWSER;
+    // check if preferred web browser is selected
+    if (args.getOptionValues("browser")!= null){
+      String browserName = args.getOptionValues("browser").get(0);
+
+      switch (browserName.toLowerCase().trim()){
+        case "firefox":
+          browserType= FIREFOX_BROWSER;
+          break;
+        case "chrome":
+          browserType=CHROME_BROWSER;
+          break;
+        case "safari":
+          browserType=SAFARI_BROWSER;
+          break;
+        case "":
+          browserType=CHROME_BROWSER;
+          break;
+        default:
+          throw new Exception(browserName.trim()+" is not part of the supported browser");
+      }
+    }
+
     try {
 
-      /**
-       * Set up chrome
-       */
-      WebDriverManager.chromedriver().setup();
-      ChromeOptions options = new ChromeOptions();
-      options.addArguments("--disable-popup-blocking");
-      DesiredCapabilities capabilities = new DesiredCapabilities();
+      WebDriver webDriver=null;
+      switch (browserType) {
+        case CHROME_BROWSER:
+          WebDriverManager.chromedriver().setup();
+          ChromeOptions chromeOptions = new ChromeOptions();
+          chromeOptions.addArguments("--disable-popup-blocking");
+          DesiredCapabilities capabilities = new DesiredCapabilities();
 
-      Map<String, Object> chromePrefs = new HashMap<String, Object>();
-      chromePrefs.put("profile.default_content_settings.popups", 0);
-      chromePrefs.put("download.default_directory", downloads.toAbsolutePath().toString());
-      options.setExperimentalOption("prefs", chromePrefs);
-      capabilities.setCapability(ChromeOptions.CAPABILITY, options);
-      WebDriver webDriver = new ChromeDriver(options);
+          Map<String, Object> chromePrefs = new HashMap<String, Object>();
+          chromePrefs.put("profile.default_content_settings.popups", 0);
+          chromePrefs.put("download.default_directory", downloads.toAbsolutePath().toString());
+          chromeOptions.setExperimentalOption("prefs", chromePrefs);
+          capabilities.setCapability(ChromeOptions.CAPABILITY, chromeOptions);
+          webDriver = new ChromeDriver(chromeOptions);
+          break;
+        case FIREFOX_BROWSER:
+          WebDriverManager.firefoxdriver().setup();
+          FirefoxProfile firefoxProfile = new FirefoxProfile();
+          firefoxProfile.setPreference("browser.download.folderList", 2);
+          firefoxProfile.setPreference("browser.download.manager.showWhenStarting", false);
+          firefoxProfile.setPreference("browser.download.dir", downloads.toAbsolutePath().toString());
+          firefoxProfile.setPreference("browser.helperApps.neverAsk.saveToDisk", "application/x-gzip");
+          FirefoxOptions firefoxOptions= new FirefoxOptions();
+          firefoxOptions.setProfile(firefoxProfile);
+          webDriver = new FirefoxDriver(firefoxOptions);
+          break;
+    }
 
       /**
        * Read configuration for the banks
