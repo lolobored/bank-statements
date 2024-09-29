@@ -13,6 +13,7 @@ import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.Select;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -84,25 +85,27 @@ public class UOBServiceImpl implements UOBService {
         Statement currentStatement, previousStatement;
 
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("frequency-account-summary")));
-        WebElement frequency = webDriver.findElement(By.id("frequency-account-summary"));
-        frequency.sendKeys("Current Month");
+        Select frequency = new Select(webDriver.findElement(By.id("frequency-account-summary")));
+        Thread.sleep(WAIT_TIME);
+        frequency.selectByVisibleText("Current Month");
         Thread.sleep(WAIT_TIME);
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.className("i-download2")));
         WebElement download = webDriver.findElement(By.className("i-download2"));
-        download.click();
 
+        download.click();
         String xlsFile = FileUtility.getDownloadedFilename(downloads, waitTime);
         currentStatement= uobxlsConversionService.convertTableToTransactions(bankAccount.getAccountId(), Statement.DEBIT_ACCOUNT, downloads.getAbsolutePath()+"/"+xlsFile);
         FileUtils.deleteDirectory(downloads);
         downloads.mkdirs();
 
-        frequency = webDriver.findElement(By.id("frequency-account-summary"));
-        frequency.sendKeys("Previous Month");
+        frequency = new Select(webDriver.findElement(By.id("frequency-account-summary")));
+        Thread.sleep(WAIT_TIME);
+        frequency.selectByVisibleText("Previous Month");
         Thread.sleep(WAIT_TIME);
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.className("i-download2")));
         download = webDriver.findElement(By.className("i-download2"));
-        download.click();
 
+        download.click();
         xlsFile = FileUtility.getDownloadedFilename(downloads, waitTime);
         previousStatement=uobxlsConversionService.convertTableToTransactions(bankAccount.getAccountId(), Statement.DEBIT_ACCOUNT, downloads.getAbsolutePath()+"/"+xlsFile);
         currentStatement.getTransactions().addAll(previousStatement.getTransactions());
