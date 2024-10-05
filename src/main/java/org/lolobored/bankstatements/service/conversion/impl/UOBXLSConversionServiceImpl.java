@@ -17,6 +17,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 
 @Service
 public class UOBXLSConversionServiceImpl implements UOBXLSConversionService{
@@ -29,7 +30,7 @@ public class UOBXLSConversionServiceImpl implements UOBXLSConversionService{
 
         HSSFWorkbook workbook = new HSSFWorkbook(new FileInputStream(path));
         List<Transaction> transactions = new ArrayList<>();
-        SimpleDateFormat dateFormatter = new SimpleDateFormat("dd MMM yyyy");
+        SimpleDateFormat dateFormatter = new SimpleDateFormat("dd MMM yyyy", Locale.ENGLISH);
         boolean transactionStarted = false;
         HSSFSheet sheet = workbook.getSheetAt(0);
         // browse up until row named "Transaction Date"
