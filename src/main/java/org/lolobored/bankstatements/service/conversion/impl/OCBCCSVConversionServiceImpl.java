@@ -105,6 +105,8 @@ public class OCBCCSVConversionServiceImpl implements OCBCCSVConversionService {
             description= description.replaceAll(" +", " ");
         }
 
+        // remove the S followed by date at the end of the description as it seems to create issues when reconciling
+        description= description.replaceAll(" S [0-9]{2}/[0-9]{2}/[0-9]{2} $", " S");
         return description;
     }
 
