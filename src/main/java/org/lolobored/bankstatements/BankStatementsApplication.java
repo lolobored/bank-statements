@@ -33,11 +33,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 
 @SpringBootApplication
 public class BankStatementsApplication implements ApplicationRunner {
@@ -261,6 +260,16 @@ public class BankStatementsApplication implements ApplicationRunner {
       if (resultFile.exists()) {
         resultFile.delete();
       }
+      FileUtils.writeStringToFile(resultFile, ofxResult, Charset.defaultCharset());
+
+      // adding a copy temporarily
+      String TIMESTAMP_FORMAT = "yyyyMMdd-HHmmss";
+      DateTimeFormatter DATETIME_FORMATTER = DateTimeFormatter.ofPattern(TIMESTAMP_FORMAT);
+      SimpleDateFormat SIMPLEDATE_FORMAT = new SimpleDateFormat(TIMESTAMP_FORMAT);
+      outputDirectory = new File(outputDirectory.getAbsolutePath()+"/tx-compare");
+      outputDirectory.mkdirs();
+      String currentTime = SIMPLEDATE_FORMAT.format(Calendar.getInstance().getTime());
+      resultFile = new File(outputDirectory.getAbsolutePath() + "/"+currentTime+"-downloaded.ofx");
       FileUtils.writeStringToFile(resultFile, ofxResult, Charset.defaultCharset());
       webDriver.close();
 
