@@ -108,9 +108,10 @@ suffix to the account number in the ofx so that the importation is made easier i
 
 The structure of an account is the following:
 
-| Name | Description |
-| ---- | ----------- |
-| accountId | The account ID which would need to be suffixed by a banktivity suffix on 4 letters |
+| Name             | Description                                                                                                                                                                                                                                                                            |
+|------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| accountId        | The account ID which would need to be suffixed by a banktivity suffix on 4 letters                                                                                                                                                                                                     |
+| type             | The account type (either DEBIT or CREDIT). Used for OCBC processing                                                                                                                                                                                                                    |
 | banktivitySuffix | When importing an OFX into banktivity, banktivity displays only the 4 last characters of the account number. To make it easier, I added a suffix to the account id in the OFX so that I can see in a single glance which account is which. Do not fill if you don't want this feature. |
 
 ```json
@@ -143,6 +144,7 @@ The structure of an account is the following:
     "accounts": [
       {
         "accountId": "XXX-16241",
+        "type": "CREDIT",
         "banktivitySuffix": "amex"
       }
     ]
@@ -215,11 +217,13 @@ Credit cards info are in different layouts).
 
 The way to do so is following this method:
 
-| Bank | Account Name | Account type |
-| ---- | ------------ | ------------ |
-| Metrobank | Account name is fetched from the webpage, just after logging in. Each account is inside a block containing its sort code and its account number | Account type are deducted from the icon of the account. An icon of a card (C) represent a credit card. Anything else is considered as a debit / saving |
-| AMEX | Account name is fetched from the download statement CSV page by browsing into the different accounts that are available there | AMEX is always Credit Card |
-| Revolut | Account name is fetched from the name of the CSV as being downloaded from the mobile app. It should be something like "Revolut-GBP-Statement*.csv" for a GBP account. Account name will be revolut-gbp (lower case) | Revolut is only DEBIT |
-| Comm Bank AUD | Account number is fetched from the webpage, just after logging in. Each account is inside a block containing its sort code and its account number | Account Type is set to DEBIT |
-| Credit Mutuel | Account name is fetched directly from the name of the CSV which is named with the account number | Credit Mutuel is french there's no credit card there so DEBIT |
+| Bank          | Account Name                                                                                                                                                                                                        | Account type                                                                                                                                           |
+|---------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Metrobank     | Account name is fetched from the webpage, just after logging in. Each account is inside a block containing its sort code and its account number                                                                     | Account type are deducted from the icon of the account. An icon of a card (C) represent a credit card. Anything else is considered as a debit / saving |
+| AMEX          | Account name is fetched from the download statement CSV page by browsing into the different accounts that are available there                                                                                       | AMEX is always Credit Card                                                                                                                             |
+| Revolut       | Account name is fetched from the name of the CSV as being downloaded from the mobile app. It should be something like "Revolut-GBP-Statement*.csv" for a GBP account. Account name will be revolut-gbp (lower case) | Revolut is only DEBIT                                                                                                                                  |
+| Comm Bank AUD | Account number is fetched from the webpage, just after logging in. Each account is inside a block containing its sort code and its account number                                                                   | Account Type is set to DEBIT                                                                                                                           |
+| Credit Mutuel | Account name is fetched directly from the name of the CSV which is named with the account number                                                                                                                    | Credit Mutuel is french there's no credit card there so DEBIT                                                                                          |
+| UOB           | No particular management at this stage, account is picked up as a single DEBIT account (no multiple account management)                                                                                             | Account Type is set to DEBIT                                                                                                                           |
+| OCBC          | Account name is picked up against DEBIT or CREDIT account type. Note that only one DEBIT and one CREDIT account is managed                                                                                          | Account Type is set to the type set in JSON                                                                                                            |
 
