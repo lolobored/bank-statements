@@ -54,7 +54,7 @@ public class OCBCServiceImpl implements OCBCService {
         for (Account account : bank.getAccounts()) {
             if (Account.DEBIT.equals(account.getType())){
                 accessDownloadPage(webDriver, wait, "Current & savings", 5);
-                downloadTransactions(webDriver, wait, bank);
+                downloadTransactions(webDriver, wait, bank,1);
                 String csvContent = FileUtility.readDownloadedFile(downloads, bank.getWaitTime());
 
                 statements.add(ocbccsvConversionService.convertTableToTransactions(account.getAccountId(),
@@ -72,13 +72,15 @@ public class OCBCServiceImpl implements OCBCService {
         for (Account account : bank.getAccounts()) {
             if (Account.CREDIT.equals(account.getType())) {
                 // scroll back to top
-                webDriver.switchTo().defaultContent();
-                WebElement logo = webDriver.findElement(By.id("logo"));
+                //webDriver.switchTo().defaultContent();
+                WebElement logo = webDriver.findElement(By.id("content"));
                 ((JavascriptExecutor) webDriver).executeScript("arguments[0].scrollIntoView(true);", logo);
 
+                // come back to overview
+                accessDownloadPage(webDriver, wait, "Overview", 1);
                 // download credits statement
-                accessDownloadPage(webDriver, wait, "Credit card", 1);
-                downloadCreditsTransactions(webDriver, wait, bank);
+                accessCreditCards(webDriver, wait, account.getAccountId(), 1);
+                downloadCreditsTransactions(webDriver, wait, bank,1);
                 String csvContent = FileUtility.readDownloadedFile(downloads, bank.getWaitTime());
 
                 statements.add(ocbcCreditCSVConversionService.convertTableToTransactions(account.getAccountId(),
@@ -91,12 +93,12 @@ public class OCBCServiceImpl implements OCBCService {
         return statements;
     }
 
-    private void downloadTransactions(WebDriver webDriver, WebDriverWait wait, Bank bank) throws InterruptedException, IOException {
+    private void downloadTransactions(WebDriver webDriver, WebDriverWait wait, Bank bank, int multiplier) throws InterruptedException, IOException {
         //Store the web element
-        wait.until(ExpectedConditions.visibilityOfElementLocated(By.className("mfeApp")));
-        //Thread.sleep(20000);
+  //      wait.until(ExpectedConditions.visibilityOfElementLocated(By.className("mfeApp")));
+        Thread.sleep(WAIT_TIME*multiplier);
         //Switch to the frame
-        wait.until(ExpectedConditions.frameToBeAvailableAndSwitchToIt(By.className("mfeApp")));
+  //      wait.until(ExpectedConditions.frameToBeAvailableAndSwitchToIt(By.className("mfeApp")));
       //  WebElement iframe = webDriver.findElement(By.className("mfeApp"));
       //  webDriver.switchTo().frame(iframe);
 
@@ -113,12 +115,12 @@ public class OCBCServiceImpl implements OCBCService {
         csv.click();
     }
 
-    private void downloadCreditsTransactions(WebDriver webDriver, WebDriverWait wait, Bank bank) throws InterruptedException, IOException {
+    private void downloadCreditsTransactions(WebDriver webDriver, WebDriverWait wait, Bank bank, int multiplier) throws InterruptedException, IOException {
         //Store the web element
-        wait.until(ExpectedConditions.visibilityOfElementLocated(By.className("mfeApp")));
-        //Thread.sleep(20000);
+        //wait.until(ExpectedConditions.visibilityOfElementLocated(By.className("mfeApp")));
+        Thread.sleep(WAIT_TIME*multiplier);
         //Switch to the frame
-        wait.until(ExpectedConditions.frameToBeAvailableAndSwitchToIt(By.className("mfeApp")));
+        //wait.until(ExpectedConditions.frameToBeAvailableAndSwitchToIt(By.className("mfeApp")));
         //  WebElement iframe = webDriver.findElement(By.className("mfeApp"));
         //  webDriver.switchTo().frame(iframe);
 
@@ -143,6 +145,46 @@ public class OCBCServiceImpl implements OCBCService {
         WebElement csv = webDriver.findElement(By.xpath("//*[contains(text(), 'CSV')]"));
         //download in csv
         csv.click();
+    }
+
+
+
+    private void accessCreditCards(WebDriver webDriver, WebDriverWait wait, String accountNumber, int multiplier) throws InterruptedException {
+        // wait for the page to appear
+        //wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("mfe-cfo-portfolio--MuiAccordionSummary-content")));
+        Thread.sleep(WAIT_TIME*multiplier);
+        // find the "What you owe" block
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.className("wyoMainContainer")));
+        WebElement owingBlock = webDriver.findElement(By.className("wyoMainContainer"));
+
+        // retrieve all blocks of credits
+        int iterationCounter=-1;
+        List<WebElement> creditCardAccountIdBlocks = owingBlock.findElements(By.className("availableText"));
+        for (WebElement creditCardAccountIdBlock : creditCardAccountIdBlocks) {
+            iterationCounter++;
+            if (accountNumber.equals(creditCardAccountIdBlock.getText())){
+                break;
+            }
+        }
+        List<WebElement> accountClickableBlocks = owingBlock.findElements(By.className("cursor"));
+        for (WebElement accountClickableBlock : accountClickableBlocks) {
+            if (iterationCounter==0){
+                ((JavascriptExecutor) webDriver).executeScript("arguments[0].scrollIntoView(true);", accountClickableBlock);
+                Thread.sleep(WAIT_TIME);
+                Actions action = new Actions(webDriver);
+                action.moveToElement(accountClickableBlock).pause(Duration.ofMillis(WAIT_TIME)).build().perform();
+                // find the clickable "Details Transaction"
+                List<WebElement> linksBlocks = webDriver.findElements(By.className("first"));
+                for (WebElement linksBlock : linksBlocks) {
+                    if ("Details / Transactions".equals(linksBlock.getText())){
+                        linksBlock.click();
+                        return;
+                        //linksBlock.sendKeys(Keys.RETURN);
+                    }
+                }
+            }
+            iterationCounter--;
+        }
     }
 
     private void accessDownloadPage(WebDriver webDriver, WebDriverWait wait, String linkName, int multiplier) throws InterruptedException {
