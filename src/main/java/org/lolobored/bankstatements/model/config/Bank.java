@@ -18,4 +18,5 @@ public class Bank {
   // for manually downloaded revolut statements
   private String statementsDirectory;
   private List<Account> accounts;
+  private Integer multiplier=1;
 }

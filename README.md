@@ -90,17 +90,18 @@ bank and a bank can have multiple accounts.
 
 At the bank level the parameters are:
 
-| Name | Description |
-| ---- | ----------- |
-| name | The name and the type of the bank ultimately. Can only be *metro*, *revolut*, *amex* or *credit mutuel* |
-| connectionUrl | The url where the login page is for each bank |
-| username | The username for the login page |
-| password | The password the the login page |
-| securityCode | Only used in the case of amex where the card security code needs to provided at login |
-| securityPin | Only used in the case of metro where an 8 digits security pin is required |
-| waitTime | The maximum number of seconds before the scraping fails in a time-out. I would recommend 5 here |
+| Name | Description                                                                                                                                                                   |
+| ---- |-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| name | The name and the type of the bank ultimately. Can only be *metro*, *revolut*, *amex* or *credit mutuel*                                                                       |
+| connectionUrl | The url where the login page is for each bank                                                                                                                                 |
+| username | The username for the login page                                                                                                                                               |
+| password | The password the the login page                                                                                                                                               |
+| securityCode | Only used in the case of amex where the card security code needs to provided at login                                                                                         |
+| securityPin | Only used in the case of metro where an 8 digits security pin is required                                                                                                     |
+| waitTime | The maximum number of seconds before the scraping fails in a time-out. I would recommend 5 here                                                                               |
 | statementsDirectory | Only used for Revolut where we cannot scrape any website. The directory where Revolut statements will have been downloaded. Note that it will delete those from the directory |
-| accounts | The list of accounts. See below for the structure of an account. |
+| multiplier | Multiplier for the wait time (used for slow websites). Default to 1                                                                                                           |
+| accounts | The list of accounts. See below for the structure of an account.                                                                                                              |
 
 Each bank can have 0 to multiple accounts. Referencing the accounts is not mandatory. The account number and account
 type (credit card or debit/savings) are automatically scraped from the webpages. Now this is only to automatically add a
@@ -111,6 +112,7 @@ The structure of an account is the following:
 | Name             | Description                                                                                                                                                                                                                                                                            |
 |------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | accountId        | The account ID which would need to be suffixed by a banktivity suffix on 4 letters                                                                                                                                                                                                     |
+| accountName      | Account Name as it might be used for crawling into the website (OCBC only)                                                                                                                                                                                                             |
 | type             | The account type (either DEBIT or CREDIT). Used for OCBC processing                                                                                                                                                                                                                    |
 | banktivitySuffix | When importing an OFX into banktivity, banktivity displays only the 4 last characters of the account number. To make it easier, I added a suffix to the account id in the OFX so that I can see in a single glance which account is which. Do not fill if you don't want this feature. |
 

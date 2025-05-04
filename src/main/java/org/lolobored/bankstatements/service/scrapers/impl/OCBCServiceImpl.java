@@ -7,22 +7,18 @@ import org.lolobored.bankstatements.model.config.Bank;
 import org.lolobored.bankstatements.service.conversion.OCBCCSVConversionService;
 import org.lolobored.bankstatements.service.conversion.OCBCCreditCSVConversionService;
 import org.lolobored.bankstatements.service.scrapers.OCBCService;
+import org.lolobored.bankstatements.utils.AccountUtils;
 import org.lolobored.bankstatements.utils.FileUtility;
 import org.openqa.selenium.*;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.Select;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.awt.*;
-import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
-import java.text.ParseException;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
@@ -39,7 +35,7 @@ public class OCBCServiceImpl implements OCBCService {
 
     private Logger logger = LoggerFactory.getLogger(OCBCServiceImpl.class);
     @Override
-    public List<Statement> downloadStatements(WebDriver webDriver, Bank bank, String downloadDir) throws InterruptedException, IOException, ParseException {
+    public List<Statement> downloadStatements(WebDriver webDriver, Bank bank, String downloadDir) throws Exception {
         List<Statement> statements = new ArrayList<>();
         WebDriverWait wait = new WebDriverWait(webDriver, Duration.ofSeconds(bank.getWaitTime()));
         /**
@@ -53,7 +49,8 @@ public class OCBCServiceImpl implements OCBCService {
 
         for (Account account : bank.getAccounts()) {
             if (Account.DEBIT.equals(account.getType())){
-                accessDownloadPage(webDriver, wait, "Current & savings", 5);
+                // download credits statement
+                accessAccountDetails(webDriver, wait, "mfe-cfo-portfolio--MuiPaper-root", account.getAccountName(), bank.getMultiplier());
                 downloadTransactions(webDriver, wait, bank,1);
                 String csvContent = FileUtility.readDownloadedFile(downloads, bank.getWaitTime());
 
@@ -79,7 +76,7 @@ public class OCBCServiceImpl implements OCBCService {
                 // come back to overview
                 accessDownloadPage(webDriver, wait, "Overview", 1);
                 // download credits statement
-                accessCreditCards(webDriver, wait, account.getAccountId(), 1);
+                accessAccountDetails(webDriver, wait, "wyoMainContainer", account.getAccountName(), bank.getMultiplier());
                 downloadCreditsTransactions(webDriver, wait, bank,1);
                 String csvContent = FileUtility.readDownloadedFile(downloads, bank.getWaitTime());
 
@@ -95,12 +92,7 @@ public class OCBCServiceImpl implements OCBCService {
 
     private void downloadTransactions(WebDriver webDriver, WebDriverWait wait, Bank bank, int multiplier) throws InterruptedException, IOException {
         //Store the web element
-  //      wait.until(ExpectedConditions.visibilityOfElementLocated(By.className("mfeApp")));
         Thread.sleep(WAIT_TIME*multiplier);
-        //Switch to the frame
-  //      wait.until(ExpectedConditions.frameToBeAvailableAndSwitchToIt(By.className("mfeApp")));
-      //  WebElement iframe = webDriver.findElement(By.className("mfeApp"));
-      //  webDriver.switchTo().frame(iframe);
 
         wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("//*[contains(text(), 'Download')]")));
         WebElement download = webDriver.findElement(By.xpath("//*[contains(text(), 'Download')]"));
@@ -116,14 +108,7 @@ public class OCBCServiceImpl implements OCBCService {
     }
 
     private void downloadCreditsTransactions(WebDriver webDriver, WebDriverWait wait, Bank bank, int multiplier) throws InterruptedException, IOException {
-        //Store the web element
-        //wait.until(ExpectedConditions.visibilityOfElementLocated(By.className("mfeApp")));
         Thread.sleep(WAIT_TIME*multiplier);
-        //Switch to the frame
-        //wait.until(ExpectedConditions.frameToBeAvailableAndSwitchToIt(By.className("mfeApp")));
-        //  WebElement iframe = webDriver.findElement(By.className("mfeApp"));
-        //  webDriver.switchTo().frame(iframe);
-
         wait.until(ExpectedConditions.presenceOfElementLocated(By.id("dropdown-cards-list")));
         WebElement frequency = webDriver.findElement(By.id("dropdown-cards-list"));
         ((JavascriptExecutor) webDriver).executeScript("arguments[0].scrollIntoView(true);", frequency);
@@ -147,43 +132,29 @@ public class OCBCServiceImpl implements OCBCService {
         csv.click();
     }
 
+    private void accessAccountDetails(WebDriver webDriver, WebDriverWait wait, String blockClassName, String accountName, int multiplier) throws Exception {
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.className(blockClassName)));
+        WebElement owingBlock = webDriver.findElement(By.className(blockClassName));
 
+        ((JavascriptExecutor) webDriver).executeScript("arguments[0].scrollIntoView(true);", owingBlock);
 
-    private void accessCreditCards(WebDriver webDriver, WebDriverWait wait, String accountNumber, int multiplier) throws InterruptedException {
-        // wait for the page to appear
-        //wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("mfe-cfo-portfolio--MuiAccordionSummary-content")));
-        Thread.sleep(WAIT_TIME*multiplier);
-        // find the "What you owe" block
-        wait.until(ExpectedConditions.visibilityOfElementLocated(By.className("wyoMainContainer")));
-        WebElement owingBlock = webDriver.findElement(By.className("wyoMainContainer"));
-
-        // retrieve all blocks of credits
-        int iterationCounter=-1;
-        List<WebElement> creditCardAccountIdBlocks = owingBlock.findElements(By.className("availableText"));
-        for (WebElement creditCardAccountIdBlock : creditCardAccountIdBlocks) {
-            iterationCounter++;
-            if (accountNumber.equals(creditCardAccountIdBlock.getText())){
-                break;
-            }
-        }
         List<WebElement> accountClickableBlocks = owingBlock.findElements(By.className("cursor"));
         for (WebElement accountClickableBlock : accountClickableBlocks) {
-            if (iterationCounter==0){
-                ((JavascriptExecutor) webDriver).executeScript("arguments[0].scrollIntoView(true);", accountClickableBlock);
-                Thread.sleep(WAIT_TIME);
+            if (accountName.equals(AccountUtils.getCleanedAccount(accountClickableBlock.getText()))) {
                 Actions action = new Actions(webDriver);
+                ((JavascriptExecutor) webDriver).executeScript("arguments[0].scrollIntoView(true);", accountClickableBlock);
                 action.moveToElement(accountClickableBlock).pause(Duration.ofMillis(WAIT_TIME)).build().perform();
                 // find the clickable "Details Transaction"
                 List<WebElement> linksBlocks = webDriver.findElements(By.className("first"));
+                System.out.print("size"+linksBlocks.size());
                 for (WebElement linksBlock : linksBlocks) {
-                    if ("Details / Transactions".equals(linksBlock.getText())){
+                    if ("Details / Transactions".equals(linksBlock.getText())) {
                         linksBlock.click();
                         return;
-                        //linksBlock.sendKeys(Keys.RETURN);
                     }
                 }
+                throw new IOException("Couldn't find account id "+accountName);
             }
-            iterationCounter--;
         }
     }
 
