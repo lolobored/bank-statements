@@ -100,7 +100,6 @@ At the bank level the parameters are:
 | securityPin | Only used in the case of metro where an 8 digits security pin is required                                                                                                     |
 | waitTime | The maximum number of seconds before the scraping fails in a time-out. I would recommend 5 here                                                                               |
 | statementsDirectory | Only used for Revolut where we cannot scrape any website. The directory where Revolut statements will have been downloaded. Note that it will delete those from the directory |
-| multiplier | Multiplier for the wait time (used for slow websites). Default to 1                                                                                                           |
 | accounts | The list of accounts. See below for the structure of an account.                                                                                                              |
 
 Each bank can have 0 to multiple accounts. Referencing the accounts is not mandatory. The account number and account
