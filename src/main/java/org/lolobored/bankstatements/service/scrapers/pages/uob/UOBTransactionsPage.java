@@ -40,21 +40,21 @@ public class UOBTransactionsPage {
     private void downloadForPeriod(String period) throws InterruptedException {
         long t0 = System.currentTimeMillis();
         wait.until(ExpectedConditions.visibilityOfElementLocated(FREQUENCY_DROPDOWN));
-        logger.info("[TIMING] UOBTransactions({}): wait for frequency dropdown visible: {}ms", period, System.currentTimeMillis() - t0);
+        logger.debug("[TIMING] UOBTransactions({}): wait for frequency dropdown visible: {}ms", period, System.currentTimeMillis() - t0);
 
         t0 = System.currentTimeMillis();
         Thread.sleep(RENDER_PAUSE_MS);
-        logger.info("[TIMING] UOBTransactions({}): post-dropdown-visible sleep (budget {}ms): {}ms", period, RENDER_PAUSE_MS, System.currentTimeMillis() - t0);
+        logger.debug("[TIMING] UOBTransactions({}): post-dropdown-visible sleep (budget {}ms): {}ms", period, RENDER_PAUSE_MS, System.currentTimeMillis() - t0);
 
         new Select(driver.findElement(FREQUENCY_DROPDOWN)).selectByVisibleText(period);
 
         t0 = System.currentTimeMillis();
         Thread.sleep(PERIOD_SETTLE_MS);
-        logger.info("[TIMING] UOBTransactions({}): post-period-select sleep (budget {}ms): {}ms", period, PERIOD_SETTLE_MS, System.currentTimeMillis() - t0);
+        logger.debug("[TIMING] UOBTransactions({}): post-period-select sleep (budget {}ms): {}ms", period, PERIOD_SETTLE_MS, System.currentTimeMillis() - t0);
 
         t0 = System.currentTimeMillis();
         wait.until(ExpectedConditions.visibilityOfElementLocated(DOWNLOAD_ICON));
-        logger.info("[TIMING] UOBTransactions({}): wait for download icon visible: {}ms", period, System.currentTimeMillis() - t0);
+        logger.debug("[TIMING] UOBTransactions({}): wait for download icon visible: {}ms", period, System.currentTimeMillis() - t0);
         driver.findElement(DOWNLOAD_ICON).click();
     }
 }

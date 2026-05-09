@@ -30,7 +30,7 @@ public class CreditMutCSVConversionServiceImpl implements CreditMutCSVConversion
     Statement statement = new Statement();
     statement.setAccountNumber(accountNumber);
     statement.setAccountType(accountType);
-    statement.setCurrency("GBP");
+    statement.setCurrency("EUR");
 
     List<CreditMutCsvLine> creditMutCsvLines = parseCSV(csv);
     for (CreditMutCsvLine creditMutCsvLine : creditMutCsvLines) {

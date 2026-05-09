@@ -32,7 +32,7 @@ public class UOBAccountsPage {
     public void openAccount(String accountId) throws IOException, InterruptedException {
         long t0 = System.currentTimeMillis();
         wait.until(ExpectedConditions.visibilityOfElementLocated(ACCOUNT_TILES));
-        logger.info("[TIMING] UOBAccounts: wait for account tiles visible: {}ms", System.currentTimeMillis() - t0);
+        logger.debug("[TIMING] UOBAccounts: wait for account tiles visible: {}ms", System.currentTimeMillis() - t0);
 
         List<WebElement> accounts = driver.findElements(ACCOUNT_TILES);
 
@@ -40,7 +40,7 @@ public class UOBAccountsPage {
             if (StringUtils.equalsIgnoreCase(accountId.trim(), account.getText().trim())) {
                 t0 = System.currentTimeMillis();
                 Thread.sleep(ACCOUNT_CLICK_PAUSE_MS);
-                logger.info("[TIMING] UOBAccounts: pre-click sleep (budget {}ms): {}ms", ACCOUNT_CLICK_PAUSE_MS, System.currentTimeMillis() - t0);
+                logger.debug("[TIMING] UOBAccounts: pre-click sleep (budget {}ms): {}ms", ACCOUNT_CLICK_PAUSE_MS, System.currentTimeMillis() - t0);
                 account.click();
                 return;
             }

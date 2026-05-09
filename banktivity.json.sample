@@ -1,0 +1,71 @@
+[
+  {
+    "name": "metro",
+    "connectionUrl": "https://personal.metrobankonline.co.uk/MetroBankRetail",
+    "bitwardenItemName": "Metro Bank",
+    "accounts": [
+      { "accountId": "12345678", "banktivitySuffix": "metr" }
+    ]
+  },
+  {
+    "name": "amex",
+    "connectionUrl": "https://global.americanexpress.com/login?inav=iNavLnkLog",
+    "bitwardenItemName": "Amex",
+    "securityCode": "0000",
+    "accounts": [
+      { "accountId": "XXX-16241", "banktivitySuffix": "amex" }
+    ]
+  },
+  {
+    "name": "credit mutuel",
+    "connectionUrl": "https://www.creditmutuel.fr/fr/authentification.html",
+    "bitwardenItemName": "Credit Mutuel",
+    "accounts": [
+      { "accountId": "4352432423", "banktivitySuffix": "cmeu" },
+      { "accountId": "3534643234", "currency": "CHF", "banktivitySuffix": "cmch" },
+      { "accountId": "325346573",  "currency": "GBP", "banktivitySuffix": "cmgb" }
+    ]
+  },
+  {
+    "name": "comm bank",
+    "connectionUrl": "https://www.commbank.com.au",
+    "bitwardenItemName": "CommBank",
+    "accounts": [
+      { "accountId": "06200112345678", "banktivitySuffix": "cba" }
+    ]
+  },
+  {
+    "name": "westpac",
+    "connectionUrl": "https://www.westpac.com.au",
+    "bitwardenItemName": "Westpac",
+    "accounts": [
+      { "accountId": "732-123456", "banktivitySuffix": "wbk" }
+    ]
+  },
+  {
+    "name": "uob",
+    "connectionUrl": "https://pib.uob.com.sg/PIBLogin/Public/processPreCapture.do?keyId=lpc",
+    "bitwardenItemName": "UOB",
+    "accounts": [
+      { "accountId": "123-456-789-0", "banktivitySuffix": "uob" }
+    ]
+  },
+  {
+    "name": "ocbc",
+    "connectionUrl": "https://internet.ocbc.com/internet-banking/digital/web/sg/cfo/login/login",
+    "bitwardenItemName": "OCBC",
+    "accounts": [
+      { "accountId": "602-123456-001", "accountName": "360 Account",             "type": "DEBIT",  "banktivitySuffix": "ocbc" },
+      { "accountId": "5413-0000-0000-0001", "accountName": "OCBC Cashback Card", "type": "CREDIT", "banktivitySuffix": "cash" }
+    ]
+  },
+  {
+    "name": "revolut",
+    "statementsDirectory": "/Users/username/Downloads/revolut-statements",
+    "accounts": [
+      { "accountId": "revolut-gbp", "banktivitySuffix": "rgbp" },
+      { "accountId": "revolut-eur", "banktivitySuffix": "reur" },
+      { "accountId": "revolut-chf", "banktivitySuffix": "rchf" }
+    ]
+  }
+]

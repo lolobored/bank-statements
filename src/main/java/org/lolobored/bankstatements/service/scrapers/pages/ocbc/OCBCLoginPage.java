@@ -37,26 +37,26 @@ public class OCBCLoginPage {
 
         long t0 = System.currentTimeMillis();
         wait.until(ExpectedConditions.visibilityOfElementLocated(USERNAME_FIELD));
-        logger.info("[TIMING] OCBCLogin: wait for username field visible: {}ms", System.currentTimeMillis() - t0);
+        logger.debug("[TIMING] OCBCLogin: wait for username field visible: {}ms", System.currentTimeMillis() - t0);
 
         WebElement usernameField = driver.findElement(USERNAME_FIELD);
         t0 = System.currentTimeMillis();
         new Actions(driver).moveToElement(usernameField).pause(ANIMATION_PAUSE).build().perform();
-        logger.info("[TIMING] OCBCLogin: hover+pause action (budget {}ms): {}ms", ANIMATION_PAUSE.toMillis(), System.currentTimeMillis() - t0);
+        logger.debug("[TIMING] OCBCLogin: hover+pause action (budget {}ms): {}ms", ANIMATION_PAUSE.toMillis(), System.currentTimeMillis() - t0);
         usernameField.sendKeys(username);
 
         t0 = System.currentTimeMillis();
         wait.until(ExpectedConditions.visibilityOfElementLocated(PASSWORD_FIELD));
-        logger.info("[TIMING] OCBCLogin: wait for password field visible: {}ms", System.currentTimeMillis() - t0);
+        logger.debug("[TIMING] OCBCLogin: wait for password field visible: {}ms", System.currentTimeMillis() - t0);
         driver.findElement(PASSWORD_FIELD).sendKeys(password);
 
         t0 = System.currentTimeMillis();
         wait.until(ExpectedConditions.elementToBeClickable(LOGIN_BUTTON));
-        logger.info("[TIMING] OCBCLogin: wait for login button clickable: {}ms", System.currentTimeMillis() - t0);
+        logger.debug("[TIMING] OCBCLogin: wait for login button clickable: {}ms", System.currentTimeMillis() - t0);
 
         t0 = System.currentTimeMillis();
         Thread.sleep(PRE_SUBMIT_PAUSE.toMillis());
-        logger.info("[TIMING] OCBCLogin: pre-submit sleep (budget {}ms): {}ms", PRE_SUBMIT_PAUSE.toMillis(), System.currentTimeMillis() - t0);
+        logger.debug("[TIMING] OCBCLogin: pre-submit sleep (budget {}ms): {}ms", PRE_SUBMIT_PAUSE.toMillis(), System.currentTimeMillis() - t0);
         driver.findElement(LOGIN_BUTTON).click();
     }
 }

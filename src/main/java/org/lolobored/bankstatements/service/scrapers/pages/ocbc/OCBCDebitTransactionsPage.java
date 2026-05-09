@@ -29,11 +29,11 @@ public class OCBCDebitTransactionsPage {
     public void downloadCsv() throws InterruptedException {
         long t0 = System.currentTimeMillis();
         Thread.sleep(RENDER_PAUSE_MS);
-        logger.info("[TIMING] OCBCDebit: initial render sleep (budget {}ms): {}ms", RENDER_PAUSE_MS, System.currentTimeMillis() - t0);
+        logger.debug("[TIMING] OCBCDebit: initial render sleep (budget {}ms): {}ms", RENDER_PAUSE_MS, System.currentTimeMillis() - t0);
 
         t0 = System.currentTimeMillis();
         wait.until(ExpectedConditions.elementToBeClickable(DOWNLOAD_BUTTON));
-        logger.info("[TIMING] OCBCDebit: wait for download button clickable: {}ms", System.currentTimeMillis() - t0);
+        logger.debug("[TIMING] OCBCDebit: wait for download button clickable: {}ms", System.currentTimeMillis() - t0);
 
         WebElement download = driver.findElement(DOWNLOAD_BUTTON);
         ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", download);
@@ -41,7 +41,7 @@ public class OCBCDebitTransactionsPage {
 
         t0 = System.currentTimeMillis();
         wait.until(ExpectedConditions.visibilityOfElementLocated(CSV_OPTION));
-        logger.info("[TIMING] OCBCDebit: wait for CSV option visible: {}ms", System.currentTimeMillis() - t0);
+        logger.debug("[TIMING] OCBCDebit: wait for CSV option visible: {}ms", System.currentTimeMillis() - t0);
         driver.findElement(CSV_OPTION).click();
     }
 }

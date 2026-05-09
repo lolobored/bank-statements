@@ -36,27 +36,27 @@ public class UOBLoginPage {
 
         long t0 = System.currentTimeMillis();
         wait.until(ExpectedConditions.visibilityOfElementLocated(USERNAME_FIELD));
-        logger.info("[TIMING] UOBLogin: wait for username field visible: {}ms", System.currentTimeMillis() - t0);
+        logger.debug("[TIMING] UOBLogin: wait for username field visible: {}ms", System.currentTimeMillis() - t0);
         driver.findElement(USERNAME_FIELD).sendKeys(username);
 
         t0 = System.currentTimeMillis();
         wait.until(ExpectedConditions.visibilityOfElementLocated(PASSWORD_FIELD));
-        logger.info("[TIMING] UOBLogin: wait for password field visible: {}ms", System.currentTimeMillis() - t0);
+        logger.debug("[TIMING] UOBLogin: wait for password field visible: {}ms", System.currentTimeMillis() - t0);
         driver.findElement(PASSWORD_FIELD).sendKeys(password);
 
         t0 = System.currentTimeMillis();
         wait.until(ExpectedConditions.elementToBeClickable(LOGIN_BUTTON));
-        logger.info("[TIMING] UOBLogin: wait for login button clickable: {}ms", System.currentTimeMillis() - t0);
+        logger.debug("[TIMING] UOBLogin: wait for login button clickable: {}ms", System.currentTimeMillis() - t0);
         driver.findElement(LOGIN_BUTTON).sendKeys(Keys.RETURN);
 
         try {
             WebDriverWait shortWait = new WebDriverWait(driver, PROCEED_CHECK_WAIT);
             t0 = System.currentTimeMillis();
             shortWait.until(ExpectedConditions.elementToBeClickable(PROCEED_BUTTON));
-            logger.info("[TIMING] UOBLogin: existing-session Proceed dialog appeared: {}ms", System.currentTimeMillis() - t0);
+            logger.debug("[TIMING] UOBLogin: existing-session Proceed dialog appeared: {}ms", System.currentTimeMillis() - t0);
             driver.findElement(PROCEED_BUTTON).click();
         } catch (TimeoutException ignored) {
-            logger.info("[TIMING] UOBLogin: no existing-session dialog (normal login)");
+            logger.debug("[TIMING] UOBLogin: no existing-session dialog (normal login)");
         }
     }
 }

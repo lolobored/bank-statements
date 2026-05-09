@@ -67,27 +67,24 @@ The application is driven by a JSON file defining the banks and accounts to proc
 | `accountName` | no | OCBC only — account name used to identify the account on the website |
 | `type` | no | OCBC only — `DEBIT` or `CREDIT` |
 | `banktivitySuffix` | no | 4-character suffix appended to the account number in the OFX. Banktivity shows only the last 4 characters of an account number, so this makes it easy to identify accounts at a glance |
+| `currency` | no | ISO 4217 currency code (e.g. `EUR`, `CHF`, `SGD`). Overrides the bank's default currency. Set this when a bank holds accounts in multiple currencies |
 
 ### Sample configuration
+
+A complete `banktivity.json.sample` is provided at the root of the repository — copy it to your desired location and fill in your credentials.
+
+The snippet below highlights the key patterns:
 
 ```json
 [
   {
-    "name": "metro",
-    "connectionUrl": "https://personal.metrobankonline.co.uk/MetroBankRetail",
-    "bitwardenItemName": "Metro Bank",
+    "name": "credit mutuel",
+    "connectionUrl": "https://www.creditmutuel.fr/fr/authentification.html",
+    "bitwardenItemName": "Credit Mutuel",
     "accounts": [
-      { "accountId": "32432432", "banktivitySuffix": "metr" }
-    ]
-  },
-  {
-    "name": "amex",
-    "connectionUrl": "https://global.americanexpress.com/login?inav=iNavLnkLog",
-    "username": "fake.user",
-    "password": "fake.password",
-    "securityCode": "0000",
-    "accounts": [
-      { "accountId": "XXX-16241", "type": "CREDIT", "banktivitySuffix": "amex" }
+      { "accountId": "4352432423", "banktivitySuffix": "cmeu" },
+      { "accountId": "3534643234", "currency": "CHF", "banktivitySuffix": "cmch" },
+      { "accountId": "325346573",  "currency": "GBP", "banktivitySuffix": "cmgb" }
     ]
   },
   {
@@ -95,8 +92,8 @@ The application is driven by a JSON file defining the banks and accounts to proc
     "connectionUrl": "https://internet.ocbc.com/internet-banking/digital/web/sg/cfo/login/login",
     "bitwardenItemName": "OCBC",
     "accounts": [
-      { "accountId": "602-124109-001", "accountName": "360 Account", "type": "DEBIT", "banktivitySuffix": "ocbc" },
-      { "accountId": "5413-8301-0026-1510", "accountName": "OCBC INFINITY Cashback Card", "type": "CREDIT", "banktivitySuffix": "cash" }
+      { "accountId": "602-124109-001", "accountName": "360 Account",             "type": "DEBIT",  "banktivitySuffix": "ocbc" },
+      { "accountId": "5413-8301-0026-1510", "accountName": "OCBC Cashback Card", "type": "CREDIT", "banktivitySuffix": "cash" }
     ]
   },
   {
@@ -109,6 +106,21 @@ The application is driven by a JSON file defining the banks and accounts to proc
   }
 ]
 ```
+
+### Currency defaults
+
+Each bank has a hardcoded default currency. Override it per account with the `currency` field.
+
+| Bank | Default | Notes |
+|------|---------|-------|
+| Metro | GBP | |
+| AMEX | GBP | |
+| Credit Mutuel | EUR | Override per account for CHF or GBP sub-accounts |
+| Comm Bank | AUD | |
+| Westpac | AUD | |
+| UOB | SGD | |
+| OCBC | SGD | Applies to both debit and credit accounts |
+| Revolut | auto | Read from the CSV column header — no override needed |
 
 ## Bitwarden integration
 

@@ -39,10 +39,12 @@
       },
       {
         "accountId": "3534643234",
+        "currency": "CHF",
         "banktivitySuffix": "cmch"
       },
       {
         "accountId": "325346573",
+        "currency": "GBP",
         "banktivitySuffix": "ccel"
       }
     ]

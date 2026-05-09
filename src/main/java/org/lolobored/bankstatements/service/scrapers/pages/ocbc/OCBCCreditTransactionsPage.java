@@ -34,11 +34,11 @@ public class OCBCCreditTransactionsPage {
     public void downloadCsv() throws InterruptedException {
         long t0 = System.currentTimeMillis();
         Thread.sleep(RENDER_PAUSE_MS);
-        logger.info("[TIMING] OCBCCredit: initial render sleep (budget {}ms): {}ms", RENDER_PAUSE_MS, System.currentTimeMillis() - t0);
+        logger.debug("[TIMING] OCBCCredit: initial render sleep (budget {}ms): {}ms", RENDER_PAUSE_MS, System.currentTimeMillis() - t0);
 
         t0 = System.currentTimeMillis();
         wait.until(ExpectedConditions.elementToBeClickable(PERIOD_DROPDOWN));
-        logger.info("[TIMING] OCBCCredit: wait for period dropdown clickable: {}ms", System.currentTimeMillis() - t0);
+        logger.debug("[TIMING] OCBCCredit: wait for period dropdown clickable: {}ms", System.currentTimeMillis() - t0);
 
         WebElement dropdown = driver.findElement(PERIOD_DROPDOWN);
         ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", dropdown);
@@ -46,18 +46,18 @@ public class OCBCCreditTransactionsPage {
 
         t0 = System.currentTimeMillis();
         wait.until(ExpectedConditions.visibilityOfElementLocated(PAST_30_DAYS));
-        logger.info("[TIMING] OCBCCredit: wait for PAST_30_DAYS option visible: {}ms", System.currentTimeMillis() - t0);
+        logger.debug("[TIMING] OCBCCredit: wait for PAST_30_DAYS option visible: {}ms", System.currentTimeMillis() - t0);
         driver.findElement(PAST_30_DAYS).click();
 
         // Brief pause so the loading backdrop has time to appear before we check for it
         Thread.sleep(300);
         t0 = System.currentTimeMillis();
         wait.until(ExpectedConditions.invisibilityOfElementLocated(LOADING_BACKDROP));
-        logger.info("[TIMING] OCBCCredit: wait for loading backdrop gone: {}ms", System.currentTimeMillis() - t0);
+        logger.debug("[TIMING] OCBCCredit: wait for loading backdrop gone: {}ms", System.currentTimeMillis() - t0);
 
         t0 = System.currentTimeMillis();
         wait.until(ExpectedConditions.elementToBeClickable(DOWNLOAD_BUTTON));
-        logger.info("[TIMING] OCBCCredit: wait for download button clickable: {}ms", System.currentTimeMillis() - t0);
+        logger.debug("[TIMING] OCBCCredit: wait for download button clickable: {}ms", System.currentTimeMillis() - t0);
 
         WebElement download = driver.findElement(DOWNLOAD_BUTTON);
         ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", download);
@@ -65,7 +65,7 @@ public class OCBCCreditTransactionsPage {
 
         t0 = System.currentTimeMillis();
         wait.until(ExpectedConditions.visibilityOfElementLocated(CSV_OPTION));
-        logger.info("[TIMING] OCBCCredit: wait for CSV option visible: {}ms", System.currentTimeMillis() - t0);
+        logger.debug("[TIMING] OCBCCredit: wait for CSV option visible: {}ms", System.currentTimeMillis() - t0);
         driver.findElement(CSV_OPTION).click();
     }
 }

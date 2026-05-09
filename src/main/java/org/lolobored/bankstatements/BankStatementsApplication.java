@@ -79,6 +79,7 @@ public class BankStatementsApplication implements ApplicationRunner {
   public void run(ApplicationArguments args) throws Exception {
     Path downloads = Files.createTempDirectory("statements");
     Map<String, String> accountReplacements = new HashMap<>();
+    Map<String, String> accountCurrencies = new HashMap<>();
     LocalDate startingDate = LocalDate.parse("1970-01-01");
 
     if (!args.containsOption("json")) {
@@ -145,11 +146,14 @@ public class BankStatementsApplication implements ApplicationRunner {
         new TypeReference<List<Bank>>() {}
       );
 
-      // Collect banktivity suffix replacements from all accounts (including disabled banks)
+      // Collect per-account config from all accounts (including disabled banks)
       for (Bank bank : banks) {
         for (Account account : bank.getAccounts()) {
           if (account.getBanktivitySuffix() != null) {
             accountReplacements.put(account.getAccountId(), account.getBanktivitySuffix());
+          }
+          if (account.getCurrency() != null) {
+            accountCurrencies.put(account.getAccountId(), account.getCurrency());
           }
         }
       }
@@ -166,6 +170,7 @@ public class BankStatementsApplication implements ApplicationRunner {
       // Build one task per enabled bank — each gets its own WebDriver and download subdirectory
       final int finalBrowserType = browserType;
       List<Callable<List<Statement>>> tasks = new ArrayList<>();
+      List<String> taskBankNames = new ArrayList<>();
 
       for (Bank bank : banks) {
         if (!bank.isEnabled()) {
@@ -178,6 +183,7 @@ public class BankStatementsApplication implements ApplicationRunner {
         Path bankDownloadDir = downloads.resolve(bank.getName().replaceAll("\\s+", "-"));
         Files.createDirectories(bankDownloadDir);
 
+        taskBankNames.add(bank.getName());
         tasks.add(() -> {
           WebDriver driver = createWebDriver(finalBrowserType, bankDownloadDir);
           try {
@@ -200,16 +206,36 @@ public class BankStatementsApplication implements ApplicationRunner {
         executor.shutdown();
       }
 
-      // Collect results — propagate the first failure if any
+      // Collect results — keep going even if some banks fail
       List<Statement> statements = new ArrayList<>();
-      for (Future<List<Statement>> future : futures) {
+      List<String> failures = new ArrayList<>();
+      for (int i = 0; i < futures.size(); i++) {
+        String bankName = taskBankNames.get(i);
         try {
-          statements.addAll(future.get());
+          statements.addAll(futures.get(i).get());
         } catch (ExecutionException e) {
           Throwable cause = e.getCause();
-          throw cause instanceof Exception ? (Exception) cause : new RuntimeException(cause);
+          String msg = cause.getMessage() != null ? cause.getMessage() : cause.getClass().getSimpleName();
+          failures.add(bankName + ": " + msg);
+          logger.error("Bank [{}] failed", bankName, cause);
         }
       }
+      if (!failures.isEmpty()) {
+        logger.error("╔══════════════════════════════════════╗");
+        logger.error("║         BANK SCRAPING FAILURES       ║");
+        logger.error("╠══════════════════════════════════════╣");
+        failures.forEach(f -> logger.error("║  ✗ {}", f));
+        logger.error("╚══════════════════════════════════════╝");
+      }
+      if (statements.isEmpty() && !failures.isEmpty()) {
+        throw new RuntimeException("All banks failed — no statements to process");
+      }
+
+      // Apply per-account currency overrides before filtering (filtering may modify account numbers)
+      statements.forEach(s -> {
+        String currency = accountCurrencies.get(s.getAccountNumber());
+        if (currency != null) s.setCurrency(currency);
+      });
 
       statements = statementsFilterService.filterStatements(statements, startingDate, accountReplacements);
       String ofxResult = ofxConversionService.convertStatementsToOfx(statements);
@@ -226,6 +252,15 @@ public class BankStatementsApplication implements ApplicationRunner {
       String currentTime = SIMPLEDATE_FORMAT.format(Calendar.getInstance().getTime());
       resultFile = new File(outputDirectory.getAbsolutePath() + "/" + currentTime + "-downloaded.ofx");
       FileUtils.writeStringToFile(resultFile, ofxResult, Charset.defaultCharset());
+
+      // Keep only the 30 most recent timestamped OFX files
+      File[] txFiles = outputDirectory.listFiles((dir, name) -> name.endsWith("-downloaded.ofx"));
+      if (txFiles != null && txFiles.length > 30) {
+        Arrays.sort(txFiles, Comparator.comparing(File::getName));
+        for (int i = 0; i < txFiles.length - 30; i++) {
+          txFiles[i].delete();
+        }
+      }
 
     } finally {
       FileUtils.deleteDirectory(downloads.toFile());

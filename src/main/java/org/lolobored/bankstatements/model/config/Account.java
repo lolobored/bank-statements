@@ -12,6 +12,8 @@ public class Account {
   private String accountId;
   private String type;
   private String banktivitySuffix;
+  // ISO 4217 currency code — overrides the hardcoded default in the conversion service
+  private String currency;
 
   private void setAccountName(String accountName){
     this.accountName= AccountUtils.getCleanedAccount(accountName);

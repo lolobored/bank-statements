@@ -63,7 +63,7 @@ public class OCBCAccountsOverviewPage {
     public void navigateToOverview() throws InterruptedException {
         long t0 = System.currentTimeMillis();
         Thread.sleep(NAVIGATION_PAUSE.toMillis());
-        logger.info("[TIMING] OCBCOverview.navigateToOverview: initial nav sleep (budget {}ms): {}ms", NAVIGATION_PAUSE.toMillis(), System.currentTimeMillis() - t0);
+        logger.debug("[TIMING] OCBCOverview.navigateToOverview: initial nav sleep (budget {}ms): {}ms", NAVIGATION_PAUSE.toMillis(), System.currentTimeMillis() - t0);
 
         By overviewLocator = By.xpath("//*[contains(text(),'" + OVERVIEW_LABEL + "')]");
         WebDriverWait shortWait = new WebDriverWait(driver, RETRY_CHECK_WAIT);
@@ -71,26 +71,26 @@ public class OCBCAccountsOverviewPage {
         for (int attempt = 0; attempt < MAX_HOVER_ATTEMPTS; attempt++) {
             t0 = System.currentTimeMillis();
             wait.until(ExpectedConditions.visibilityOfElementLocated(VIEW_ACCOUNTS_NAV));
-            logger.info("[TIMING] OCBCOverview.navigateToOverview: wait for VIEW_ACCOUNTS_NAV (attempt {}): {}ms", attempt, System.currentTimeMillis() - t0);
+            logger.debug("[TIMING] OCBCOverview.navigateToOverview: wait for VIEW_ACCOUNTS_NAV (attempt {}): {}ms", attempt, System.currentTimeMillis() - t0);
 
             WebElement viewAccounts = driver.findElement(VIEW_ACCOUNTS_NAV);
             t0 = System.currentTimeMillis();
             new Actions(driver).moveToElement(viewAccounts).pause(HOVER_PAUSE).build().perform();
-            logger.info("[TIMING] OCBCOverview.navigateToOverview: hover+pause action (budget {}ms, attempt {}): {}ms", HOVER_PAUSE.toMillis(), attempt, System.currentTimeMillis() - t0);
+            logger.debug("[TIMING] OCBCOverview.navigateToOverview: hover+pause action (budget {}ms, attempt {}): {}ms", HOVER_PAUSE.toMillis(), attempt, System.currentTimeMillis() - t0);
 
             try {
                 t0 = System.currentTimeMillis();
                 shortWait.until(ExpectedConditions.elementToBeClickable(overviewLocator));
-                logger.info("[TIMING] OCBCOverview.navigateToOverview: wait for Overview clickable (attempt {}): {}ms", attempt, System.currentTimeMillis() - t0);
+                logger.debug("[TIMING] OCBCOverview.navigateToOverview: wait for Overview clickable (attempt {}): {}ms", attempt, System.currentTimeMillis() - t0);
                 driver.findElement(overviewLocator).click();
                 return;
             } catch (TimeoutException ignored) {
-                logger.info("[TIMING] OCBCOverview.navigateToOverview: Overview not found after hover (attempt {}), retrying", attempt);
+                logger.debug("[TIMING] OCBCOverview.navigateToOverview: Overview not found after hover (attempt {}), retrying", attempt);
                 // hover didn't expose the submenu — move mouse away and retry
                 new Actions(driver).moveToElement(driver.findElement(PAGE_TOP_ANCHOR)).build().perform();
                 t0 = System.currentTimeMillis();
                 Thread.sleep(NAVIGATION_PAUSE.toMillis());
-                logger.info("[TIMING] OCBCOverview.navigateToOverview: retry reset sleep (budget {}ms): {}ms", NAVIGATION_PAUSE.toMillis(), System.currentTimeMillis() - t0);
+                logger.debug("[TIMING] OCBCOverview.navigateToOverview: retry reset sleep (budget {}ms): {}ms", NAVIGATION_PAUSE.toMillis(), System.currentTimeMillis() - t0);
             }
         }
 
@@ -107,14 +107,14 @@ public class OCBCAccountsOverviewPage {
     private void openAccount(By accountsBlockLocator, String accountName) throws Exception {
         long t0 = System.currentTimeMillis();
         wait.until(ExpectedConditions.visibilityOfElementLocated(accountsBlockLocator));
-        logger.info("[TIMING] OCBCOverview.openAccount: wait for accounts block visible: {}ms", System.currentTimeMillis() - t0);
+        logger.debug("[TIMING] OCBCOverview.openAccount: wait for accounts block visible: {}ms", System.currentTimeMillis() - t0);
 
         WebElement accountsBlock = driver.findElement(accountsBlockLocator);
         ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", accountsBlock);
 
         t0 = System.currentTimeMillis();
         Thread.sleep(NAVIGATION_PAUSE.toMillis());
-        logger.info("[TIMING] OCBCOverview.openAccount: post-scroll sleep (budget {}ms): {}ms", NAVIGATION_PAUSE.toMillis(), System.currentTimeMillis() - t0);
+        logger.debug("[TIMING] OCBCOverview.openAccount: post-scroll sleep (budget {}ms): {}ms", NAVIGATION_PAUSE.toMillis(), System.currentTimeMillis() - t0);
 
         List<WebElement> accountRows = accountsBlock.findElements(ACCOUNT_ROW);
         for (WebElement row : accountRows) {
@@ -124,12 +124,12 @@ public class OCBCAccountsOverviewPage {
                 for (int attempt = 0; attempt < MAX_HOVER_ATTEMPTS; attempt++) {
                     t0 = System.currentTimeMillis();
                     new Actions(driver).moveToElement(row).pause(HOVER_PAUSE).build().perform();
-                    logger.info("[TIMING] OCBCOverview.openAccount: hover+pause action (budget {}ms, attempt {}): {}ms", HOVER_PAUSE.toMillis(), attempt, System.currentTimeMillis() - t0);
+                    logger.debug("[TIMING] OCBCOverview.openAccount: hover+pause action (budget {}ms, attempt {}): {}ms", HOVER_PAUSE.toMillis(), attempt, System.currentTimeMillis() - t0);
 
                     try {
                         t0 = System.currentTimeMillis();
                         shortWait.until(ExpectedConditions.visibilityOfElementLocated(ACCOUNT_ACTION_LINKS));
-                        logger.info("[TIMING] OCBCOverview.openAccount: wait for action links visible (attempt {}): {}ms", attempt, System.currentTimeMillis() - t0);
+                        logger.debug("[TIMING] OCBCOverview.openAccount: wait for action links visible (attempt {}): {}ms", attempt, System.currentTimeMillis() - t0);
                         List<WebElement> actionLinks = driver.findElements(ACCOUNT_ACTION_LINKS);
                         for (WebElement link : actionLinks) {
                             if (DETAILS_TRANSACTIONS_LABEL.equals(link.getText())) {
@@ -138,7 +138,7 @@ public class OCBCAccountsOverviewPage {
                             }
                         }
                     } catch (TimeoutException ignored) {
-                        logger.info("[TIMING] OCBCOverview.openAccount: action links not visible after hover (attempt {}), retrying", attempt);
+                        logger.debug("[TIMING] OCBCOverview.openAccount: action links not visible after hover (attempt {}), retrying", attempt);
                         // hover didn't reveal action links — retry
                     }
                 }
