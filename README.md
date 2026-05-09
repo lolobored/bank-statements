@@ -196,20 +196,28 @@ This downloads the newest jar from GitHub Releases, removes the old one, and exi
 
 ### Using the wrapper script (recommended)
 
-The `download-ofx` script handles Bitwarden unlocking automatically and always picks the latest jar in its directory:
+The `download-ofx` script handles Bitwarden unlocking automatically and always picks the latest jar in its directory. All options are passed through to the application:
 
 ```bash
-# Current month only
+# Current month, headless Chrome (default)
 ./download-ofx --monthly
 
 # From a specific date
 ./download-ofx --date=2024-01-01
+
+# Safari — useful when headless Chrome doesn't work
+./download-ofx --monthly --browser=safari
+
+# Firefox in headless mode
+./download-ofx --monthly --browser=firefox
 ```
 
 The script behaviour on startup:
 - **Vault already unlocked** — proceeds immediately
 - **Vault locked** — prompts for your master password, unlocks, then runs
 - **Not logged in** — prints a message asking you to run `bw login` (one-time setup only)
+
+> **Browser note:** Chrome and Firefox run headless (no visible window). Safari runs in a visible window — use it as a fallback when a bank's login flow doesn't work headlessly.
 
 ### Running directly
 
@@ -227,7 +235,7 @@ java -jar bank-statements-<VERSION>.jar --json=<path/to/config.json> --output=<o
 | `--month` | Only include transactions from the last 30 days |
 | `--days=<n>` | Only include transactions from the last `n` days |
 | `--date=<yyyy-MM-dd>` | Only include transactions on or after this date |
-| `--browser=<name>` | Browser to use: `chrome` (default), `firefox`, `safari` |
+| `--browser=<name>` | Browser to use: `chrome` (default, headless), `firefox` (headless), `safari` (visible window — useful as fallback) |
 
 If none of the date options are provided, all available transactions are downloaded.
 

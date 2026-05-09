@@ -61,4 +61,4 @@ case "$BW_STATUS" in
 esac
 
 echo "Running $(basename "$JAR") with: $@"
-java -jar "$JAR" --json="$JSON" --output="$OUTPUT" --browser=chrome "$@"
+java -jar "$JAR" --json="$JSON" --output="$OUTPUT" "$@"
