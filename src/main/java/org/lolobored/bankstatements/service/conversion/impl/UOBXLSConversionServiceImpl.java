@@ -3,7 +3,6 @@ package org.lolobored.bankstatements.service.conversion.impl;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -22,7 +21,7 @@ import org.springframework.stereotype.Service;
 public class UOBXLSConversionServiceImpl implements UOBXLSConversionService {
   @Override
   public Statement convertTableToTransactions(String accountNumber, String accountType, String path)
-      throws ParseException, IOException {
+      throws IOException {
     Statement statement = new Statement();
     statement.setAccountNumber(accountNumber);
     statement.setAccountType(accountType);

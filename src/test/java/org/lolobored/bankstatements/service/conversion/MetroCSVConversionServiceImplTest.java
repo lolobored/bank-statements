@@ -3,7 +3,6 @@ package org.lolobored.bankstatements.service.conversion;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
-import java.text.ParseException;
 import java.time.LocalDate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,7 +20,7 @@ class MetroCSVConversionServiceImplTest {
   }
 
   @Test
-  void convertsDebitTransactionWhenMoneyInIsEmpty() throws ParseException {
+  void convertsDebitTransactionWhenMoneyInIsEmpty() {
     String csv =
         "Date,Description,Transaction Type,Money In,Money Out,Balance\n"
             + "01/03/2024,UBER EATS,PURCHASE,,12.99,1234.56\n";
@@ -39,7 +38,7 @@ class MetroCSVConversionServiceImplTest {
   }
 
   @Test
-  void convertsDebitTransactionWhenMoneyInIsZero() throws ParseException {
+  void convertsDebitTransactionWhenMoneyInIsZero() {
     String csv =
         "Date,Description,Transaction Type,Money In,Money Out,Balance\n"
             + "01/03/2024,SHOP,PURCHASE,0.00,25.00,1000.00\n";
@@ -52,7 +51,7 @@ class MetroCSVConversionServiceImplTest {
   }
 
   @Test
-  void convertsCreditTransaction() throws ParseException {
+  void convertsCreditTransaction() {
     String csv =
         "Date,Description,Transaction Type,Money In,Money Out,Balance\n"
             + "15/03/2024,SALARY CREDIT,CREDIT,5000.00,,6234.56\n";
@@ -66,7 +65,7 @@ class MetroCSVConversionServiceImplTest {
   }
 
   @Test
-  void convertsMultipleTransactions() throws ParseException {
+  void convertsMultipleTransactions() {
     String csv =
         "Date,Description,Transaction Type,Money In,Money Out,Balance\n"
             + "01/03/2024,UBER EATS,PURCHASE,,12.99,1234.56\n"

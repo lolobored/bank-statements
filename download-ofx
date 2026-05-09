@@ -47,7 +47,7 @@ JSON="$SCRIPT_DIR/banks.json"
 OUTPUT="$HOME/Downloads"
 
 # Use the project's Java version via SDKMAN
-export JAVA_HOME="$HOME/.sdkman/candidates/java/17.0.15-amzn"
+export JAVA_HOME="$HOME/.sdkman/candidates/java/current"
 export PATH="$JAVA_HOME/bin:$PATH"
 
 SESSION_FILE="$HOME/.bw_session"

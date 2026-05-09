@@ -3,7 +3,6 @@ package org.lolobored.bankstatements.service.conversion;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
-import java.text.ParseException;
 import java.time.LocalDate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,7 +20,7 @@ class CreditMutCSVConversionServiceImplTest {
   }
 
   @Test
-  void convertsDebitTransaction() throws ParseException {
+  void convertsDebitTransaction() {
     // Semicolon separated, skip 1 header line. moneyOut present → DEBIT.
     // Amounts use comma as decimal separator (converted to dot by setter).
     String csv =
@@ -42,7 +41,7 @@ class CreditMutCSVConversionServiceImplTest {
   }
 
   @Test
-  void convertsCreditTransaction() throws ParseException {
+  void convertsCreditTransaction() {
     String csv =
         "Date;Date valeur;Debit;Credit;Libelle;Solde\n"
             + "15/03/2024;15/03/2024;;5000,00;SALARY;6234,56\n";
@@ -56,7 +55,7 @@ class CreditMutCSVConversionServiceImplTest {
   }
 
   @Test
-  void usesValueDateNotTransactionDate() throws ParseException {
+  void usesValueDateNotTransactionDate() {
     String csv =
         "Date;Date valeur;Debit;Credit;Libelle;Solde\n"
             + "28/02/2024;01/03/2024;10,00;;SHOP;100,00\n";
@@ -68,7 +67,7 @@ class CreditMutCSVConversionServiceImplTest {
   }
 
   @Test
-  void convertsMultipleTransactions() throws ParseException {
+  void convertsMultipleTransactions() {
     String csv =
         "Date;Date valeur;Debit;Credit;Libelle;Solde\n"
             + "01/03/2024;01/03/2024;12,99;;UBER EATS;1234,56\n"

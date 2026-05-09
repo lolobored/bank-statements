@@ -3,7 +3,6 @@ package org.lolobored.bankstatements.service.conversion;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
-import java.text.ParseException;
 import java.time.LocalDate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,7 +20,7 @@ class WestpacCSVConversionServiceImplTest {
   }
 
   @Test
-  void convertsDebitTransaction() throws ParseException {
+  void convertsDebitTransaction() {
     String csv =
         "Bank Account,Date,Narrative,Debit Amount,Credit Amount,Balance,Categories,Serial\n"
             + "BSB-123,01/03/2024,UBER EATS,12.99,,1234.56,,\n";
@@ -39,7 +38,7 @@ class WestpacCSVConversionServiceImplTest {
   }
 
   @Test
-  void convertsCreditTransaction() throws ParseException {
+  void convertsCreditTransaction() {
     String csv =
         "Bank Account,Date,Narrative,Debit Amount,Credit Amount,Balance,Categories,Serial\n"
             + "BSB-123,15/03/2024,SALARY,,5000.00,6234.56,,\n";
@@ -53,7 +52,7 @@ class WestpacCSVConversionServiceImplTest {
   }
 
   @Test
-  void stripsNewlinesFromNarrative() throws ParseException {
+  void stripsNewlinesFromNarrative() {
     String csv =
         "Bank Account,Date,Narrative,Debit Amount,Credit Amount,Balance,Categories,Serial\n"
             + "BSB-123,01/03/2024,\"UBER\r\nEATS\",12.99,,1234.56,,\n";
@@ -64,7 +63,7 @@ class WestpacCSVConversionServiceImplTest {
   }
 
   @Test
-  void handlesThousandSeparatorInAmount() throws ParseException {
+  void handlesThousandSeparatorInAmount() {
     // Amounts with thousand separators are quoted in the real Westpac CSV export
     String csv =
         "Bank Account,Date,Narrative,Debit Amount,Credit Amount,Balance,Categories,Serial\n"
@@ -77,7 +76,7 @@ class WestpacCSVConversionServiceImplTest {
   }
 
   @Test
-  void convertsMultipleTransactions() throws ParseException {
+  void convertsMultipleTransactions() {
     String csv =
         "Bank Account,Date,Narrative,Debit Amount,Credit Amount,Balance,Categories,Serial\n"
             + "BSB-123,01/03/2024,UBER EATS,12.99,,1234.56,,\n"

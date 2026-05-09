@@ -3,7 +3,6 @@ package org.lolobored.bankstatements.service.conversion;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
-import java.text.ParseException;
 import java.time.LocalDate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,7 +20,7 @@ class RevolutCSVConversionServiceImplTest {
   }
 
   @Test
-  void extractsCurrencyFromHeader() throws ParseException {
+  void extractsCurrencyFromHeader() {
     String csv =
         "Date;Reference;Paid Out (EUR);Paid In (EUR);Exchange Out;Exchange In;Balance;Category\n"
             + "01 March 2024;UBER EATS;12.99;;;;1234.56;Transport\n";
@@ -33,7 +32,7 @@ class RevolutCSVConversionServiceImplTest {
   }
 
   @Test
-  void convertsDebitTransaction() throws ParseException {
+  void convertsDebitTransaction() {
     String csv =
         "Date;Reference;Paid Out (GBP);Paid In (GBP);Exchange Out;Exchange In;Balance;Category\n"
             + "01 March 2024;UBER EATS;12.99;;;;1234.56;Transport\n";
@@ -51,7 +50,7 @@ class RevolutCSVConversionServiceImplTest {
   }
 
   @Test
-  void convertsCreditTransaction() throws ParseException {
+  void convertsCreditTransaction() {
     String csv =
         "Date;Reference;Paid Out (GBP);Paid In (GBP);Exchange Out;Exchange In;Balance;Category\n"
             + "15 March 2024;SALARY;;5000.00;;;6234.56;Income\n";
@@ -66,7 +65,7 @@ class RevolutCSVConversionServiceImplTest {
   }
 
   @Test
-  void removesThousandSeparatorsFromAmount() throws ParseException {
+  void removesThousandSeparatorsFromAmount() {
     String csv =
         "Date;Reference;Paid Out (GBP);Paid In (GBP);Exchange Out;Exchange In;Balance;Category\n"
             + "01 March 2024;BIG PAYMENT;1,234.56;;;;0;Other\n";
@@ -79,7 +78,7 @@ class RevolutCSVConversionServiceImplTest {
   }
 
   @Test
-  void parsesFullDateWithYear() throws ParseException {
+  void parsesFullDateWithYear() {
     String csv =
         "Date;Reference;Paid Out (GBP);Paid In (GBP);Exchange Out;Exchange In;Balance;Category\n"
             + "25 December 2023;GIFT;;100.00;;;100.00;Other\n";

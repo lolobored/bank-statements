@@ -3,7 +3,6 @@ package org.lolobored.bankstatements.service.conversion;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
-import java.text.ParseException;
 import java.time.LocalDate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,7 +23,7 @@ class OCBCCreditCSVConversionServiceImplTest {
   }
 
   @Test
-  void convertsDebitPurchase() throws ParseException {
+  void convertsDebitPurchase() {
     // OCBCCredit CSV: date, description, debitAmount, creditAmount
     String csv = HEADER + "01/03/2024,\"DEBIT PURCHASE\nxx-1234 GRAB SINGAPORE 01/03/24\",12.99,\n";
 
@@ -38,7 +37,7 @@ class OCBCCreditCSVConversionServiceImplTest {
   }
 
   @Test
-  void convertsCashRebateAsCredit() throws ParseException {
+  void convertsCashRebateAsCredit() {
     String csv = HEADER + "15/03/2024,\"CASH REBATE\nMONTHLY REBATE\",, 25.00\n";
 
     Statement statement = service.convertTableToTransactions("CC123", Statement.CREDIT_CARD, csv);
@@ -50,7 +49,7 @@ class OCBCCreditCSVConversionServiceImplTest {
   }
 
   @Test
-  void convertsFastPaymentAsTransfer() throws ParseException {
+  void convertsFastPaymentAsTransfer() {
     String csv = HEADER + "02/03/2024,\"FAST PAYMENT\nSHOP ABC\",50.00,\n";
 
     Statement statement = service.convertTableToTransactions("CC123", Statement.CREDIT_CARD, csv);
@@ -59,7 +58,7 @@ class OCBCCreditCSVConversionServiceImplTest {
   }
 
   @Test
-  void convertsInterestCreditLabel() throws ParseException {
+  void convertsInterestCreditLabel() {
     String csv = HEADER + "31/03/2024,INTEREST CREDIT,,1.00\n";
 
     Statement statement = service.convertTableToTransactions("CC123", Statement.CREDIT_CARD, csv);

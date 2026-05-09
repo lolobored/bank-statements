@@ -7,7 +7,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.file.Path;
-import java.text.ParseException;
 import java.time.LocalDate;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
@@ -63,7 +62,7 @@ class UOBXLSConversionServiceImplTest {
   }
 
   @Test
-  void convertsDebitTransaction() throws ParseException, IOException {
+  void convertsDebitTransaction() throws IOException {
     File xls = createXls(new String[][] {{"01 Mar 2024", "UBER EATS", "12.99", "0.0"}});
 
     Statement statement =
@@ -80,7 +79,7 @@ class UOBXLSConversionServiceImplTest {
   }
 
   @Test
-  void convertsCreditTransaction() throws ParseException, IOException {
+  void convertsCreditTransaction() throws IOException {
     File xls = createXls(new String[][] {{"15 Mar 2024", "SALARY", "0.0", "5000.0"}});
 
     Statement statement =
@@ -93,7 +92,7 @@ class UOBXLSConversionServiceImplTest {
   }
 
   @Test
-  void convertsMultipleTransactions() throws ParseException, IOException {
+  void convertsMultipleTransactions() throws IOException {
     File xls =
         createXls(
             new String[][] {
@@ -111,7 +110,7 @@ class UOBXLSConversionServiceImplTest {
   }
 
   @Test
-  void skipsRowsBeforeTransactionDateHeader() throws ParseException, IOException {
+  void skipsRowsBeforeTransactionDateHeader() throws IOException {
     // The createXls helper puts a preamble row before the header — verify it's not parsed as a
     // transaction
     File xls = createXls(new String[][] {{"01 Mar 2024", "ONLY TX", "10.0", "0.0"}});

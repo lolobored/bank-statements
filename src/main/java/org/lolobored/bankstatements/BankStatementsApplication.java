@@ -7,7 +7,6 @@ import java.io.File;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -161,8 +160,7 @@ public class BankStatementsApplication implements ApplicationRunner {
       ObjectMapper objectMapper = new ObjectMapper();
       List<Bank> banks =
           objectMapper.readValue(
-              new String(Files.readAllBytes(Paths.get(jsonFilePath))),
-              new TypeReference<List<Bank>>() {});
+              Files.readString(Path.of(jsonFilePath)), new TypeReference<List<Bank>>() {});
 
       // Collect per-account config from all accounts (including disabled banks)
       for (Bank bank : banks) {

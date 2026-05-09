@@ -3,7 +3,6 @@ package org.lolobored.bankstatements.service.conversion;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
-import java.text.ParseException;
 import java.time.LocalDate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,7 +20,7 @@ class CommBankCSVConversionServiceImplTest {
   }
 
   @Test
-  void convertsDebitTransaction() throws ParseException {
+  void convertsDebitTransaction() {
     // CommBank CSV has no header row
     String csv = "01/03/2024,-12.99,UBER EATS,1234.56\n";
 
@@ -40,7 +39,7 @@ class CommBankCSVConversionServiceImplTest {
   }
 
   @Test
-  void convertsCreditTransaction() throws ParseException {
+  void convertsCreditTransaction() {
     String csv = "15/03/2024,5000.00,SALARY CREDIT,6234.56\n";
 
     Statement statement =
@@ -53,7 +52,7 @@ class CommBankCSVConversionServiceImplTest {
   }
 
   @Test
-  void treatsZeroAmountAsCredit() throws ParseException {
+  void treatsZeroAmountAsCredit() {
     String csv = "01/03/2024,0.00,ZERO TX,100.00\n";
 
     Statement statement =
@@ -63,7 +62,7 @@ class CommBankCSVConversionServiceImplTest {
   }
 
   @Test
-  void convertsMultipleTransactions() throws ParseException {
+  void convertsMultipleTransactions() {
     String csv =
         "01/03/2024,-12.99,UBER EATS,1234.56\n"
             + "02/03/2024,-4.50,COFFEE,1230.06\n"

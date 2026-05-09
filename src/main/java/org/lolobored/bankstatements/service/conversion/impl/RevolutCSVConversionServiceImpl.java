@@ -7,7 +7,6 @@ import java.io.BufferedReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.math.BigDecimal;
-import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -26,8 +25,8 @@ public class RevolutCSVConversionServiceImpl implements RevolutCSVConversionServ
       DateTimeFormatter.ofPattern("dd MMMM yyyy", Locale.ENGLISH);
 
   @Override
-  public Statement convertTableToTransactions(String accountNumber, String accountType, String csv)
-      throws ParseException {
+  public Statement convertTableToTransactions(
+      String accountNumber, String accountType, String csv) {
     String thisYear = String.valueOf(LocalDate.now().getYear());
     List<RevolutCSVLine> csvLines = parseCSV(csv);
     String header = StringUtils.substringBefore(csv, "\n");

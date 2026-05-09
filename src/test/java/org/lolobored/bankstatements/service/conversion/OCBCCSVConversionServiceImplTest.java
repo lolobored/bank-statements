@@ -3,7 +3,6 @@ package org.lolobored.bankstatements.service.conversion;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
-import java.text.ParseException;
 import java.time.LocalDate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,7 +23,7 @@ class OCBCCSVConversionServiceImplTest {
   }
 
   @Test
-  void convertsFastPaymentAsTransfer() throws ParseException {
+  void convertsFastPaymentAsTransfer() {
     String csv = HEADER + "01/03/2024,01/03/2024,\"FAST PAYMENT\nGRAB SINGAPORE\",12.99,\n";
 
     Statement statement = service.convertTableToTransactions("SG123", Statement.DEBIT_ACCOUNT, csv);
@@ -38,7 +37,7 @@ class OCBCCSVConversionServiceImplTest {
   }
 
   @Test
-  void convertsGiroSalaryAsCredit() throws ParseException {
+  void convertsGiroSalaryAsCredit() {
     String csv = HEADER + "15/03/2024,15/03/2024,\"GIRO - SALARY\nMY COMPANY\",, 5000.00\n";
 
     Statement statement = service.convertTableToTransactions("SG123", Statement.DEBIT_ACCOUNT, csv);
@@ -50,7 +49,7 @@ class OCBCCSVConversionServiceImplTest {
   }
 
   @Test
-  void convertsNetsQrAsDebit() throws ParseException {
+  void convertsNetsQrAsDebit() {
     String csv = HEADER + "02/03/2024,02/03/2024,\"NETS QR\nCOFFEE SHOP\",4.50,\n";
 
     Statement statement = service.convertTableToTransactions("SG123", Statement.DEBIT_ACCOUNT, csv);
@@ -61,7 +60,7 @@ class OCBCCSVConversionServiceImplTest {
   }
 
   @Test
-  void convertsInterestCreditAsCredit() throws ParseException {
+  void convertsInterestCreditAsCredit() {
     String csv = HEADER + "31/03/2024,31/03/2024,INTEREST CREDIT,,1.23\n";
 
     Statement statement = service.convertTableToTransactions("SG123", Statement.DEBIT_ACCOUNT, csv);
@@ -72,7 +71,7 @@ class OCBCCSVConversionServiceImplTest {
   }
 
   @Test
-  void handlesThousandSeparatorInAmount() throws ParseException {
+  void handlesThousandSeparatorInAmount() {
     String csv = HEADER + "01/03/2024,01/03/2024,\"GIRO - SALARY\nBIG CORP\",, \"1,500.00\"\n";
 
     Statement statement = service.convertTableToTransactions("SG123", Statement.DEBIT_ACCOUNT, csv);

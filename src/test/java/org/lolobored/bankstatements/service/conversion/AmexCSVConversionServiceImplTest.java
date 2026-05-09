@@ -3,7 +3,6 @@ package org.lolobored.bankstatements.service.conversion;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
-import java.text.ParseException;
 import java.time.LocalDate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,7 +20,7 @@ class AmexCSVConversionServiceImplTest {
   }
 
   @Test
-  void convertsDebitTransaction() throws ParseException {
+  void convertsDebitTransaction() {
     String csv =
         "Date,Description,Amount,Extended Details,Appears On Your Statement As,Address,Town/City,Postcode,Country,Reference\n"
             + "01/03/24,UBER EATS,12.99,Meal delivery,,,,,,'REF123'\n";
@@ -43,7 +42,7 @@ class AmexCSVConversionServiceImplTest {
   }
 
   @Test
-  void convertsCreditTransaction() throws ParseException {
+  void convertsCreditTransaction() {
     String csv =
         "Date,Description,Amount,Extended Details,Appears On Your Statement As,Address,Town/City,Postcode,Country,Reference\n"
             + "15/03/24,AMAZON REFUND,-5.00,Return,,,,,,REF456\n";
@@ -58,7 +57,7 @@ class AmexCSVConversionServiceImplTest {
   }
 
   @Test
-  void convertsMultipleTransactions() throws ParseException {
+  void convertsMultipleTransactions() {
     String csv =
         "Date,Description,Amount,Extended Details,Appears On Your Statement As,Address,Town/City,Postcode,Country,Reference\n"
             + "01/03/24,UBER EATS,12.99,,,,,,,REF001\n"
@@ -74,7 +73,7 @@ class AmexCSVConversionServiceImplTest {
   }
 
   @Test
-  void stripsQuotesFromReference() throws ParseException {
+  void stripsQuotesFromReference() {
     String csv =
         "Date,Description,Amount,Extended Details,Appears On Your Statement As,Address,Town/City,Postcode,Country,Reference\n"
             + "01/03/24,SHOP,10.00,,,,,,,'REF789'\n";
