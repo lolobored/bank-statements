@@ -2,9 +2,7 @@
   {
     "name": "metro",
     "connectionUrl": "https://personal.metrobankonline.co.uk/MetroBankRetail",
-    "username": "fake.user",
-    "password": "fake.password",
-    "securityPin": "535452435",
+    "bitwardenItemName": "Metro Bank",
     "waitTime": 5,
     "accounts": [
       {
@@ -23,6 +21,7 @@
     "username": "fake.user",
     "password": "fake.password",
     "waitTime": 5,
+    "_comment": "alternatively use: \"bitwardenItemName\": \"Amex\" to fetch credentials from Bitwarden",
     "accounts": [
       {
         "accountId": "XXX-16241",

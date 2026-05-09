@@ -7,6 +7,7 @@ import org.apache.commons.io.FileUtils;
 import org.lolobored.bankstatements.model.Statement;
 import org.lolobored.bankstatements.model.config.Account;
 import org.lolobored.bankstatements.model.config.Bank;
+import org.lolobored.bankstatements.service.bitwarden.BitwardenService;
 import org.lolobored.bankstatements.service.filter.StatementsFilterService;
 import org.lolobored.bankstatements.service.ofx.OfxConversionService;
 import org.lolobored.bankstatements.service.scrapers.*;
@@ -57,6 +58,8 @@ public class BankStatementsApplication implements ApplicationRunner {
   private UOBService uobService;
   @Autowired
   private OCBCService ocbcService;
+  @Autowired
+  private BitwardenService bitwardenService;
   @Autowired
   private StatementsFilterService statementsFilterService;
 
@@ -209,6 +212,17 @@ public class BankStatementsApplication implements ApplicationRunner {
               });
 
       List<Statement> statements = new ArrayList<>();
+
+      // if any bank uses Bitwarden, verify the vault is accessible before proceeding
+      boolean anyBankUsesBitwarden = banks.stream().anyMatch(b -> b.getBitwardenItemName() != null && !b.getBitwardenItemName().isEmpty());
+      if (anyBankUsesBitwarden) {
+        bitwardenService.checkVaultAccess();
+      }
+
+      // resolve credentials from Bitwarden where configured, fall back to plain JSON otherwise
+      for (Bank bank : banks) {
+        bitwardenService.resolveCredentials(bank);
+      }
 
       // find all the replacements
       // for an easier integration into banktivity

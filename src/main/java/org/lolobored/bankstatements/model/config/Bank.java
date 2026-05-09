@@ -19,4 +19,6 @@ public class Bank {
   private String statementsDirectory;
   private List<Account> accounts;
   private Integer multiplier=1;
+  // if set, credentials are fetched from Bitwarden instead of the fields above
+  private String bitwardenItemName;
 }

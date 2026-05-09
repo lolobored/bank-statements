@@ -2,137 +2,83 @@
 
 ## Origin
 
-This Java application was designed for automatically scraping my account statements from the following websites:
+This Java application automatically scrapes account statements from bank websites, converts them to OFX format, and merges them into a single file ready to import into [Banktivity](https://www.banktivity.com).
 
-* Credit Mutuel (FR): https://www.creditmutuel.fr
-* AMEX (UK): https://www.americanexpress.com/uk
-* Metrobank (UK): https://www.metrobankonline.co.uk
-* Comm Bank (AU): https://www.commbank.com.au
-* UOB (SG): https://www.uob.com.sg
-* OCBC (SG): https//www.ocbc.com
+This became a necessity when Banktivity and its provider (Yodlee) decided to **not** implement PSD2 and Open Banking standards, leaving users with no automated import option.
 
-In addition it automatically converts as well Revolut (https://www.revolut.com) statements.
+## Supported banks
 
-This became a necessity when Banktivity and its provider (Yodlee) decided without any common sense to **not** implement
-PSD2 and Open Banking standards in an account management software.
+| Bank | Region | Format |
+|------|--------|--------|
+| [Credit Mutuel](https://www.creditmutuel.fr) | FR | CSV (scraped) |
+| [AMEX](https://www.americanexpress.com/uk) | UK | CSV (scraped) |
+| [Metrobank](https://www.metrobankonline.co.uk) | UK | CSV (scraped) |
+| [Comm Bank](https://www.commbank.com.au) | AU | CSV (scraped) |
+| [Westpac](https://www.westpac.com.au) | AU | CSV (scraped) |
+| [UOB](https://www.uob.com.sg) | SG | XLS (scraped) |
+| [OCBC](https://www.ocbc.com) | SG | CSV (scraped) |
+| [Revolut](https://www.revolut.com) | Multi | CSV (manual download) |
 
-## Basic features
+## Requirements
 
-The configuration of the application relies on a JSON file that defines the site and the accounts statements to
-download. The download will be done using Selenium Chrome driver (appropriate driver automatically downloaded when
-running the application).
+- **Java 17+** — via [SDKMAN](https://sdkman.io) (a `.sdkmanrc` is provided)
+- **Gradle 8.9+** — via SDKMAN or the included Gradle wrapper
+- **Google Chrome** — default browser for scraping (Firefox and Safari also supported)
+- **[Bitwarden CLI](https://bitwarden.com/help/cli/)** (`bw`) — optional, required only if managing credentials via Bitwarden
 
-It will go through these website and download CSVs files.
+Install the Bitwarden CLI via Homebrew:
 
-Once downloaded it will convert and merge all of these in one single OFX file ready to be imported.
-
-## Running the software
-
-A self-running jar file is created when building using gradle:
-
-```
-gradle clean build
+```bash
+brew install bitwarden-cli
 ```
 
-Running the software only requires to run the jar file with the appropriate options:
+## Building
 
-* json: defines where to find the json file defining the banks website to scrape
-* output: defines where the merged OFX file will be created. The merged file will be named "downloaded.ofx"
-* monthly: an optional parameter allowing to use only transactions whose value date is from the start of the current
-  month
-* month: an optional parameter allowing to use only transactions whose value date is 30-days earlier than today
-* date: an optional parameter allowing to download all the transactions available from that date using a pattern
-  yyyy-MM-dd
-* browser (optional): choose which browser to use to scrap the data:
-  * chrome
-  * firefox
-  * safari (wip)
-
-If none of the last parameter is used, all the transactions will be downloaded.
-
-Example of usage:
-
-* Downloading all the transactions available into the user Downloads directory:
-
-```
-java -jar bank-statements-<VERSION>.jar --json=<path to the json file> --output=~/Downloads
+```bash
+./gradlew clean build
 ```
 
-* Downloading all the transactions available from the 1st of this month into the user Downloads directory:
+This produces a self-contained jar in `build/libs/`.
 
-```
-java -jar bank-statements-<VERSION>.jar --json=<path to the json file> --monthly --output=~/Downloads
-```
+## Configuration
 
-* Downloading all the transactions available from 30-days ago into the user Downloads directory:
+The application is driven by a JSON file defining the banks and accounts to process. A sample is provided at `src/main/resources/sample.json`.
 
-```
-java -jar bank-statements-<VERSION>.jar --json=<path to the json file> --month --output=~/Downloads
-```
+### Bank-level parameters
 
-* Downloading all the transactions available from the 28th of January 1980 into the user Downloads directory:
+| Name | Required | Description |
+|------|----------|-------------|
+| `name` | yes | Bank identifier. One of: `metro`, `amex`, `credit mutuel`, `comm bank`, `westpac`, `uob`, `ocbc`, `revolut` |
+| `connectionUrl` | yes | Login page URL |
+| `username` | no | Login username (omit if using Bitwarden) |
+| `password` | no | Login password (omit if using Bitwarden) |
+| `securityCode` | no | AMEX only — card security code required at login |
+| `securityPin` | no | Metro only — 8-digit security PIN |
+| `bitwardenItemName` | no | If set, credentials are fetched from this Bitwarden item instead of the fields above |
+| `waitTime` | yes | Selenium timeout in seconds. 5 is usually enough; increase for slow connections |
+| `statementsDirectory` | no | Revolut only — directory where manually downloaded Revolut CSVs are stored (files are deleted after processing) |
+| `accounts` | yes | List of accounts. See below |
 
-```
-java -jar bank-statements-<VERSION>.jar --json=<path to the json file> --date=1980-01-28 --output=~/Downloads
-```
+### Account-level parameters
 
-* Downloading all the transactions available from the 1st of January 1980 and from the last 30 days into the user
-  Downloads directory:
+| Name | Required | Description |
+|------|----------|-------------|
+| `accountId` | yes | Account number as it appears on the bank website |
+| `accountName` | no | OCBC only — account name used to identify the account on the website |
+| `type` | no | OCBC only — `DEBIT` or `CREDIT` |
+| `banktivitySuffix` | no | 4-character suffix appended to the account number in the OFX. Banktivity shows only the last 4 characters of an account number, so this makes it easy to identify accounts at a glance |
 
-```
-java -jar bank-statements-<VERSION>.jar --json=<path to the json file> --date=1980-01-28 --days=30 --output=~/Downloads
-```
-
-## JSON File
-
-A sample of the JSON file defining the configuration per bank can be found in src/main/resources. Each entry describe a
-bank and a bank can have multiple accounts.
-
-At the bank level the parameters are:
-
-| Name | Description                                                                                                                                                                   |
-| ---- |-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| name | The name and the type of the bank ultimately. Can only be *metro*, *revolut*, *amex* or *credit mutuel*                                                                       |
-| connectionUrl | The url where the login page is for each bank                                                                                                                                 |
-| username | The username for the login page                                                                                                                                               |
-| password | The password the the login page                                                                                                                                               |
-| securityCode | Only used in the case of amex where the card security code needs to provided at login                                                                                         |
-| securityPin | Only used in the case of metro where an 8 digits security pin is required                                                                                                     |
-| waitTime | The maximum number of seconds before the scraping fails in a time-out. I would recommend 5 here                                                                               |
-| statementsDirectory | Only used for Revolut where we cannot scrape any website. The directory where Revolut statements will have been downloaded. Note that it will delete those from the directory |
-| accounts | The list of accounts. See below for the structure of an account.                                                                                                              |
-
-Each bank can have 0 to multiple accounts. Referencing the accounts is not mandatory. The account number and account
-type (credit card or debit/savings) are automatically scraped from the webpages. Now this is only to automatically add a
-suffix to the account number in the ofx so that the importation is made easier in Banktivity.
-
-The structure of an account is the following:
-
-| Name             | Description                                                                                                                                                                                                                                                                            |
-|------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| accountId        | The account ID which would need to be suffixed by a banktivity suffix on 4 letters                                                                                                                                                                                                     |
-| accountName      | Account Name as it might be used for crawling into the website (OCBC only)                                                                                                                                                                                                             |
-| type             | The account type (either DEBIT or CREDIT). Used for OCBC processing                                                                                                                                                                                                                    |
-| banktivitySuffix | When importing an OFX into banktivity, banktivity displays only the 4 last characters of the account number. To make it easier, I added a suffix to the account id in the OFX so that I can see in a single glance which account is which. Do not fill if you don't want this feature. |
+### Sample configuration
 
 ```json
 [
   {
     "name": "metro",
     "connectionUrl": "https://personal.metrobankonline.co.uk/MetroBankRetail",
-    "username": "fake.user",
-    "password": "fake.password",
-    "securityPin": "535452435",
+    "bitwardenItemName": "Metro Bank",
     "waitTime": 5,
     "accounts": [
-      {
-        "accountId": "32432432",
-        "banktivitySuffix": "metr"
-      },
-      {
-        "accountId": "23453532",
-        "banktivitySuffix": "metr"
-      }
+      { "accountId": "32432432", "banktivitySuffix": "metr" }
     ]
   },
   {
@@ -143,88 +89,147 @@ The structure of an account is the following:
     "securityCode": "0000",
     "waitTime": 5,
     "accounts": [
-      {
-        "accountId": "XXX-16241",
-        "type": "CREDIT",
-        "banktivitySuffix": "amex"
-      }
+      { "accountId": "XXX-16241", "type": "CREDIT", "banktivitySuffix": "amex" }
     ]
   },
   {
-    "name": "credit mutuel",
-    "connectionUrl": "https://www.creditmutuel.fr/fr/authentification.html",
-    "username": "3543532421",
-    "password": "3423rfewdfaf",
-    "waitTime": 5,
+    "name": "ocbc",
+    "connectionUrl": "https://internet.ocbc.com/internet-banking/digital/web/sg/cfo/login/login",
+    "bitwardenItemName": "OCBC",
+    "waitTime": 60,
     "accounts": [
-      {
-        "accountId": "4352432423",
-        "banktivitySuffix": "cmeu"
-      },
-      {
-        "accountId": "3534643234",
-        "banktivitySuffix": "cmch"
-      },
-      {
-        "accountId": "325346573",
-        "banktivitySuffix": "ccel"
-      }
-    ]
-  },
-  {
-    "name": "comm bank",
-    "connectionUrl": "https://www.my.commbank.com.au/netbank/Logon/Logon.aspx",
-    "username": "11111111",
-    "password": "lffesacne,",
-    "waitTime": 10,
-    "accounts": [
-      {
-        "accountId": "22222222",
-        "banktivitySuffix": "cbcu"
-      },
-      {
-        "accountId": "33333333",
-        "banktivitySuffix": "cbsa"
-      }
+      { "accountId": "602-124109-001", "accountName": "360 Account", "type": "DEBIT", "banktivitySuffix": "ocbc" },
+      { "accountId": "5413-8301-0026-1510", "accountName": "OCBC INFINITY Cashback Card", "type": "CREDIT", "banktivitySuffix": "cash" }
     ]
   },
   {
     "name": "revolut",
-    "statementsDirectory": "/Users/username/OneDrive/revolut-statements",
+    "statementsDirectory": "/Users/username/Downloads/revolut-statements",
     "waitTime": 5,
     "accounts": [
-      {
-        "accountId": "revolut-gbp",
-        "banktivitySuffix": "rgbp"
-      },
-      {
-        "accountId": "revolut-eur",
-        "banktivitySuffix": "reur"
-      },
-      {
-        "accountId": "revolut-chf",
-        "banktivitySuffix": "rchf"
-      }
+      { "accountId": "revolut-gbp", "banktivitySuffix": "rgbp" },
+      { "accountId": "revolut-eur", "banktivitySuffix": "reur" }
     ]
   }
 ]
 ```
 
-## Account naming & type
+## Bitwarden integration
 
-When creating the OFX file, the utility automatically fetches the account number and information from the website. Note
-that distinction between credit card and debit / saving is important as it is required for producing an accurate OFX (
-Credit cards info are in different layouts).
+Credentials can optionally be stored in Bitwarden instead of the JSON config file. Set `bitwardenItemName` on a bank entry to the name of the corresponding item in your Bitwarden vault. The following fields are mapped:
 
-The way to do so is following this method:
+| Bitwarden field | Bank config field |
+|-----------------|-------------------|
+| Login → Username | `username` |
+| Login → Password | `password` |
+| Custom field `securityPin` | `securityPin` (Metro) |
+| Custom field `securityCode` | `securityCode` (AMEX) |
 
-| Bank          | Account Name                                                                                                                                                                                                        | Account type                                                                                                                                           |
-|---------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Metrobank     | Account name is fetched from the webpage, just after logging in. Each account is inside a block containing its sort code and its account number                                                                     | Account type are deducted from the icon of the account. An icon of a card (C) represent a credit card. Anything else is considered as a debit / saving |
-| AMEX          | Account name is fetched from the download statement CSV page by browsing into the different accounts that are available there                                                                                       | AMEX is always Credit Card                                                                                                                             |
-| Revolut       | Account name is fetched from the name of the CSV as being downloaded from the mobile app. It should be something like "Revolut-GBP-Statement*.csv" for a GBP account. Account name will be revolut-gbp (lower case) | Revolut is only DEBIT                                                                                                                                  |
-| Comm Bank AUD | Account number is fetched from the webpage, just after logging in. Each account is inside a block containing its sort code and its account number                                                                   | Account Type is set to DEBIT                                                                                                                           |
-| Credit Mutuel | Account name is fetched directly from the name of the CSV which is named with the account number                                                                                                                    | Credit Mutuel is french there's no credit card there so DEBIT                                                                                          |
-| UOB           | No particular management at this stage, account is picked up as a single DEBIT account (no multiple account management)                                                                                             | Account Type is set to DEBIT                                                                                                                           |
-| OCBC          | Account name is picked up against DEBIT or CREDIT account type. Note that only one DEBIT and one CREDIT account is managed                                                                                          | Account Type is set to the type set in JSON                                                                                                            |
+Banks without `bitwardenItemName` continue to use plain credentials from the JSON file — the two approaches can be mixed freely.
 
+### Installation
+
+```bash
+brew install bitwarden-cli
+```
+
+### Self-hosted Bitwarden / Vaultwarden
+
+If you run your own Bitwarden-compatible server (e.g. [Vaultwarden](https://github.com/dani-garcia/vaultwarden)), point the CLI at it before logging in:
+
+```bash
+bw config server https://your-vaultwarden-url.com
+```
+
+### First-time login
+
+Run this once in your terminal. It requires an interactive session so it must be run directly in your terminal app, not through a script:
+
+```bash
+bw login
+```
+
+### Each session
+
+Before running the application, unlock your vault and export the session token:
+
+```bash
+export BW_SESSION=$(bw unlock --raw)
+```
+
+The `download-ofx` wrapper script handles this automatically — it detects the vault state and prompts for your master password if needed.
+
+## Running
+
+### Using the wrapper script (recommended)
+
+A `download-ofx` wrapper script is provided alongside the jar. It handles Bitwarden unlocking automatically and always picks the latest jar in the directory:
+
+```bash
+# Current month only
+./download-ofx --monthly
+
+# From a specific date
+./download-ofx --date=2024-01-01
+```
+
+The script behaviour on startup:
+- **Vault already unlocked** — proceeds immediately
+- **Vault locked** — prompts for your master password, unlocks, then runs
+- **Not logged in** — prints a message asking you to run `bw login` (one-time setup only)
+
+### Running directly
+
+```bash
+java -jar bank-statements-<VERSION>.jar --json=<path/to/config.json> --output=<output/dir> [options]
+```
+
+### Options
+
+| Option | Description |
+|--------|-------------|
+| `--json=<path>` | Path to the JSON configuration file **(required)** |
+| `--output=<dir>` | Directory where `downloaded.ofx` will be written **(required)** |
+| `--monthly` | Only include transactions from the 1st of the current month |
+| `--month` | Only include transactions from the last 30 days |
+| `--days=<n>` | Only include transactions from the last `n` days |
+| `--date=<yyyy-MM-dd>` | Only include transactions on or after this date |
+| `--browser=<name>` | Browser to use: `chrome` (default), `firefox`, `safari` |
+
+If none of the date options are provided, all available transactions are downloaded.
+
+A timestamped backup of each generated OFX is also saved under `<output>/tx-compare/` for easy reconciliation.
+
+### Examples
+
+```bash
+# All available transactions
+java -jar bank-statements-<VERSION>.jar --json=~/banks.json --output=~/Downloads
+
+# Current month only
+java -jar bank-statements-<VERSION>.jar --json=~/banks.json --output=~/Downloads --monthly
+
+# Last 30 days
+java -jar bank-statements-<VERSION>.jar --json=~/banks.json --output=~/Downloads --month
+
+# From a specific date
+java -jar bank-statements-<VERSION>.jar --json=~/banks.json --output=~/Downloads --date=2024-01-01
+
+# Using Firefox
+java -jar bank-statements-<VERSION>.jar --json=~/banks.json --output=~/Downloads --monthly --browser=firefox
+```
+
+## Account detection
+
+Account numbers and types are detected automatically during scraping. The `accounts` section in the JSON is only needed for `banktivitySuffix` (and for OCBC where the account name and type are needed to navigate the website).
+
+| Bank | Account ID source | Account type |
+|------|-------------------|--------------|
+| Metrobank | Sort code + account number from the webpage | Detected from account icon (card = credit) |
+| AMEX | From the download statement CSV page | Always `CREDIT CARD` |
+| Revolut | From the CSV filename (e.g. `Revolut-GBP-Statement*.csv` → `revolut-gbp`) | Always `DEBIT` |
+| Comm Bank | Account number from the webpage | Always `DEBIT` |
+| Westpac | Account number from the webpage | Always `DEBIT` |
+| Credit Mutuel | From the CSV filename | Always `DEBIT` |
+| UOB | Single account, no multi-account support | Always `DEBIT` |
+| OCBC | Matched against `accountName` in JSON config | Set by `type` in JSON config |
