@@ -6,13 +6,17 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class OCBCDebitTransactionsPage {
+
+    private static final Logger logger = LoggerFactory.getLogger(OCBCDebitTransactionsPage.class);
 
     private static final By DOWNLOAD_BUTTON = By.xpath("//*[contains(text(),'Download')]");
     private static final By CSV_OPTION      = By.xpath("//*[contains(text(),'CSV')]");
 
-    private static final int RENDER_PAUSE_MS = 3000;
+    private static final int RENDER_PAUSE_MS = 500;
 
     private final WebDriver driver;
     private final WebDriverWait wait;
@@ -23,15 +27,21 @@ public class OCBCDebitTransactionsPage {
     }
 
     public void downloadCsv() throws InterruptedException {
+        long t0 = System.currentTimeMillis();
         Thread.sleep(RENDER_PAUSE_MS);
+        logger.info("[TIMING] OCBCDebit: initial render sleep (budget {}ms): {}ms", RENDER_PAUSE_MS, System.currentTimeMillis() - t0);
 
-        wait.until(ExpectedConditions.presenceOfElementLocated(DOWNLOAD_BUTTON));
+        t0 = System.currentTimeMillis();
+        wait.until(ExpectedConditions.elementToBeClickable(DOWNLOAD_BUTTON));
+        logger.info("[TIMING] OCBCDebit: wait for download button clickable: {}ms", System.currentTimeMillis() - t0);
+
         WebElement download = driver.findElement(DOWNLOAD_BUTTON);
         ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", download);
-        Thread.sleep(RENDER_PAUSE_MS);
         download.click();
 
+        t0 = System.currentTimeMillis();
         wait.until(ExpectedConditions.visibilityOfElementLocated(CSV_OPTION));
+        logger.info("[TIMING] OCBCDebit: wait for CSV option visible: {}ms", System.currentTimeMillis() - t0);
         driver.findElement(CSV_OPTION).click();
     }
 }

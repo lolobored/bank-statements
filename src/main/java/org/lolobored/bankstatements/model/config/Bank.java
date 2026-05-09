@@ -14,7 +14,7 @@ public class Bank {
   // used only in the case of Metro
   private String securityPin;
   private String connectionUrl;
-  private int waitTime;
+  private int waitTime = 60;
   // for manually downloaded revolut statements
   private String statementsDirectory;
   private List<Account> accounts;

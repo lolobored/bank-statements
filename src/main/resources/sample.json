@@ -3,7 +3,6 @@
     "name": "metro",
     "connectionUrl": "https://personal.metrobankonline.co.uk/MetroBankRetail",
     "bitwardenItemName": "Metro Bank",
-    "waitTime": 5,
     "accounts": [
       {
         "accountId": "32432432",
@@ -20,7 +19,6 @@
     "connectionUrl": "https://global.americanexpress.com/login?inav=iNavLnkLog",
     "username": "fake.user",
     "password": "fake.password",
-    "waitTime": 5,
     "_comment": "alternatively use: \"bitwardenItemName\": \"Amex\" to fetch credentials from Bitwarden",
     "accounts": [
       {
@@ -34,7 +32,6 @@
     "connectionUrl": "https://www.creditmutuel.fr/fr/authentification.html",
     "username": "3543532421",
     "password": "3423rfewdfaf",
-    "waitTime": 5,
     "accounts": [
       {
         "accountId": "4352432423",
@@ -53,7 +50,6 @@
   {
     "name": "revolut",
     "statementsDirectory": "/Users/username/OneDrive/revolut-statements",
-    "waitTime": 5,
     "accounts": [
       {
         "accountId": "revolut-gbp",

@@ -55,7 +55,6 @@ The application is driven by a JSON file defining the banks and accounts to proc
 | `securityCode` | no | AMEX only — card security code required at login |
 | `securityPin` | no | Metro only — 8-digit security PIN |
 | `bitwardenItemName` | no | If set, credentials are fetched from this Bitwarden item instead of the fields above |
-| `waitTime` | yes | Selenium timeout in seconds. 5 is usually enough; increase for slow connections |
 | `enabled` | no | Set to `false` to skip this bank without removing it from the config. Defaults to `true` |
 | `statementsDirectory` | no | Revolut only — directory where manually downloaded Revolut CSVs are stored (files are deleted after processing) |
 | `accounts` | yes | List of accounts. See below |
@@ -77,7 +76,6 @@ The application is driven by a JSON file defining the banks and accounts to proc
     "name": "metro",
     "connectionUrl": "https://personal.metrobankonline.co.uk/MetroBankRetail",
     "bitwardenItemName": "Metro Bank",
-    "waitTime": 5,
     "accounts": [
       { "accountId": "32432432", "banktivitySuffix": "metr" }
     ]
@@ -88,7 +86,6 @@ The application is driven by a JSON file defining the banks and accounts to proc
     "username": "fake.user",
     "password": "fake.password",
     "securityCode": "0000",
-    "waitTime": 5,
     "accounts": [
       { "accountId": "XXX-16241", "type": "CREDIT", "banktivitySuffix": "amex" }
     ]
@@ -97,7 +94,6 @@ The application is driven by a JSON file defining the banks and accounts to proc
     "name": "ocbc",
     "connectionUrl": "https://internet.ocbc.com/internet-banking/digital/web/sg/cfo/login/login",
     "bitwardenItemName": "OCBC",
-    "waitTime": 60,
     "accounts": [
       { "accountId": "602-124109-001", "accountName": "360 Account", "type": "DEBIT", "banktivitySuffix": "ocbc" },
       { "accountId": "5413-8301-0026-1510", "accountName": "OCBC INFINITY Cashback Card", "type": "CREDIT", "banktivitySuffix": "cash" }
@@ -106,7 +102,6 @@ The application is driven by a JSON file defining the banks and accounts to proc
   {
     "name": "revolut",
     "statementsDirectory": "/Users/username/Downloads/revolut-statements",
-    "waitTime": 5,
     "accounts": [
       { "accountId": "revolut-gbp", "banktivitySuffix": "rgbp" },
       { "accountId": "revolut-eur", "banktivitySuffix": "reur" }
