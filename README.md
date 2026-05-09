@@ -258,6 +258,7 @@ java -jar bank-statements-<VERSION>.jar --json=<path/to/config.json> --output=<o
 | `--days=<n>` | Only include transactions from the last `n` days |
 | `--date=<yyyy-MM-dd>` | Only include transactions on or after this date |
 | `--browser=<name>` | Browser to use: `chrome` (default, headless), `firefox` (headless), `safari` (visible window — useful as fallback) |
+| `--screenshots=<dir>` | Directory where error screenshots are saved on scraping failure. Defaults to `~/Downloads` |
 
 If none of the date options are provided, all available transactions are downloaded.
 

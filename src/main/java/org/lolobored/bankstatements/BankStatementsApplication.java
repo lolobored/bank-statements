@@ -116,6 +116,10 @@ public class BankStatementsApplication implements ApplicationRunner {
     }
 
     File outputDirectory = new File(args.getOptionValues("output").get(0));
+    File screenshotsDirectory =
+        args.containsOption("screenshots")
+            ? new File(args.getOptionValues("screenshots").get(0))
+            : new File(System.getProperty("user.home"), "Downloads");
     String jsonFilePath = args.getOptionValues("json").get(0);
     logger.info("JSON file [" + new File(jsonFilePath).getAbsolutePath() + "]");
     if (!new File(jsonFilePath).exists()) {
@@ -185,6 +189,7 @@ public class BankStatementsApplication implements ApplicationRunner {
 
       // Build one task per enabled bank — each gets its own WebDriver and download subdirectory
       final int finalBrowserType = browserType;
+      final File finalScreenshotsDirectory = screenshotsDirectory;
       List<Callable<List<Statement>>> tasks = new ArrayList<>();
       List<String> taskBankNames = new ArrayList<>();
 
@@ -206,7 +211,7 @@ public class BankStatementsApplication implements ApplicationRunner {
               try {
                 return service.downloadStatements(driver, bank, bankDownloadDir.toString());
               } catch (Exception e) {
-                saveErrorScreenshot(driver, bank.getName());
+                saveErrorScreenshot(driver, bank.getName(), finalScreenshotsDirectory);
                 throw e;
               } finally {
                 driver.close();
@@ -332,18 +337,11 @@ public class BankStatementsApplication implements ApplicationRunner {
     }
   }
 
-  private void saveErrorScreenshot(WebDriver driver, String bankName) {
+  private void saveErrorScreenshot(WebDriver driver, String bankName, File screenshotsDir) {
     try {
       File screenshot = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
       String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss"));
-      File dest =
-          new File(
-              System.getProperty("user.home")
-                  + "/Downloads/error-"
-                  + bankName
-                  + "-"
-                  + timestamp
-                  + ".png");
+      File dest = new File(screenshotsDir, "error-" + bankName + "-" + timestamp + ".png");
       FileUtils.copyFile(screenshot, dest);
       logger.error("Screenshot for [{}] saved to: {}", bankName, dest.getAbsolutePath());
     } catch (Exception e) {
