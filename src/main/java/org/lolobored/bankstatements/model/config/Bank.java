@@ -1,8 +1,7 @@
 package org.lolobored.bankstatements.model.config;
 
-import lombok.Data;
-
 import java.util.List;
+import lombok.Data;
 
 @Data
 public class Bank {
@@ -18,7 +17,7 @@ public class Bank {
   // for manually downloaded revolut statements
   private String statementsDirectory;
   private List<Account> accounts;
-  private Integer multiplier=1;
+  private Integer multiplier = 1;
   // if set, credentials are fetched from Bitwarden instead of the fields above
   private String bitwardenItemName;
   private boolean enabled = true;

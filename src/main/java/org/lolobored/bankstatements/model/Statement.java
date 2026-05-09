@@ -1,9 +1,8 @@
 package org.lolobored.bankstatements.model;
 
-import lombok.Data;
-
 import java.util.ArrayList;
 import java.util.List;
+import lombok.Data;
 
 @Data
 public class Statement {
@@ -19,5 +18,4 @@ public class Statement {
   public void addTransaction(Transaction transaction) {
     transactions.add(transaction);
   }
-
 }

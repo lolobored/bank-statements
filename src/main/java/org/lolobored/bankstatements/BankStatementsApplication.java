@@ -3,6 +3,16 @@ package org.lolobored.bankstatements;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.bonigarcia.wdm.WebDriverManager;
+import java.io.File;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.concurrent.*;
 import org.apache.commons.io.FileUtils;
 import org.lolobored.bankstatements.model.Statement;
 import org.lolobored.bankstatements.model.config.Account;
@@ -29,17 +39,6 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-import java.io.File;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
-import java.util.concurrent.*;
-
 @SpringBootApplication
 public class BankStatementsApplication implements ApplicationRunner {
 
@@ -55,18 +54,18 @@ public class BankStatementsApplication implements ApplicationRunner {
   @Autowired private StatementsFilterService statementsFilterService;
   @Autowired private OfxConversionService ofxConversionService;
 
-  private static final String METRO     = "metro";
+  private static final String METRO = "metro";
   private static final String CREDIT_MUT = "credit mutuel";
-  private static final String AMEX      = "amex";
-  private static final String REVOLUT   = "revolut";
+  private static final String AMEX = "amex";
+  private static final String REVOLUT = "revolut";
   private static final String COMM_BANK = "comm bank";
-  private static final String WESTPAC   = "westpac";
-  private static final String UOB       = "uob";
-  private static final String OCBC      = "ocbc";
+  private static final String WESTPAC = "westpac";
+  private static final String UOB = "uob";
+  private static final String OCBC = "ocbc";
 
-  private static final int CHROME_BROWSER  = 0;
+  private static final int CHROME_BROWSER = 0;
   private static final int FIREFOX_BROWSER = 1;
-  private static final int SAFARI_BROWSER  = 2;
+  private static final int SAFARI_BROWSER = 2;
 
   private final Logger logger = LoggerFactory.getLogger(BankStatementsApplication.class);
 
@@ -82,11 +81,13 @@ public class BankStatementsApplication implements ApplicationRunner {
     LocalDate startingDate = LocalDate.parse("1970-01-01");
 
     if (!args.containsOption("json")) {
-      logger.error("Option --json is mandatory and should contain the json config file path for the banks");
+      logger.error(
+          "Option --json is mandatory and should contain the json config file path for the banks");
       System.exit(-1);
     }
     if (!args.containsOption("output")) {
-      logger.error("Option --output is mandatory and should contain the directory where the merged ofx file will be produced");
+      logger.error(
+          "Option --output is mandatory and should contain the directory where the merged ofx file will be produced");
       System.exit(-1);
     }
 
@@ -95,7 +96,8 @@ public class BankStatementsApplication implements ApplicationRunner {
       if (comparableDate.isAfter(startingDate)) startingDate = comparableDate;
     }
     if (args.containsOption("days")) {
-      LocalDate comparableDate = LocalDate.now().minusDays(Integer.parseInt(args.getOptionValues("days").get(0)));
+      LocalDate comparableDate =
+          LocalDate.now().minusDays(Integer.parseInt(args.getOptionValues("days").get(0)));
       if (comparableDate.isAfter(startingDate)) startingDate = comparableDate;
     }
     if (args.containsOption("month")) {
@@ -124,26 +126,39 @@ public class BankStatementsApplication implements ApplicationRunner {
     int browserType = CHROME_BROWSER;
     if (args.getOptionValues("browser") != null) {
       switch (args.getOptionValues("browser").get(0).toLowerCase().trim()) {
-        case "firefox": browserType = FIREFOX_BROWSER; break;
-        case "safari":  browserType = SAFARI_BROWSER;  break;
+        case "firefox":
+          browserType = FIREFOX_BROWSER;
+          break;
+        case "safari":
+          browserType = SAFARI_BROWSER;
+          break;
         case "chrome":
-        case "":        browserType = CHROME_BROWSER;  break;
-        default: throw new Exception(args.getOptionValues("browser").get(0).trim() + " is not part of the supported browser");
+        case "":
+          browserType = CHROME_BROWSER;
+          break;
+        default:
+          throw new Exception(
+              args.getOptionValues("browser").get(0).trim()
+                  + " is not part of the supported browser");
       }
     }
 
     // Set up the driver binary once before spawning parallel tasks
     switch (browserType) {
-      case CHROME_BROWSER:  WebDriverManager.chromedriver().setup();  break;
-      case FIREFOX_BROWSER: WebDriverManager.firefoxdriver().setup(); break;
+      case CHROME_BROWSER:
+        WebDriverManager.chromedriver().setup();
+        break;
+      case FIREFOX_BROWSER:
+        WebDriverManager.firefoxdriver().setup();
+        break;
     }
 
     try {
       ObjectMapper objectMapper = new ObjectMapper();
-      List<Bank> banks = objectMapper.readValue(
-        new String(Files.readAllBytes(Paths.get(jsonFilePath))),
-        new TypeReference<List<Bank>>() {}
-      );
+      List<Bank> banks =
+          objectMapper.readValue(
+              new String(Files.readAllBytes(Paths.get(jsonFilePath))),
+              new TypeReference<List<Bank>>() {});
 
       // Collect per-account config from all accounts (including disabled banks)
       for (Bank bank : banks) {
@@ -157,8 +172,10 @@ public class BankStatementsApplication implements ApplicationRunner {
         }
       }
 
-      boolean anyBankUsesBitwarden = banks.stream()
-        .anyMatch(b -> b.getBitwardenItemName() != null && !b.getBitwardenItemName().isEmpty());
+      boolean anyBankUsesBitwarden =
+          banks.stream()
+              .anyMatch(
+                  b -> b.getBitwardenItemName() != null && !b.getBitwardenItemName().isEmpty());
       if (anyBankUsesBitwarden) {
         bitwardenService.checkVaultAccess();
       }
@@ -183,17 +200,18 @@ public class BankStatementsApplication implements ApplicationRunner {
         Files.createDirectories(bankDownloadDir);
 
         taskBankNames.add(bank.getName());
-        tasks.add(() -> {
-          WebDriver driver = createWebDriver(finalBrowserType, bankDownloadDir);
-          try {
-            return service.downloadStatements(driver, bank, bankDownloadDir.toString());
-          } catch (Exception e) {
-            saveErrorScreenshot(driver, bank.getName());
-            throw e;
-          } finally {
-            driver.close();
-          }
-        });
+        tasks.add(
+            () -> {
+              WebDriver driver = createWebDriver(finalBrowserType, bankDownloadDir);
+              try {
+                return service.downloadStatements(driver, bank, bankDownloadDir.toString());
+              } catch (Exception e) {
+                saveErrorScreenshot(driver, bank.getName());
+                throw e;
+              } finally {
+                driver.close();
+              }
+            });
       }
 
       // Run all banks in parallel
@@ -214,7 +232,8 @@ public class BankStatementsApplication implements ApplicationRunner {
           statements.addAll(futures.get(i).get());
         } catch (ExecutionException e) {
           Throwable cause = e.getCause();
-          String msg = cause.getMessage() != null ? cause.getMessage() : cause.getClass().getSimpleName();
+          String msg =
+              cause.getMessage() != null ? cause.getMessage() : cause.getClass().getSimpleName();
           failures.add(bankName + ": " + msg);
           logger.error("Bank [{}] failed", bankName, cause);
         }
@@ -230,13 +249,16 @@ public class BankStatementsApplication implements ApplicationRunner {
         throw new RuntimeException("All banks failed — no statements to process");
       }
 
-      // Apply per-account currency overrides before filtering (filtering may modify account numbers)
-      statements.forEach(s -> {
-        String currency = accountCurrencies.get(s.getAccountNumber());
-        if (currency != null) s.setCurrency(currency);
-      });
+      // Apply per-account currency overrides before filtering (filtering may modify account
+      // numbers)
+      statements.forEach(
+          s -> {
+            String currency = accountCurrencies.get(s.getAccountNumber());
+            if (currency != null) s.setCurrency(currency);
+          });
 
-      statements = statementsFilterService.filterStatements(statements, startingDate, accountReplacements);
+      statements =
+          statementsFilterService.filterStatements(statements, startingDate, accountReplacements);
       String ofxResult = ofxConversionService.convertStatementsToOfx(statements);
 
       outputDirectory.mkdirs();
@@ -244,12 +266,12 @@ public class BankStatementsApplication implements ApplicationRunner {
       if (resultFile.exists()) resultFile.delete();
       FileUtils.writeStringToFile(resultFile, ofxResult, Charset.defaultCharset());
 
-      String TIMESTAMP_FORMAT = "yyyyMMdd-HHmmss";
-      SimpleDateFormat SIMPLEDATE_FORMAT = new SimpleDateFormat(TIMESTAMP_FORMAT);
       outputDirectory = new File(outputDirectory.getAbsolutePath() + "/tx-compare");
       outputDirectory.mkdirs();
-      String currentTime = SIMPLEDATE_FORMAT.format(Calendar.getInstance().getTime());
-      resultFile = new File(outputDirectory.getAbsolutePath() + "/" + currentTime + "-downloaded.ofx");
+      String currentTime =
+          LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss"));
+      resultFile =
+          new File(outputDirectory.getAbsolutePath() + "/" + currentTime + "-downloaded.ofx");
       FileUtils.writeStringToFile(resultFile, ofxResult, Charset.defaultCharset());
 
       // Keep only the 30 most recent timestamped OFX files
@@ -268,40 +290,43 @@ public class BankStatementsApplication implements ApplicationRunner {
 
   private BankGenericService resolveService(String bankName) {
     return switch (bankName) {
-      case METRO     -> metroService;
+      case METRO -> metroService;
       case CREDIT_MUT -> creditMutService;
-      case AMEX      -> amexService;
-      case REVOLUT   -> revolutService;
+      case AMEX -> amexService;
+      case REVOLUT -> revolutService;
       case COMM_BANK -> commBankService;
-      case WESTPAC   -> westpacService;
-      case UOB       -> uobService;
-      case OCBC      -> ocbcService;
-      default        -> null;
+      case WESTPAC -> westpacService;
+      case UOB -> uobService;
+      case OCBC -> ocbcService;
+      default -> null;
     };
   }
 
   private WebDriver createWebDriver(int browserType, Path downloadDir) {
     switch (browserType) {
-      case CHROME_BROWSER: {
-        ChromeOptions opts = new ChromeOptions();
-        opts.addArguments("--headless=new", "--window-size=1920,1080", "--disable-popup-blocking");
-        Map<String, Object> prefs = new HashMap<>();
-        prefs.put("profile.default_content_settings.popups", 0);
-        prefs.put("download.default_directory", downloadDir.toAbsolutePath().toString());
-        opts.setExperimentalOption("prefs", prefs);
-        return new ChromeDriver(opts);
-      }
-      case FIREFOX_BROWSER: {
-        FirefoxProfile profile = new FirefoxProfile();
-        profile.setPreference("browser.download.folderList", 2);
-        profile.setPreference("browser.download.manager.showWhenStarting", false);
-        profile.setPreference("browser.download.dir", downloadDir.toAbsolutePath().toString());
-        profile.setPreference("browser.helperApps.neverAsk.saveToDisk", "application/x-gzip");
-        FirefoxOptions opts = new FirefoxOptions();
-        opts.addArguments("--headless");
-        opts.setProfile(profile);
-        return new FirefoxDriver(opts);
-      }
+      case CHROME_BROWSER:
+        {
+          ChromeOptions opts = new ChromeOptions();
+          opts.addArguments(
+              "--headless=new", "--window-size=1920,1080", "--disable-popup-blocking");
+          Map<String, Object> prefs = new HashMap<>();
+          prefs.put("profile.default_content_settings.popups", 0);
+          prefs.put("download.default_directory", downloadDir.toAbsolutePath().toString());
+          opts.setExperimentalOption("prefs", prefs);
+          return new ChromeDriver(opts);
+        }
+      case FIREFOX_BROWSER:
+        {
+          FirefoxProfile profile = new FirefoxProfile();
+          profile.setPreference("browser.download.folderList", 2);
+          profile.setPreference("browser.download.manager.showWhenStarting", false);
+          profile.setPreference("browser.download.dir", downloadDir.toAbsolutePath().toString());
+          profile.setPreference("browser.helperApps.neverAsk.saveToDisk", "application/x-gzip");
+          FirefoxOptions opts = new FirefoxOptions();
+          opts.addArguments("--headless");
+          opts.setProfile(profile);
+          return new FirefoxDriver(opts);
+        }
       default:
         return new SafariDriver(new SafariOptions());
     }
@@ -310,8 +335,15 @@ public class BankStatementsApplication implements ApplicationRunner {
   private void saveErrorScreenshot(WebDriver driver, String bankName) {
     try {
       File screenshot = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
-      String timestamp = new SimpleDateFormat("yyyyMMdd-HHmmss").format(new Date());
-      File dest = new File(System.getProperty("user.home") + "/Downloads/error-" + bankName + "-" + timestamp + ".png");
+      String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss"));
+      File dest =
+          new File(
+              System.getProperty("user.home")
+                  + "/Downloads/error-"
+                  + bankName
+                  + "-"
+                  + timestamp
+                  + ".png");
       FileUtils.copyFile(screenshot, dest);
       logger.error("Screenshot for [{}] saved to: {}", bankName, dest.getAbsolutePath());
     } catch (Exception e) {

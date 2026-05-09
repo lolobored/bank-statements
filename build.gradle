@@ -3,6 +3,7 @@ plugins {
   id 'java'
   id "io.franzbecker.gradle-lombok" version "5.0.0"
   id 'org.springframework.boot' version '4.0.6'
+  id 'com.diffplug.spotless' version '7.0.4'
 }
 
 group 'org.lolobored'
@@ -37,3 +38,24 @@ dependencies {
 test {
   useJUnitPlatform()
 }
+
+spotless {
+  java {
+    removeUnusedImports()
+    googleJavaFormat()
+    target 'src/**/*.java'
+  }
+}
+
+tasks.register('installGitHooks') {
+  inputs.file 'scripts/pre-commit'
+  outputs.file '.git/hooks/pre-commit'
+  doLast {
+    copy {
+      from 'scripts/pre-commit'
+      into '.git/hooks'
+    }
+    file('.git/hooks/pre-commit').setExecutable(true, false)
+  }
+}
+build.dependsOn installGitHooks

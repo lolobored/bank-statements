@@ -5,8 +5,8 @@ import org.lolobored.bankstatements.utils.AccountUtils;
 
 @Data
 public class Account {
-  public static String DEBIT="DEBIT";
-  public static String CREDIT="CREDIT";
+  public static String DEBIT = "DEBIT";
+  public static String CREDIT = "CREDIT";
 
   private String accountName;
   private String accountId;
@@ -15,7 +15,7 @@ public class Account {
   // ISO 4217 currency code — overrides the hardcoded default in the conversion service
   private String currency;
 
-  private void setAccountName(String accountName){
-    this.accountName= AccountUtils.getCleanedAccount(accountName);
+  private void setAccountName(String accountName) {
+    this.accountName = AccountUtils.getCleanedAccount(accountName);
   }
 }

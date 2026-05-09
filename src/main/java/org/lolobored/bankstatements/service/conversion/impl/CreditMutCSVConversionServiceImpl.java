@@ -1,9 +1,16 @@
 package org.lolobored.bankstatements.service.conversion.impl;
 
-
 import com.opencsv.bean.ColumnPositionMappingStrategy;
 import com.opencsv.bean.CsvToBean;
 import com.opencsv.bean.CsvToBeanBuilder;
+import java.io.BufferedReader;
+import java.io.Reader;
+import java.io.StringReader;
+import java.math.BigDecimal;
+import java.text.ParseException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.lolobored.bankstatements.model.Statement;
 import org.lolobored.bankstatements.model.Transaction;
@@ -11,21 +18,14 @@ import org.lolobored.bankstatements.model.csv.CreditMutCsvLine;
 import org.lolobored.bankstatements.service.conversion.CreditMutCSVConversionService;
 import org.springframework.stereotype.Service;
 
-import java.io.BufferedReader;
-import java.io.Reader;
-import java.io.StringReader;
-import java.math.BigDecimal;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.List;
-
 @Service
 public class CreditMutCSVConversionServiceImpl implements CreditMutCSVConversionService {
 
-  private static SimpleDateFormat amexCSVDate = new SimpleDateFormat("dd/MM/yyyy");
+  private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
   @Override
-  public Statement convertTableToTransactions(String accountNumber, String accountType, String csv) throws ParseException {
+  public Statement convertTableToTransactions(String accountNumber, String accountType, String csv)
+      throws ParseException {
 
     Statement statement = new Statement();
     statement.setAccountNumber(accountNumber);
@@ -36,7 +36,7 @@ public class CreditMutCSVConversionServiceImpl implements CreditMutCSVConversion
     for (CreditMutCsvLine creditMutCsvLine : creditMutCsvLines) {
       Transaction transaction = new Transaction();
       transaction.setLabel(creditMutCsvLine.getLabel());
-      transaction.setDate(amexCSVDate.parse(creditMutCsvLine.getValueDate()));
+      transaction.setDate(LocalDate.parse(creditMutCsvLine.getValueDate(), DATE_FORMATTER));
       if (StringUtils.isEmpty(creditMutCsvLine.getMoneyIn())) {
         transaction.setAmount(new BigDecimal(creditMutCsvLine.getMoneyOut()));
         transaction.setType(Transaction.DEBIT_TYPE);
@@ -54,7 +54,8 @@ public class CreditMutCSVConversionServiceImpl implements CreditMutCSVConversion
     ms.setType(CreditMutCsvLine.class);
 
     Reader reader = new BufferedReader(new StringReader(csvContent.trim()));
-    CsvToBean cb = new CsvToBeanBuilder(reader)
+    CsvToBean cb =
+        new CsvToBeanBuilder(reader)
             .withSeparator(';')
             .withSkipLines(1)
             .withType(CreditMutCsvLine.class)

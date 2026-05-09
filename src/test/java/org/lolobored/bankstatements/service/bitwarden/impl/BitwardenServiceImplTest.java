@@ -1,14 +1,12 @@
 package org.lolobored.bankstatements.service.bitwarden.impl;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import java.io.IOException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.lolobored.bankstatements.model.config.Bank;
-import org.lolobored.bankstatements.service.bitwarden.impl.BitwardenServiceImpl;
-
-import java.io.IOException;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class BitwardenServiceImplTest {
 
@@ -34,7 +32,8 @@ class BitwardenServiceImplTest {
   @Test
   void appliesUsernameAndPasswordFromLogin() throws IOException {
     Bank bank = new Bank();
-    String json = """
+    String json =
+        """
         {
           "name": "Metro Bank",
           "login": {
@@ -54,7 +53,8 @@ class BitwardenServiceImplTest {
   @Test
   void appliesSecurityPinFromCustomField() throws IOException {
     Bank bank = new Bank();
-    String json = """
+    String json =
+        """
         {
           "name": "Metro Bank",
           "login": {"username": "u", "password": "p"},
@@ -72,7 +72,8 @@ class BitwardenServiceImplTest {
   @Test
   void appliesSecurityCodeFromCustomField() throws IOException {
     Bank bank = new Bank();
-    String json = """
+    String json =
+        """
         {
           "name": "Amex",
           "login": {"username": "u", "password": "p"},
@@ -90,7 +91,8 @@ class BitwardenServiceImplTest {
   @Test
   void appliesAllFieldsInOneItem() throws IOException {
     Bank bank = new Bank();
-    String json = """
+    String json =
+        """
         {
           "name": "Metro Bank",
           "login": {"username": "metro-user", "password": "metro-pass"},
@@ -113,7 +115,8 @@ class BitwardenServiceImplTest {
   void doesNotOverwriteWhenFieldAbsent() throws IOException {
     Bank bank = new Bank();
     bank.setSecurityPin("existing-pin");
-    String json = """
+    String json =
+        """
         {
           "name": "Bank",
           "login": {"username": "u", "password": "p"},
@@ -129,7 +132,8 @@ class BitwardenServiceImplTest {
   @Test
   void ignoresUnknownCustomFields() throws IOException {
     Bank bank = new Bank();
-    String json = """
+    String json =
+        """
         {
           "name": "Bank",
           "login": {"username": "u", "password": "p"},
@@ -155,12 +159,13 @@ class BitwardenServiceImplTest {
   @Test
   void checkVaultAccessThrowsWhenUnauthenticated() {
     // Simulate bw status returning unauthenticated
-    BitwardenServiceImpl spy = new BitwardenServiceImpl() {
-      @Override
-      String runBwCommand(String itemName) {
-        return "{\"status\":\"unauthenticated\"}";
-      }
-    };
+    BitwardenServiceImpl spy =
+        new BitwardenServiceImpl() {
+          @Override
+          String runBwCommand(String itemName) {
+            return "{\"status\":\"unauthenticated\"}";
+          }
+        };
     // We can't call checkVaultAccess directly without bw, but we can verify
     // the status parsing logic by checking the regex used internally
     String stdout = "{\"status\":\"unauthenticated\"}";
@@ -170,14 +175,16 @@ class BitwardenServiceImplTest {
 
   @Test
   void checkVaultAccessStatusParsingHandlesLockedState() {
-    String stdout = "{\"serverUrl\":null,\"lastSync\":null,\"userEmail\":null,\"userId\":null,\"status\":\"locked\"}";
+    String stdout =
+        "{\"serverUrl\":null,\"lastSync\":null,\"userEmail\":null,\"userId\":null,\"status\":\"locked\"}";
     String status = stdout.replaceAll(".*\"status\":\"([^\"]+)\".*", "$1").trim();
     assertThat(status).isEqualTo("locked");
   }
 
   @Test
   void checkVaultAccessStatusParsingHandlesUnlockedState() {
-    String stdout = "{\"serverUrl\":\"https://vault.example.com\",\"lastSync\":\"2024-01-01\",\"userEmail\":\"user@example.com\",\"userId\":\"abc\",\"status\":\"unlocked\"}";
+    String stdout =
+        "{\"serverUrl\":\"https://vault.example.com\",\"lastSync\":\"2024-01-01\",\"userEmail\":\"user@example.com\",\"userId\":\"abc\",\"status\":\"unlocked\"}";
     String status = stdout.replaceAll(".*\"status\":\"([^\"]+)\".*", "$1").trim();
     assertThat(status).isEqualTo("unlocked");
   }

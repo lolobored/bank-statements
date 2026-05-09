@@ -3,6 +3,14 @@ package org.lolobored.bankstatements.service.conversion.impl;
 import com.opencsv.bean.ColumnPositionMappingStrategy;
 import com.opencsv.bean.CsvToBean;
 import com.opencsv.bean.CsvToBeanBuilder;
+import java.io.BufferedReader;
+import java.io.Reader;
+import java.io.StringReader;
+import java.math.BigDecimal;
+import java.text.ParseException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.lolobored.bankstatements.model.Statement;
 import org.lolobored.bankstatements.model.Transaction;
@@ -10,21 +18,14 @@ import org.lolobored.bankstatements.model.csv.MetroCSVLine;
 import org.lolobored.bankstatements.service.conversion.MetroCSVConversionService;
 import org.springframework.stereotype.Service;
 
-import java.io.BufferedReader;
-import java.io.Reader;
-import java.io.StringReader;
-import java.math.BigDecimal;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.List;
-
 @Service
 public class MetroCSVConversionServiceImpl implements MetroCSVConversionService {
 
-  private static SimpleDateFormat metroCSVDate = new SimpleDateFormat("dd/MM/yyyy");
+  private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
   @Override
-  public Statement convertTableToTransactions(String accountNumber, String accountType, String csv) throws ParseException {
+  public Statement convertTableToTransactions(String accountNumber, String accountType, String csv)
+      throws ParseException {
     Statement statement = new Statement();
     statement.setAccountNumber(accountNumber);
     statement.setAccountType(accountType);
@@ -34,8 +35,9 @@ public class MetroCSVConversionServiceImpl implements MetroCSVConversionService 
     for (MetroCSVLine metroCSVLine : metroCSVLines) {
       Transaction transaction = new Transaction();
       transaction.setLabel(metroCSVLine.getLabel());
-      transaction.setDate(metroCSVDate.parse(metroCSVLine.getDate()));
-      if (StringUtils.isEmpty(metroCSVLine.getMoneyIn()) || metroCSVLine.getMoneyIn().equals("0.00")) {
+      transaction.setDate(LocalDate.parse(metroCSVLine.getDate(), DATE_FORMATTER));
+      if (StringUtils.isEmpty(metroCSVLine.getMoneyIn())
+          || metroCSVLine.getMoneyIn().equals("0.00")) {
         transaction.setAmount(new BigDecimal("-" + metroCSVLine.getMoneyOut()));
         transaction.setType(Transaction.DEBIT_TYPE);
       } else {
@@ -45,7 +47,6 @@ public class MetroCSVConversionServiceImpl implements MetroCSVConversionService 
       statement.addTransaction(transaction);
     }
 
-
     return statement;
   }
 
@@ -54,7 +55,8 @@ public class MetroCSVConversionServiceImpl implements MetroCSVConversionService 
     ms.setType(MetroCSVLine.class);
 
     Reader reader = new BufferedReader(new StringReader(csvContent.trim()));
-    CsvToBean cb = new CsvToBeanBuilder(reader)
+    CsvToBean cb =
+        new CsvToBeanBuilder(reader)
             .withSeparator(',')
             .withSkipLines(1)
             .withType(MetroCSVLine.class)

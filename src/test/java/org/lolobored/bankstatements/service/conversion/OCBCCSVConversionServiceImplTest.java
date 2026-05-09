@@ -1,91 +1,83 @@
 package org.lolobored.bankstatements.service.conversion;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.math.BigDecimal;
+import java.text.ParseException;
+import java.time.LocalDate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.lolobored.bankstatements.model.Statement;
 import org.lolobored.bankstatements.model.Transaction;
 import org.lolobored.bankstatements.service.conversion.impl.OCBCCSVConversionServiceImpl;
 
-import java.math.BigDecimal;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
 class OCBCCSVConversionServiceImplTest {
 
-    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd/MM/yyyy");
+  // 6 header lines are skipped by the parser
+  private static final String HEADER = "Line1\nLine2\nLine3\nLine4\nLine5\nLine6\n";
 
-    // 6 header lines are skipped by the parser
-    private static final String HEADER = "Line1\nLine2\nLine3\nLine4\nLine5\nLine6\n";
+  private OCBCCSVConversionServiceImpl service;
 
-    private OCBCCSVConversionServiceImpl service;
+  @BeforeEach
+  void setUp() {
+    service = new OCBCCSVConversionServiceImpl();
+  }
 
-    @BeforeEach
-    void setUp() {
-        service = new OCBCCSVConversionServiceImpl();
-    }
+  @Test
+  void convertsFastPaymentAsTransfer() throws ParseException {
+    String csv = HEADER + "01/03/2024,01/03/2024,\"FAST PAYMENT\nGRAB SINGAPORE\",12.99,\n";
 
-    @Test
-    void convertsFastPaymentAsTransfer() throws ParseException {
-        String csv = HEADER +
-                     "01/03/2024,01/03/2024,\"FAST PAYMENT\nGRAB SINGAPORE\",12.99,\n";
+    Statement statement = service.convertTableToTransactions("SG123", Statement.DEBIT_ACCOUNT, csv);
 
-        Statement statement = service.convertTableToTransactions("SG123", Statement.DEBIT_ACCOUNT, csv);
+    assertThat(statement.getCurrency()).isEqualTo("SGD");
+    Transaction tx = statement.getTransactions().get(0);
+    assertThat(tx.getType()).isEqualTo(Transaction.XFER_TYPE);
+    assertThat(tx.getAmount()).isEqualByComparingTo(new BigDecimal("-12.99"));
+    assertThat(tx.getLabel()).isEqualTo("GRAB SINGAPORE");
+    assertThat(tx.getDate()).isEqualTo(LocalDate.of(2024, 3, 1));
+  }
 
-        assertThat(statement.getCurrency()).isEqualTo("SGD");
-        Transaction tx = statement.getTransactions().get(0);
-        assertThat(tx.getType()).isEqualTo(Transaction.XFER_TYPE);
-        assertThat(tx.getAmount()).isEqualByComparingTo(new BigDecimal("-12.99"));
-        assertThat(tx.getLabel()).isEqualTo("GRAB SINGAPORE");
-        assertThat(tx.getDate()).isEqualTo(DATE_FORMAT.parse("01/03/2024"));
-    }
+  @Test
+  void convertsGiroSalaryAsCredit() throws ParseException {
+    String csv = HEADER + "15/03/2024,15/03/2024,\"GIRO - SALARY\nMY COMPANY\",, 5000.00\n";
 
-    @Test
-    void convertsGiroSalaryAsCredit() throws ParseException {
-        String csv = HEADER +
-                     "15/03/2024,15/03/2024,\"GIRO - SALARY\nMY COMPANY\",, 5000.00\n";
+    Statement statement = service.convertTableToTransactions("SG123", Statement.DEBIT_ACCOUNT, csv);
 
-        Statement statement = service.convertTableToTransactions("SG123", Statement.DEBIT_ACCOUNT, csv);
+    Transaction tx = statement.getTransactions().get(0);
+    assertThat(tx.getType()).isEqualTo(Transaction.CREDIT_TYPE);
+    assertThat(tx.getAmount()).isEqualByComparingTo(new BigDecimal("5000.00"));
+    assertThat(tx.getLabel()).isEqualTo("MY COMPANY");
+  }
 
-        Transaction tx = statement.getTransactions().get(0);
-        assertThat(tx.getType()).isEqualTo(Transaction.CREDIT_TYPE);
-        assertThat(tx.getAmount()).isEqualByComparingTo(new BigDecimal("5000.00"));
-        assertThat(tx.getLabel()).isEqualTo("MY COMPANY");
-    }
+  @Test
+  void convertsNetsQrAsDebit() throws ParseException {
+    String csv = HEADER + "02/03/2024,02/03/2024,\"NETS QR\nCOFFEE SHOP\",4.50,\n";
 
-    @Test
-    void convertsNetsQrAsDebit() throws ParseException {
-        String csv = HEADER +
-                     "02/03/2024,02/03/2024,\"NETS QR\nCOFFEE SHOP\",4.50,\n";
+    Statement statement = service.convertTableToTransactions("SG123", Statement.DEBIT_ACCOUNT, csv);
 
-        Statement statement = service.convertTableToTransactions("SG123", Statement.DEBIT_ACCOUNT, csv);
+    Transaction tx = statement.getTransactions().get(0);
+    assertThat(tx.getType()).isEqualTo(Transaction.DEBIT_TYPE);
+    assertThat(tx.getAmount()).isEqualByComparingTo(new BigDecimal("-4.50"));
+  }
 
-        Transaction tx = statement.getTransactions().get(0);
-        assertThat(tx.getType()).isEqualTo(Transaction.DEBIT_TYPE);
-        assertThat(tx.getAmount()).isEqualByComparingTo(new BigDecimal("-4.50"));
-    }
+  @Test
+  void convertsInterestCreditAsCredit() throws ParseException {
+    String csv = HEADER + "31/03/2024,31/03/2024,INTEREST CREDIT,,1.23\n";
 
-    @Test
-    void convertsInterestCreditAsCredit() throws ParseException {
-        String csv = HEADER +
-                     "31/03/2024,31/03/2024,INTEREST CREDIT,,1.23\n";
+    Statement statement = service.convertTableToTransactions("SG123", Statement.DEBIT_ACCOUNT, csv);
 
-        Statement statement = service.convertTableToTransactions("SG123", Statement.DEBIT_ACCOUNT, csv);
+    Transaction tx = statement.getTransactions().get(0);
+    assertThat(tx.getType()).isEqualTo(Transaction.CREDIT_TYPE);
+    assertThat(tx.getLabel()).isEqualTo("Interests credit");
+  }
 
-        Transaction tx = statement.getTransactions().get(0);
-        assertThat(tx.getType()).isEqualTo(Transaction.CREDIT_TYPE);
-        assertThat(tx.getLabel()).isEqualTo("Interests credit");
-    }
+  @Test
+  void handlesThousandSeparatorInAmount() throws ParseException {
+    String csv = HEADER + "01/03/2024,01/03/2024,\"GIRO - SALARY\nBIG CORP\",, \"1,500.00\"\n";
 
-    @Test
-    void handlesThousandSeparatorInAmount() throws ParseException {
-        String csv = HEADER +
-                     "01/03/2024,01/03/2024,\"GIRO - SALARY\nBIG CORP\",, \"1,500.00\"\n";
+    Statement statement = service.convertTableToTransactions("SG123", Statement.DEBIT_ACCOUNT, csv);
 
-        Statement statement = service.convertTableToTransactions("SG123", Statement.DEBIT_ACCOUNT, csv);
-
-        assertThat(statement.getTransactions().get(0).getAmount())
-                .isEqualByComparingTo(new BigDecimal("1500.00"));
-    }
+    assertThat(statement.getTransactions().get(0).getAmount())
+        .isEqualByComparingTo(new BigDecimal("1500.00"));
+  }
 }

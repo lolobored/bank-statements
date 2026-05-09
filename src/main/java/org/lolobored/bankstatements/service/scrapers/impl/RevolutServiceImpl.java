@@ -1,5 +1,11 @@
 package org.lolobored.bankstatements.service.scrapers.impl;
 
+import java.io.File;
+import java.io.IOException;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.lolobored.bankstatements.model.Statement;
@@ -11,25 +17,16 @@ import org.openqa.selenium.WebDriver;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.io.File;
-import java.io.IOException;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
 @Service
 public class RevolutServiceImpl implements RevolutService {
 
-  @Autowired
-  private RevolutCSVConversionService revolutCSVConversionService;
+  @Autowired private RevolutCSVConversionService revolutCSVConversionService;
 
   @Override
-  public List<Statement> downloadStatements(WebDriver webDriver, Bank bank, String downloadDir) throws InterruptedException, IOException, ParseException {
+  public List<Statement> downloadStatements(WebDriver webDriver, Bank bank, String downloadDir)
+      throws InterruptedException, IOException, ParseException {
 
-    /**
-     * Delete the download directory
-     */
+    /** Delete the download directory */
     File downloads = new File(downloadDir);
     FileUtils.deleteDirectory(downloads);
     downloads.mkdirs();
@@ -42,14 +39,17 @@ public class RevolutServiceImpl implements RevolutService {
     if (statementsDirectory.exists()) {
 
       // list the files
-      Collection<File> statementFiles = FileUtils.listFiles(statementsDirectory, new String[]{"csv"}, false);
+      Collection<File> statementFiles =
+          FileUtils.listFiles(statementsDirectory, new String[] {"csv"}, false);
       for (File statement : statementFiles) {
         if (statement.getName().startsWith("Revolut-")) {
           FileUtils.moveFileToDirectory(statement, tempDirectory, true);
           String fileName = FileUtility.getDownloadedFilename(tempDirectory, bank.getWaitTime());
           String csv = FileUtility.readDownloadedFile(tempDirectory, bank.getWaitTime());
           String accountName = StringUtils.substringBefore(fileName, "-Statement").toLowerCase();
-          statements.add(revolutCSVConversionService.convertTableToTransactions(accountName, Statement.DEBIT_ACCOUNT, csv));
+          statements.add(
+              revolutCSVConversionService.convertTableToTransactions(
+                  accountName, Statement.DEBIT_ACCOUNT, csv));
         }
       }
     }

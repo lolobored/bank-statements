@@ -3,6 +3,15 @@ package org.lolobored.bankstatements.service.conversion.impl;
 import com.opencsv.bean.ColumnPositionMappingStrategy;
 import com.opencsv.bean.CsvToBean;
 import com.opencsv.bean.CsvToBeanBuilder;
+import java.io.BufferedReader;
+import java.io.Reader;
+import java.io.StringReader;
+import java.math.BigDecimal;
+import java.text.ParseException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Locale;
 import org.apache.commons.lang3.StringUtils;
 import org.lolobored.bankstatements.model.Statement;
 import org.lolobored.bankstatements.model.Transaction;
@@ -10,24 +19,16 @@ import org.lolobored.bankstatements.model.csv.RevolutCSVLine;
 import org.lolobored.bankstatements.service.conversion.RevolutCSVConversionService;
 import org.springframework.stereotype.Service;
 
-import java.io.BufferedReader;
-import java.io.Reader;
-import java.io.StringReader;
-import java.math.BigDecimal;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
-
 @Service
 public class RevolutCSVConversionServiceImpl implements RevolutCSVConversionService {
 
-  private static SimpleDateFormat dateFormat = new SimpleDateFormat("dd MMMMMMMMMMMM yyyy");
-  private static SimpleDateFormat yearFormat = new SimpleDateFormat("yyyy");
+  private static final DateTimeFormatter DATE_FORMATTER =
+      DateTimeFormatter.ofPattern("dd MMMM yyyy", Locale.ENGLISH);
 
   @Override
-  public Statement convertTableToTransactions(String accountNumber, String accountType, String csv) throws ParseException {
-    String thisYear = yearFormat.format(new Date());
+  public Statement convertTableToTransactions(String accountNumber, String accountType, String csv)
+      throws ParseException {
+    String thisYear = String.valueOf(LocalDate.now().getYear());
     List<RevolutCSVLine> csvLines = parseCSV(csv);
     String header = StringUtils.substringBefore(csv, "\n");
     String currency = StringUtils.substringBetween(header, "Paid Out (", ")");
@@ -38,9 +39,9 @@ public class RevolutCSVConversionServiceImpl implements RevolutCSVConversionServ
     for (RevolutCSVLine csvLine : csvLines) {
       Transaction tx = new Transaction();
       if (StringUtils.countMatches(csvLine.getDate(), ' ') == 1) {
-        tx.setDate(dateFormat.parse(csvLine.getDate() + " " + thisYear));
+        tx.setDate(LocalDate.parse(csvLine.getDate() + " " + thisYear, DATE_FORMATTER));
       } else {
-        tx.setDate(dateFormat.parse(csvLine.getDate()));
+        tx.setDate(LocalDate.parse(csvLine.getDate(), DATE_FORMATTER));
       }
 
       if (StringUtils.isNotEmpty(csvLine.getAmountIn())) {
@@ -63,7 +64,8 @@ public class RevolutCSVConversionServiceImpl implements RevolutCSVConversionServ
     ms.setType(RevolutCSVLine.class);
 
     Reader reader = new BufferedReader(new StringReader(csvContent.trim()));
-    CsvToBean cb = new CsvToBeanBuilder(reader)
+    CsvToBean cb =
+        new CsvToBeanBuilder(reader)
             .withSeparator(';')
             .withSkipLines(1)
             .withType(RevolutCSVLine.class)
