@@ -33,7 +33,7 @@ class CreditMutCSVConversionServiceImplTest {
         Statement statement = service.convertTableToTransactions("FR123", Statement.DEBIT_ACCOUNT, csv);
 
         assertThat(statement.getAccountNumber()).isEqualTo("FR123");
-        assertThat(statement.getCurrency()).isEqualTo("GBP");
+        assertThat(statement.getCurrency()).isEqualTo("EUR");
         assertThat(statement.getTransactions()).hasSize(1);
 
         Transaction tx = statement.getTransactions().get(0);
