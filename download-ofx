@@ -4,7 +4,7 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO="lolobored/bank-statements"
 
-# Auto-update: if gh is available, check for a newer jar and download it
+# Auto-update: if gh is available, check for a newer jar and script and download them
 if command -v gh &>/dev/null; then
   LATEST_TAG=$(gh release view --repo "$REPO" --json tagName -q .tagName 2>/dev/null || true)
   if [ -n "$LATEST_TAG" ] && [ ! -f "$SCRIPT_DIR/bank-statements-${LATEST_TAG}.jar" ]; then
@@ -22,7 +22,17 @@ if command -v gh &>/dev/null; then
         rm "${JARS[$i]}"
       done
     fi
-    echo "Updated to $LATEST_TAG."
+    # Also update this script itself, then re-exec the new version
+    if gh release download "$LATEST_TAG" \
+        --repo "$REPO" \
+        --pattern "download-ofx" \
+        --dir "$SCRIPT_DIR" \
+        --clobber 2>/dev/null; then
+      chmod +x "$SCRIPT_DIR/download-ofx"
+      echo "Script updated to $LATEST_TAG."
+      exec "$SCRIPT_DIR/download-ofx" "$@"
+    fi
+    echo "Updated jar to $LATEST_TAG."
   fi
 fi
 
