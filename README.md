@@ -219,6 +219,26 @@ java -jar bank-statements-<VERSION>.jar --json=~/banks.json --output=~/Downloads
 java -jar bank-statements-<VERSION>.jar --json=~/banks.json --output=~/Downloads --monthly --browser=firefox
 ```
 
+## Code architecture
+
+All bank scrapers use the **Page Object Model (POM)** pattern. Each logical page or workflow on a bank website has its own class under `service/scrapers/pages/<bank>/`. These classes:
+
+- Declare all CSS selectors and XPaths as named `private static final By` constants
+- Expose only high-level actions (`login()`, `downloadCsv()`, etc.)
+- Contain no business logic — just DOM interaction
+
+The service impls (`service/scrapers/impl/`) are thin orchestrators (~30-55 lines each) that wire page objects together and pass results to the conversion layer. When a bank changes its UI, only the relevant page object needs updating — the service impl stays untouched.
+
+| Bank | Page objects |
+|------|-------------|
+| OCBC | `OCBCLoginPage`, `OCBCAccountsOverviewPage`, `OCBCDebitTransactionsPage`, `OCBCCreditTransactionsPage` |
+| AMEX | `AmexLoginPage`, `AmexActivityPage` |
+| CommBank | `CommBankLoginPage`, `CommBankAccountsPage`, `CommBankTransactionsPage` |
+| Westpac | `WestpacLoginPage`, `WestpacExportPage` |
+| CreditMut | `CreditMutLoginPage`, `CreditMutDownloadPage` |
+| Metro | `MetroLoginPage`, `MetroSecurityPage`, `MetroAccountsPage` |
+| UOB | `UOBLoginPage`, `UOBAccountsPage`, `UOBTransactionsPage` |
+
 ## Account detection
 
 Account numbers and types are detected automatically during scraping. The `accounts` section in the JSON is only needed for `banktivitySuffix` (and for OCBC where the account name and type are needed to navigate the website).
