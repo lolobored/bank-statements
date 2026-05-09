@@ -22,27 +22,13 @@ This became a necessity when Banktivity and its provider (Yodlee) decided to **n
 ## Requirements
 
 - **Java 17+** — via [SDKMAN](https://sdkman.io) (a `.sdkmanrc` is provided)
-- **Gradle 8.9+** — via SDKMAN or the included Gradle wrapper
 - **Google Chrome** — default browser for scraping (Firefox and Safari also supported)
 - **[Bitwarden CLI](https://bitwarden.com/help/cli/)** (`bw`) — optional, required only if managing credentials via Bitwarden
-
-Install the Bitwarden CLI via Homebrew:
-
-```bash
-brew install bitwarden-cli
-```
-
-## Building
-
-```bash
-./gradlew clean build
-```
-
-This produces a self-contained jar in `build/libs/`.
+- **[GitHub CLI](https://cli.github.com)** (`gh`) — optional, required only for `download-ofx --update`
 
 ## Configuration
 
-The application is driven by a JSON file defining the banks and accounts to process. A sample is provided at `src/main/resources/sample.json`.
+The application is driven by a JSON file defining the banks and accounts to process. A complete `banktivity.json.sample` is provided at the root of the repository — copy it to your desired location and fill in your credentials.
 
 ### Bank-level parameters
 
@@ -70,10 +56,6 @@ The application is driven by a JSON file defining the banks and accounts to proc
 | `currency` | no | ISO 4217 currency code (e.g. `EUR`, `CHF`, `SGD`). Overrides the bank's default currency. Set this when a bank holds accounts in multiple currencies |
 
 ### Sample configuration
-
-A complete `banktivity.json.sample` is provided at the root of the repository — copy it to your desired location and fill in your credentials.
-
-The snippet below highlights the key patterns:
 
 ```json
 [
@@ -135,12 +117,6 @@ Credentials can optionally be stored in Bitwarden instead of the JSON config fil
 
 Banks without `bitwardenItemName` continue to use plain credentials from the JSON file — the two approaches can be mixed freely.
 
-### Installation
-
-```bash
-brew install bitwarden-cli
-```
-
 ### Self-hosted Bitwarden / Vaultwarden
 
 If you run your own Bitwarden-compatible server (e.g. [Vaultwarden](https://github.com/dani-garcia/vaultwarden)), point the CLI at it before logging in:
@@ -157,69 +133,121 @@ Run this once in your terminal. It requires an interactive session so it must be
 bw login
 ```
 
-### Each session
+## `download-ofx` — setup and automation
 
-Before running the application, unlock your vault and export the session token:
+`download-ofx` is a wrapper script that handles everything in one command: it unlocks Bitwarden if needed, picks the right Java, and runs the jar. It is the recommended way to run the application.
 
-```bash
-export BW_SESSION=$(bw unlock --raw)
-```
+### First-time setup
 
-The `download-ofx` wrapper script handles this automatically — it detects the vault state and prompts for your master password if needed.
-
-## Installation
-
-Each [GitHub Release](https://github.com/lolobored/bank-statements/releases) ships two assets:
-
-| Asset | Description |
-|-------|-------------|
-| `bank-statements-<version>.jar` | Executable fat jar |
-| `download-ofx` | Wrapper script (handles Bitwarden + Java path) |
-
-Download both to the same directory (e.g. `~/.local/banktivity/`), place your `banks.json` in that directory, and make the script executable:
+Download the latest `bank-statements-<version>.jar` and `download-ofx` from the [Releases page](https://github.com/lolobored/bank-statements/releases) into the same directory, then:
 
 ```bash
+# Make the script executable
 chmod +x download-ofx
+
+# Place your banks.json in the same directory
+cp /path/to/your/banks.json ~/banktivity/banks.json
 ```
 
-### Keeping up to date
+The script expects `banks.json` and the jar to live alongside it.
 
-The `download-ofx` script can update itself to the latest release:
-
-```bash
-./download-ofx --update
-```
-
-This downloads the newest jar from GitHub Releases, removes the old one, and exits. Requires the [GitHub CLI](https://cli.github.com) (`gh`) to be installed and authenticated.
-
-## Running
-
-### Using the wrapper script (recommended)
-
-The `download-ofx` script handles Bitwarden unlocking automatically and always picks the latest jar in its directory. All options are passed through to the application:
+### Daily usage
 
 ```bash
-# Current month, headless Chrome (default)
+# Current month — headless Chrome (default)
 ./download-ofx --monthly
 
 # From a specific date
 ./download-ofx --date=2024-01-01
 
-# Safari — useful when headless Chrome doesn't work
-./download-ofx --monthly --browser=safari
-
-# Firefox in headless mode
-./download-ofx --monthly --browser=firefox
+# Last 30 days
+./download-ofx --month
 ```
 
-The script behaviour on startup:
-- **Vault already unlocked** — proceeds immediately
-- **Vault locked** — prompts for your master password, unlocks, then runs
-- **Not logged in** — prints a message asking you to run `bw login` (one-time setup only)
+### Browser selection
 
-> **Browser note:** Chrome and Firefox run headless (no visible window). Safari runs in a visible window — use it as a fallback when a bank's login flow doesn't work headlessly.
+Chrome and Firefox run headless (no visible window). Safari runs in a visible window and is useful as a fallback when a bank's login flow doesn't behave correctly in headless mode.
 
-### Running directly
+```bash
+# Headless Chrome (default)
+./download-ofx --monthly
+
+# Headless Firefox
+./download-ofx --monthly --browser=firefox
+
+# Visible Safari window — fallback
+./download-ofx --monthly --browser=safari
+```
+
+### Keeping up to date
+
+The script can update itself to the latest release. Requires the [GitHub CLI](https://cli.github.com) (`gh`) to be installed and authenticated.
+
+```bash
+./download-ofx --update
+```
+
+This downloads the newest jar from GitHub Releases and removes the old one.
+
+### Automation
+
+Because MFA approval is required (OCBC and UOB send push notifications to your phone), the script cannot run fully unattended. However, you can streamline the process by scheduling a reminder that pre-unlocks the vault and launches the script ready for you to approve.
+
+**macOS — run manually on a schedule**
+
+The simplest approach on macOS is a shell alias or a calendar reminder. When you want to run:
+
+```bash
+# Unlock vault once, then run
+export BW_SESSION=$(bw unlock --raw)
+./download-ofx --monthly
+```
+
+**macOS — launchd (runs at login or on a schedule)**
+
+Create `~/Library/LaunchAgents/com.banktivity.download.plist`:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.banktivity.download</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/Users/username/banktivity/download-ofx</string>
+    <string>--monthly</string>
+  </array>
+  <!-- Run on the 1st of every month at 09:00 -->
+  <key>StartCalendarInterval</key>
+  <dict>
+    <key>Day</key>
+    <integer>1</integer>
+    <key>Hour</key>
+    <integer>9</integer>
+    <key>Minute</key>
+    <integer>0</integer>
+  </dict>
+  <key>StandardOutPath</key>
+  <string>/tmp/banktivity.log</string>
+  <key>StandardErrorPath</key>
+  <string>/tmp/banktivity.log</string>
+</dict>
+</plist>
+```
+
+Load it with:
+
+```bash
+launchctl load ~/Library/LaunchAgents/com.banktivity.download.plist
+```
+
+> **Note:** The launchd job will prompt for your Bitwarden master password when it runs. Make sure your vault is unlocked beforehand, or run the script manually when you are at your machine to approve the MFA notifications on your phone.
+
+## Running directly
+
+For advanced use or scripting without the wrapper:
 
 ```bash
 java -jar bank-statements-<VERSION>.jar --json=<path/to/config.json> --output=<output/dir> [options]
@@ -239,26 +267,28 @@ java -jar bank-statements-<VERSION>.jar --json=<path/to/config.json> --output=<o
 
 If none of the date options are provided, all available transactions are downloaded.
 
-A timestamped backup of each generated OFX is also saved under `<output>/tx-compare/` for easy reconciliation.
+A timestamped backup of each generated OFX is also saved under `<output>/tx-compare/` (last 30 kept) for easy reconciliation.
 
 ### Examples
 
 ```bash
-# All available transactions
+# All available transactions, headless Chrome
 java -jar bank-statements-<VERSION>.jar --json=~/banks.json --output=~/Downloads
 
-# Current month only
-java -jar bank-statements-<VERSION>.jar --json=~/banks.json --output=~/Downloads --monthly
-
-# Last 30 days
-java -jar bank-statements-<VERSION>.jar --json=~/banks.json --output=~/Downloads --month
-
-# From a specific date
-java -jar bank-statements-<VERSION>.jar --json=~/banks.json --output=~/Downloads --date=2024-01-01
-
-# Using Firefox
+# Current month, headless Firefox
 java -jar bank-statements-<VERSION>.jar --json=~/banks.json --output=~/Downloads --monthly --browser=firefox
+
+# From a specific date, visible Safari window
+java -jar bank-statements-<VERSION>.jar --json=~/banks.json --output=~/Downloads --date=2024-01-01 --browser=safari
 ```
+
+## Building from source
+
+```bash
+./gradlew bootJar
+```
+
+This produces a self-contained jar in `build/libs/`.
 
 ## Code architecture
 
