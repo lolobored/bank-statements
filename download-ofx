@@ -40,7 +40,14 @@ OUTPUT="$HOME/Downloads"
 export JAVA_HOME="$HOME/.sdkman/candidates/java/17.0.15-amzn"
 export PATH="$JAVA_HOME/bin:$PATH"
 
-# Check Bitwarden vault status
+SESSION_FILE="$HOME/.bw_session"
+
+# Load a previously stored session so we don't prompt every run
+if [ -f "$SESSION_FILE" ]; then
+  export BW_SESSION=$(cat "$SESSION_FILE")
+fi
+
+# Check vault status (uses BW_SESSION if set)
 BW_STATUS=$(bw status 2>/dev/null | grep -o '"status":"[^"]*"' | cut -d'"' -f4)
 
 case "$BW_STATUS" in
@@ -51,9 +58,10 @@ case "$BW_STATUS" in
   locked)
     echo "Unlocking Bitwarden vault..."
     export BW_SESSION=$(bw unlock --raw)
+    echo "$BW_SESSION" > "$SESSION_FILE"
+    chmod 600 "$SESSION_FILE"
     ;;
   unlocked)
-    echo "Bitwarden vault already unlocked."
     ;;
   *)
     echo "Could not determine Bitwarden status. Proceeding without unlock."
