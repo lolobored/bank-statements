@@ -167,11 +167,36 @@ export BW_SESSION=$(bw unlock --raw)
 
 The `download-ofx` wrapper script handles this automatically — it detects the vault state and prompts for your master password if needed.
 
+## Installation
+
+Each [GitHub Release](https://github.com/lolobored/bank-statements/releases) ships two assets:
+
+| Asset | Description |
+|-------|-------------|
+| `bank-statements-<version>.jar` | Executable fat jar |
+| `download-ofx` | Wrapper script (handles Bitwarden + Java path) |
+
+Download both to the same directory (e.g. `~/.local/banktivity/`), place your `banks.json` in that directory, and make the script executable:
+
+```bash
+chmod +x download-ofx
+```
+
+### Keeping up to date
+
+The `download-ofx` script can update itself to the latest release:
+
+```bash
+./download-ofx --update
+```
+
+This downloads the newest jar from GitHub Releases, removes the old one, and exits. Requires the [GitHub CLI](https://cli.github.com) (`gh`) to be installed and authenticated.
+
 ## Running
 
 ### Using the wrapper script (recommended)
 
-A `download-ofx` wrapper script is provided alongside the jar. It handles Bitwarden unlocking automatically and always picks the latest jar in the directory:
+The `download-ofx` script handles Bitwarden unlocking automatically and always picks the latest jar in its directory:
 
 ```bash
 # Current month only

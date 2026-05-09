@@ -1,0 +1,64 @@
+#!/bin/bash
+set -e
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO="lolobored/bank-statements"
+
+# --update: download the latest release jar from GitHub and remove old ones
+if [[ "$1" == "--update" ]]; then
+  echo "Fetching latest release from $REPO..."
+  LATEST_TAG=$(gh release view --repo "$REPO" --json tagName -q .tagName)
+  gh release download "$LATEST_TAG" \
+    --repo "$REPO" \
+    --pattern "bank-statements-*.jar" \
+    --dir "$SCRIPT_DIR" \
+    --clobber
+  # Remove older jars, keep only the one just downloaded
+  JARS=( $(ls "$SCRIPT_DIR"/bank-statements-*.jar 2>/dev/null | sort -V) )
+  COUNT=${#JARS[@]}
+  if [ "$COUNT" -gt 1 ]; then
+    for ((i=0; i<COUNT-1; i++)); do
+      echo "Removing old jar: $(basename "${JARS[$i]}")"
+      rm "${JARS[$i]}"
+    done
+  fi
+  echo "Updated to $LATEST_TAG."
+  exit 0
+fi
+
+JAR=$(ls "$SCRIPT_DIR"/bank-statements-*.jar 2>/dev/null | sort -V | tail -1)
+if [ -z "$JAR" ]; then
+  echo "No bank-statements jar found in $SCRIPT_DIR."
+  echo "Run:  $(basename "$0") --update   to download the latest release."
+  exit 1
+fi
+
+JSON="$SCRIPT_DIR/banks.json"
+OUTPUT="$HOME/Downloads"
+
+# Use the project's Java version via SDKMAN
+export JAVA_HOME="$HOME/.sdkman/candidates/java/17.0.15-amzn"
+export PATH="$JAVA_HOME/bin:$PATH"
+
+# Check Bitwarden vault status
+BW_STATUS=$(bw status 2>/dev/null | grep -o '"status":"[^"]*"' | cut -d'"' -f4)
+
+case "$BW_STATUS" in
+  unauthenticated)
+    echo "Not logged in to Bitwarden. Please run: bw login"
+    exit 1
+    ;;
+  locked)
+    echo "Unlocking Bitwarden vault..."
+    export BW_SESSION=$(bw unlock --raw)
+    ;;
+  unlocked)
+    echo "Bitwarden vault already unlocked."
+    ;;
+  *)
+    echo "Could not determine Bitwarden status. Proceeding without unlock."
+    ;;
+esac
+
+echo "Running $(basename "$JAR") with: $@"
+java -jar "$JAR" --json="$JSON" --output="$OUTPUT" --browser=chrome "$@"

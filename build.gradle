@@ -4,7 +4,6 @@ plugins {
   id "io.franzbecker.gradle-lombok" version "5.0.0"
   id 'org.springframework.boot' version '4.0.6'
   id "net.researchgate.release" version "3.1.0"
-  id "maven-publish"
 }
 
 group 'org.lolobored'
@@ -12,9 +11,6 @@ version project.version
 
 repositories {
   mavenCentral()
-  maven{
-    url "https://repo.e-iceblue.cn/repository/maven-public/"
-  }
 }
 
 lombok {
@@ -42,35 +38,3 @@ dependencies {
 test {
   useJUnitPlatform()
 }
-
-configurations {
-  [apiElements, runtimeElements].each {
-    it.outgoing.artifacts.removeIf {
-      it.buildDependencies.getDependencies(null).contains(jar)
-    }
-    it.outgoing.artifact(bootJar)
-  }
-}
-
-release {
-  afterReleaseBuild.dependsOn publish
-}
-publishing {
-  repositories {
-    maven {
-      name = "GitHubPackages"
-      url = uri("https://maven.pkg.github.com/lolobored/bank-statements")
-      credentials {
-        username = project.findProperty("gpr.user") ?: System.getenv("USERNAME")
-        password = project.findProperty("gpr.key") ?: System.getenv("PASSWORD")
-      }
-    }
-  }
-  publications {
-    gpr(MavenPublication) {
-      from(components.java)
-    }
-  }
-}
-
-
