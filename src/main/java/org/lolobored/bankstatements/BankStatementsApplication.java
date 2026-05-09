@@ -11,6 +11,8 @@ import org.lolobored.bankstatements.service.bitwarden.BitwardenService;
 import org.lolobored.bankstatements.service.filter.StatementsFilterService;
 import org.lolobored.bankstatements.service.ofx.OfxConversionService;
 import org.lolobored.bankstatements.service.scrapers.*;
+import org.openqa.selenium.OutputType;
+import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
@@ -172,13 +174,15 @@ public class BankStatementsApplication implements ApplicationRunner {
       }
     }
 
+    WebDriver webDriver = null;
     try {
 
-      WebDriver webDriver=null;
       switch (browserType) {
         case CHROME_BROWSER:
           WebDriverManager.chromedriver().setup();
           ChromeOptions chromeOptions = new ChromeOptions();
+          chromeOptions.addArguments("--headless=new");
+          chromeOptions.addArguments("--window-size=1920,1080");
           chromeOptions.addArguments("--disable-popup-blocking");
           DesiredCapabilities capabilities = new DesiredCapabilities();
 
@@ -197,6 +201,7 @@ public class BankStatementsApplication implements ApplicationRunner {
           firefoxProfile.setPreference("browser.download.dir", downloads.toAbsolutePath().toString());
           firefoxProfile.setPreference("browser.helperApps.neverAsk.saveToDisk", "application/x-gzip");
           FirefoxOptions firefoxOptions= new FirefoxOptions();
+          firefoxOptions.addArguments("--headless");
           firefoxOptions.setProfile(firefoxProfile);
           webDriver = new FirefoxDriver(firefoxOptions);
           break;
@@ -292,6 +297,20 @@ public class BankStatementsApplication implements ApplicationRunner {
       FileUtils.writeStringToFile(resultFile, ofxResult, Charset.defaultCharset());
       webDriver.close();
 
+    } catch (Exception e) {
+      if (webDriver != null) {
+        try {
+          File screenshot = ((TakesScreenshot) webDriver).getScreenshotAs(OutputType.FILE);
+          String timestamp = new SimpleDateFormat("yyyyMMdd-HHmmss").format(new Date());
+          File dest = new File(System.getProperty("user.home") + "/Downloads/error-" + timestamp + ".png");
+          FileUtils.copyFile(screenshot, dest);
+          logger.error("Screenshot saved to: {}", dest.getAbsolutePath());
+        } catch (Exception screenshotEx) {
+          logger.warn("Could not take error screenshot: {}", screenshotEx.getMessage());
+        }
+        webDriver.close();
+      }
+      throw e;
     } finally {
       FileUtils.deleteDirectory(downloads.toFile());
     }

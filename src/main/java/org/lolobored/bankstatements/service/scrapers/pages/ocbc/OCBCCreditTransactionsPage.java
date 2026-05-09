@@ -49,6 +49,8 @@ public class OCBCCreditTransactionsPage {
         logger.info("[TIMING] OCBCCredit: wait for PAST_30_DAYS option visible: {}ms", System.currentTimeMillis() - t0);
         driver.findElement(PAST_30_DAYS).click();
 
+        // Brief pause so the loading backdrop has time to appear before we check for it
+        Thread.sleep(300);
         t0 = System.currentTimeMillis();
         wait.until(ExpectedConditions.invisibilityOfElementLocated(LOADING_BACKDROP));
         logger.info("[TIMING] OCBCCredit: wait for loading backdrop gone: {}ms", System.currentTimeMillis() - t0);
