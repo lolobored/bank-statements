@@ -50,6 +50,7 @@ spotless {
 
 release {
   tagTemplate = '${version}'
+  snapshotSuffix = '-SNAPSHOT'
   git {
     requireBranch.set('main')
   }
