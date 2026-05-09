@@ -50,12 +50,12 @@ public class CreditMutCSVConversionServiceImpl implements CreditMutCSVConversion
   }
 
   private List<CreditMutCsvLine> parseCSV(String csvContent) {
-    ColumnPositionMappingStrategy ms = new ColumnPositionMappingStrategy();
+    ColumnPositionMappingStrategy<CreditMutCsvLine> ms = new ColumnPositionMappingStrategy<>();
     ms.setType(CreditMutCsvLine.class);
 
     Reader reader = new BufferedReader(new StringReader(csvContent.trim()));
-    CsvToBean cb =
-        new CsvToBeanBuilder(reader)
+    CsvToBean<CreditMutCsvLine> cb =
+        new CsvToBeanBuilder<CreditMutCsvLine>(reader)
             .withSeparator(';')
             .withSkipLines(1)
             .withType(CreditMutCsvLine.class)

@@ -53,12 +53,12 @@ public class AmexCSVConversionServiceImpl implements AmexCSVConversionService {
   }
 
   private List<AmexCsvLine> parseCSV(String csvContent) {
-    ColumnPositionMappingStrategy ms = new ColumnPositionMappingStrategy();
+    ColumnPositionMappingStrategy<AmexCsvLine> ms = new ColumnPositionMappingStrategy<>();
     ms.setType(AmexCsvLine.class);
 
     Reader reader = new BufferedReader(new StringReader(csvContent.trim()));
-    CsvToBean cb =
-        new CsvToBeanBuilder(reader)
+    CsvToBean<AmexCsvLine> cb =
+        new CsvToBeanBuilder<AmexCsvLine>(reader)
             .withSkipLines(1)
             .withSeparator(',')
             .withType(AmexCsvLine.class)

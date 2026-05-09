@@ -54,12 +54,12 @@ public class OCBCCSVConversionServiceImpl implements OCBCCSVConversionService {
   }
 
   private List<OCBCCSVLine> parseCSV(String csvContent) {
-    ColumnPositionMappingStrategy ms = new ColumnPositionMappingStrategy();
+    ColumnPositionMappingStrategy<OCBCCSVLine> ms = new ColumnPositionMappingStrategy<>();
     ms.setType(OCBCCSVLine.class);
 
     Reader reader = new BufferedReader(new StringReader(csvContent.trim()));
-    CsvToBean cb =
-        new CsvToBeanBuilder(reader)
+    CsvToBean<OCBCCSVLine> cb =
+        new CsvToBeanBuilder<OCBCCSVLine>(reader)
             .withSkipLines(6)
             .withSeparator(',')
             .withType(OCBCCSVLine.class)

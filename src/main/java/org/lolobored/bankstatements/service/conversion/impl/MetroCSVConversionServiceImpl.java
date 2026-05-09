@@ -51,12 +51,12 @@ public class MetroCSVConversionServiceImpl implements MetroCSVConversionService 
   }
 
   private List<MetroCSVLine> parseCSV(String csvContent) {
-    ColumnPositionMappingStrategy ms = new ColumnPositionMappingStrategy();
+    ColumnPositionMappingStrategy<MetroCSVLine> ms = new ColumnPositionMappingStrategy<>();
     ms.setType(MetroCSVLine.class);
 
     Reader reader = new BufferedReader(new StringReader(csvContent.trim()));
-    CsvToBean cb =
-        new CsvToBeanBuilder(reader)
+    CsvToBean<MetroCSVLine> cb =
+        new CsvToBeanBuilder<MetroCSVLine>(reader)
             .withSeparator(',')
             .withSkipLines(1)
             .withType(MetroCSVLine.class)

@@ -54,12 +54,12 @@ public class OCBCCreditCSVConversionServiceImpl implements OCBCCreditCSVConversi
   }
 
   private List<OCBCCreditCSVLine> parseCSV(String csvContent) {
-    ColumnPositionMappingStrategy ms = new ColumnPositionMappingStrategy();
+    ColumnPositionMappingStrategy<OCBCCreditCSVLine> ms = new ColumnPositionMappingStrategy<>();
     ms.setType(OCBCCreditCSVLine.class);
 
     Reader reader = new BufferedReader(new StringReader(csvContent.trim()));
-    CsvToBean cb =
-        new CsvToBeanBuilder(reader)
+    CsvToBean<OCBCCreditCSVLine> cb =
+        new CsvToBeanBuilder<OCBCCreditCSVLine>(reader)
             .withSkipLines(7)
             .withSeparator(',')
             .withType(OCBCCreditCSVLine.class)

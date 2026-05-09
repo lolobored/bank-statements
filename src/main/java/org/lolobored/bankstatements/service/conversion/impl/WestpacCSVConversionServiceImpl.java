@@ -55,12 +55,12 @@ public class WestpacCSVConversionServiceImpl implements WestpacCSVConversionServ
   }
 
   private List<WestpacCSVLine> parseCSV(String csvContent) {
-    ColumnPositionMappingStrategy ms = new ColumnPositionMappingStrategy();
+    ColumnPositionMappingStrategy<WestpacCSVLine> ms = new ColumnPositionMappingStrategy<>();
     ms.setType(WestpacCSVLine.class);
 
     Reader reader = new BufferedReader(new StringReader(csvContent.trim()));
-    CsvToBean cb =
-        new CsvToBeanBuilder(reader)
+    CsvToBean<WestpacCSVLine> cb =
+        new CsvToBeanBuilder<WestpacCSVLine>(reader)
             .withSkipLines(1)
             .withSeparator(',')
             .withType(WestpacCSVLine.class)

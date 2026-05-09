@@ -49,12 +49,12 @@ public class CommBankCSVConversionServiceImpl implements CommBankCSVConversionSe
   }
 
   private List<CommBankCsvLine> parseCSV(String csvContent) {
-    ColumnPositionMappingStrategy ms = new ColumnPositionMappingStrategy();
+    ColumnPositionMappingStrategy<CommBankCsvLine> ms = new ColumnPositionMappingStrategy<>();
     ms.setType(CommBankCsvLine.class);
 
     Reader reader = new BufferedReader(new StringReader(csvContent.trim()));
-    CsvToBean cb =
-        new CsvToBeanBuilder(reader)
+    CsvToBean<CommBankCsvLine> cb =
+        new CsvToBeanBuilder<CommBankCsvLine>(reader)
             .withSeparator(',')
             .withType(CommBankCsvLine.class)
             .withMappingStrategy(ms)

@@ -60,12 +60,12 @@ public class RevolutCSVConversionServiceImpl implements RevolutCSVConversionServ
   }
 
   private List<RevolutCSVLine> parseCSV(String csvContent) {
-    ColumnPositionMappingStrategy ms = new ColumnPositionMappingStrategy();
+    ColumnPositionMappingStrategy<RevolutCSVLine> ms = new ColumnPositionMappingStrategy<>();
     ms.setType(RevolutCSVLine.class);
 
     Reader reader = new BufferedReader(new StringReader(csvContent.trim()));
-    CsvToBean cb =
-        new CsvToBeanBuilder(reader)
+    CsvToBean<RevolutCSVLine> cb =
+        new CsvToBeanBuilder<RevolutCSVLine>(reader)
             .withSeparator(';')
             .withSkipLines(1)
             .withType(RevolutCSVLine.class)
