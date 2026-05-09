@@ -1,6 +1,5 @@
 package org.lolobored.bankstatements.service.scrapers.pages.uob;
 
-import org.apache.commons.lang3.StringUtils;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -37,7 +36,7 @@ public class UOBAccountsPage {
         List<WebElement> accounts = driver.findElements(ACCOUNT_TILES);
 
         for (WebElement account : accounts) {
-            if (StringUtils.equalsIgnoreCase(accountId.trim(), account.getText().trim())) {
+            if (accountId.trim().equalsIgnoreCase(account.getText().trim())) {
                 t0 = System.currentTimeMillis();
                 Thread.sleep(ACCOUNT_CLICK_PAUSE_MS);
                 logger.debug("[TIMING] UOBAccounts: pre-click sleep (budget {}ms): {}ms", ACCOUNT_CLICK_PAUSE_MS, System.currentTimeMillis() - t0);
