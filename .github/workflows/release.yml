@@ -38,7 +38,7 @@ jobs:
           cache: gradle
 
       - name: Build bootJar
-        run: ./gradlew bootJar
+        run: ./gradlew bootJar -Pversion=${{ github.ref_name }}
 
       - name: Create GitHub Release
         run: |
