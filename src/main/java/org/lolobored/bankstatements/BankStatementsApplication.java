@@ -232,6 +232,11 @@ public class BankStatementsApplication implements ApplicationRunner {
             accountReplacements.put(account.getAccountId(), account.getBanktivitySuffix());
           }
         }
+        if (!bank.isEnabled()) {
+          logger.info("Skipping disabled bank [" + bank.getName() + "]");
+          continue;
+        }
+
         BankGenericService bankGenericService = null;
 
         switch (bank.getName()) {

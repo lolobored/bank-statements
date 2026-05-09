@@ -46,7 +46,7 @@ public class BitwardenServiceImpl implements BitwardenService {
     if (StringUtils.isEmpty(bank.getBitwardenItemName())) {
       return;
     }
-    logger.info("Fetching credentials for [{}] from Bitwarden item [{}]", bank.getName(), bank.getBitwardenItemName());
+    logger.debug("Fetching credentials for [{}] from Bitwarden item [{}]", bank.getName(), bank.getBitwardenItemName());
     String json = runBwCommand(bank.getBitwardenItemName());
     applyCredentials(bank, json);
   }

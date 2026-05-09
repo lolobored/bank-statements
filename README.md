@@ -56,6 +56,7 @@ The application is driven by a JSON file defining the banks and accounts to proc
 | `securityPin` | no | Metro only — 8-digit security PIN |
 | `bitwardenItemName` | no | If set, credentials are fetched from this Bitwarden item instead of the fields above |
 | `waitTime` | yes | Selenium timeout in seconds. 5 is usually enough; increase for slow connections |
+| `enabled` | no | Set to `false` to skip this bank without removing it from the config. Defaults to `true` |
 | `statementsDirectory` | no | Revolut only — directory where manually downloaded Revolut CSVs are stored (files are deleted after processing) |
 | `accounts` | yes | List of accounts. See below |
 

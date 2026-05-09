@@ -2,3 +2,6 @@
 .idea
 build
 out
+CLAUDE.md
+.playwright-mcp/
+.claude/

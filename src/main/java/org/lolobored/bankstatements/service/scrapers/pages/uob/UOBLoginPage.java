@@ -2,15 +2,22 @@ package org.lolobored.bankstatements.service.scrapers.pages.uob;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
+import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
+
+import java.time.Duration;
 
 public class UOBLoginPage {
 
     private static final By USERNAME_FIELD = By.id("userName");
     private static final By PASSWORD_FIELD = By.id("PASSWORD1");
     private static final By LOGIN_BUTTON   = By.id("btnSubmit");
+    // UOB shows this dialog when a previous session is still active
+    private static final By PROCEED_BUTTON = By.xpath("//button[normalize-space()='Proceed']");
+
+    private static final Duration PROCEED_CHECK_WAIT = Duration.ofSeconds(10);
 
     private final WebDriver driver;
     private final WebDriverWait wait;
@@ -31,5 +38,13 @@ public class UOBLoginPage {
 
         wait.until(ExpectedConditions.elementToBeClickable(LOGIN_BUTTON));
         driver.findElement(LOGIN_BUTTON).sendKeys(Keys.RETURN);
+
+        try {
+            WebDriverWait shortWait = new WebDriverWait(driver, PROCEED_CHECK_WAIT);
+            shortWait.until(ExpectedConditions.elementToBeClickable(PROCEED_BUTTON));
+            driver.findElement(PROCEED_BUTTON).click();
+        } catch (TimeoutException ignored) {
+            // no existing-session dialog — normal login flow
+        }
     }
 }

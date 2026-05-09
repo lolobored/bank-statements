@@ -21,4 +21,5 @@ public class Bank {
   private Integer multiplier=1;
   // if set, credentials are fetched from Bitwarden instead of the fields above
   private String bitwardenItemName;
+  private boolean enabled = true;
 }
