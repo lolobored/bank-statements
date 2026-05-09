@@ -21,7 +21,7 @@ This became a necessity when Banktivity and its provider (Yodlee) decided to **n
 
 ## Requirements
 
-- **Java 17+** — via [SDKMAN](https://sdkman.io) (a `.sdkmanrc` is provided). `download-ofx` automatically picks the latest Java version installed in SDKMAN.
+- **Java 17+** — any distribution works. [SDKMAN](https://sdkman.io) is recommended (a `.sdkmanrc` is provided); if installed, `download-ofx` automatically picks the latest Java version in SDKMAN. Otherwise it uses whatever `java` is on your `PATH`.
 - **Google Chrome** — default browser for scraping (Firefox and Safari also supported)
 - **[Bitwarden CLI](https://bitwarden.com/help/cli/)** (`bw`) — optional, required only if managing credentials via Bitwarden
 - **[GitHub CLI](https://cli.github.com)** (`gh`) — optional, required only for `download-ofx --update`
