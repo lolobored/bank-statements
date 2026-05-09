@@ -181,13 +181,7 @@ Chrome and Firefox run headless (no visible window). Safari runs in a visible wi
 
 ### Keeping up to date
 
-The script can update itself to the latest release. Requires the [GitHub CLI](https://cli.github.com) (`gh`) to be installed and authenticated.
-
-```bash
-./download-ofx --update
-```
-
-This downloads the newest jar from GitHub Releases and removes the old one.
+The script updates itself automatically on every run. If the [GitHub CLI](https://cli.github.com) (`gh`) is installed and authenticated, it checks for a newer jar on GitHub Releases, downloads it, removes the old one, and then proceeds with the run as normal. If `gh` is not available or there is no network, it silently skips the check and runs with whatever jar is already present.
 
 ### Automation
 
