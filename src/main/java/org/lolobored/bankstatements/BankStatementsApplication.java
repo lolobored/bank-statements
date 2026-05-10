@@ -17,6 +17,7 @@ import org.lolobored.bankstatements.model.Statement;
 import org.lolobored.bankstatements.model.config.Account;
 import org.lolobored.bankstatements.model.config.Bank;
 import org.lolobored.bankstatements.service.bitwarden.BitwardenService;
+import org.lolobored.bankstatements.service.dedup.TransactionDeduplicationService;
 import org.lolobored.bankstatements.service.filter.StatementsFilterService;
 import org.lolobored.bankstatements.service.ofx.OfxConversionService;
 import org.lolobored.bankstatements.service.scrapers.*;
@@ -41,6 +42,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class BankStatementsApplication implements ApplicationRunner {
 
+  @Autowired private TransactionDeduplicationService transactionDeduplicationService;
   @Autowired private MetroService metroService;
   @Autowired private AmexService amexService;
   @Autowired private CreditMutService creditMutService;
@@ -77,6 +79,7 @@ public class BankStatementsApplication implements ApplicationRunner {
     Path downloads = Files.createTempDirectory("statements");
     Map<String, String> accountReplacements = new HashMap<>();
     Map<String, String> accountCurrencies = new HashMap<>();
+    Map<String, Account> accountSettings = new HashMap<>();
     LocalDate startingDate = LocalDate.parse("1970-01-01");
 
     if (!args.containsOption("json")) {
@@ -171,6 +174,11 @@ public class BankStatementsApplication implements ApplicationRunner {
           if (account.getCurrency() != null) {
             accountCurrencies.put(account.getAccountId(), account.getCurrency());
           }
+          // Build the same key that StatementsFilterServiceImpl produces
+          String settingsKey = account.getAccountId();
+          if (account.getBanktivitySuffix() != null)
+            settingsKey += "-" + account.getBanktivitySuffix();
+          accountSettings.put(settingsKey, account);
         }
       }
 
@@ -262,29 +270,21 @@ public class BankStatementsApplication implements ApplicationRunner {
 
       statements =
           statementsFilterService.filterStatements(statements, startingDate, accountReplacements);
+
+      File historyDir =
+          args.containsOption("history")
+              ? new File(args.getOptionValues("history").get(0))
+              : new File(outputDirectory.getAbsolutePath(), "tx-history");
+      statements =
+          transactionDeduplicationService.deduplicateAndUpdate(
+              statements, historyDir, accountSettings);
+
       String ofxResult = ofxConversionService.convertStatementsToOfx(statements);
 
       outputDirectory.mkdirs();
       File resultFile = new File(outputDirectory.getAbsolutePath() + "/downloaded.ofx");
       if (resultFile.exists()) resultFile.delete();
       FileUtils.writeStringToFile(resultFile, ofxResult, Charset.defaultCharset());
-
-      outputDirectory = new File(outputDirectory.getAbsolutePath() + "/tx-compare");
-      outputDirectory.mkdirs();
-      String currentTime =
-          LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss"));
-      resultFile =
-          new File(outputDirectory.getAbsolutePath() + "/" + currentTime + "-downloaded.ofx");
-      FileUtils.writeStringToFile(resultFile, ofxResult, Charset.defaultCharset());
-
-      // Keep only the 30 most recent timestamped OFX files
-      File[] txFiles = outputDirectory.listFiles((dir, name) -> name.endsWith("-downloaded.ofx"));
-      if (txFiles != null && txFiles.length > 30) {
-        Arrays.sort(txFiles, Comparator.comparing(File::getName));
-        for (int i = 0; i < txFiles.length - 30; i++) {
-          txFiles[i].delete();
-        }
-      }
 
     } finally {
       FileUtils.deleteDirectory(downloads.toFile());

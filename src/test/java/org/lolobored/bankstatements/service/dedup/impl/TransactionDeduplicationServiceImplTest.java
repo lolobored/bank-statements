@@ -1,0 +1,213 @@
+package org.lolobored.bankstatements.service.dedup.impl;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.io.File;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+import org.lolobored.bankstatements.model.Statement;
+import org.lolobored.bankstatements.model.Transaction;
+import org.lolobored.bankstatements.model.config.Account;
+
+class TransactionDeduplicationServiceImplTest {
+
+  private TransactionDeduplicationServiceImpl service;
+
+  @TempDir File tempDir;
+
+  @BeforeEach
+  void setUp() {
+    service = new TransactionDeduplicationServiceImpl();
+  }
+
+  // --- unit tests for the matching logic ---
+
+  @Test
+  void exactMatchIsNearDuplicate() {
+    Transaction tx = tx(LocalDate.of(2026, 1, 1), "-50.00", "UBER EATS");
+    var historical = historical("2026-01-01", "-50.00", "uber eats");
+    assertThat(service.isNearDuplicate(tx, historical, 5, 0.85)).isTrue();
+  }
+
+  @Test
+  void differentAmountIsNotDuplicate() {
+    Transaction tx = tx(LocalDate.of(2026, 1, 1), "-50.00", "UBER EATS");
+    var historical = historical("2026-01-01", "-49.00", "uber eats");
+    assertThat(service.isNearDuplicate(tx, historical, 5, 0.85)).isFalse();
+  }
+
+  @Test
+  void dateWithinToleranceIsNearDuplicate() {
+    Transaction tx = tx(LocalDate.of(2026, 1, 4), "-50.00", "UBER EATS");
+    var historical = historical("2026-01-01", "-50.00", "uber eats");
+    assertThat(service.isNearDuplicate(tx, historical, 5, 0.85)).isTrue();
+  }
+
+  @Test
+  void dateBeyondToleranceIsNotDuplicate() {
+    Transaction tx = tx(LocalDate.of(2026, 1, 7), "-50.00", "UBER EATS");
+    var historical = historical("2026-01-01", "-50.00", "uber eats");
+    assertThat(service.isNearDuplicate(tx, historical, 5, 0.85)).isFalse();
+  }
+
+  @Test
+  void descriptionSubstringIsNearDuplicate() {
+    Transaction tx = tx(LocalDate.of(2026, 1, 1), "-50.00", "UBER EATS SINGAPORE PTE LTD");
+    var historical = historical("2026-01-01", "-50.00", "uber eats");
+    assertThat(service.isNearDuplicate(tx, historical, 5, 0.85)).isTrue();
+  }
+
+  @Test
+  void similarDescriptionIsNearDuplicate() {
+    Transaction tx = tx(LocalDate.of(2026, 1, 1), "-50.00", "STARBUCKS COFFEE");
+    var historical = historical("2026-01-01", "-50.00", "starbucks coffe");
+    assertThat(service.isNearDuplicate(tx, historical, 5, 0.85)).isTrue();
+  }
+
+  @Test
+  void differentDescriptionIsNotDuplicate() {
+    Transaction tx = tx(LocalDate.of(2026, 1, 1), "-50.00", "STARBUCKS");
+    var historical = historical("2026-01-01", "-50.00", "mcdonalds");
+    assertThat(service.isNearDuplicate(tx, historical, 5, 0.85)).isFalse();
+  }
+
+  // --- integration tests for deduplicateAndUpdate ---
+
+  @Test
+  void firstRunAddsAllToHistory() {
+    Statement stmt = statement("ACC1", tx(LocalDate.of(2026, 1, 1), "-50.00", "UBER EATS"));
+
+    List<Statement> result =
+        service.deduplicateAndUpdate(List.of(stmt), tempDir, Collections.emptyMap());
+
+    assertThat(result.get(0).getTransactions()).hasSize(1);
+    assertThat(new File(tempDir, "ACC1.json")).exists();
+  }
+
+  @Test
+  void secondRunUsesOriginalDataForExactDuplicate() {
+    Statement stmt1 = statement("ACC1", tx(LocalDate.of(2026, 1, 1), "-50.00", "UBER EATS"));
+    service.deduplicateAndUpdate(List.of(stmt1), tempDir, Collections.emptyMap());
+
+    Statement stmt2 = statement("ACC1", tx(LocalDate.of(2026, 1, 1), "-50.00", "UBER EATS"));
+    List<Statement> result =
+        service.deduplicateAndUpdate(List.of(stmt2), tempDir, Collections.emptyMap());
+
+    assertThat(result.get(0).getTransactions()).hasSize(1);
+    Transaction tx = result.get(0).getTransactions().get(0);
+    assertThat(tx.getDate()).isEqualTo(LocalDate.of(2026, 1, 1));
+    assertThat(tx.getLabel()).isEqualTo("UBER EATS");
+  }
+
+  @Test
+  void secondRunUsesOriginalDataForNearDuplicateWithShiftedDateAndChangedLabel() {
+    Statement stmt1 = statement("ACC1", tx(LocalDate.of(2026, 1, 1), "-50.00", "MERCHANT"));
+    service.deduplicateAndUpdate(List.of(stmt1), tempDir, Collections.emptyMap());
+
+    Statement stmt2 = statement("ACC1", tx(LocalDate.of(2026, 1, 3), "-50.00", "MERCHANT PTE LTD"));
+    List<Statement> result =
+        service.deduplicateAndUpdate(List.of(stmt2), tempDir, Collections.emptyMap());
+
+    assertThat(result.get(0).getTransactions()).hasSize(1);
+    Transaction tx = result.get(0).getTransactions().get(0);
+    // original date and label must be preserved
+    assertThat(tx.getDate()).isEqualTo(LocalDate.of(2026, 1, 1));
+    assertThat(tx.getLabel()).isEqualTo("MERCHANT");
+  }
+
+  @Test
+  void genuinelyNewTransactionIsKept() {
+    Statement stmt1 = statement("ACC1", tx(LocalDate.of(2026, 1, 1), "-50.00", "UBER EATS"));
+    service.deduplicateAndUpdate(List.of(stmt1), tempDir, Collections.emptyMap());
+
+    Statement stmt2 = statement("ACC1", tx(LocalDate.of(2026, 1, 1), "-30.00", "GRAB"));
+    List<Statement> result =
+        service.deduplicateAndUpdate(List.of(stmt2), tempDir, Collections.emptyMap());
+
+    assertThat(result.get(0).getTransactions()).hasSize(1);
+  }
+
+  @Test
+  void perAccountDateToleranceIsRespected() {
+    Statement stmt1 = statement("ACC1", tx(LocalDate.of(2026, 1, 1), "-50.00", "MERCHANT"));
+    service.deduplicateAndUpdate(List.of(stmt1), tempDir, Collections.emptyMap());
+
+    // Default tolerance is 5 days. With tolerance=0 a 3-day shift should NOT match.
+    Account account = new Account();
+    account.setDateTolerance(0);
+    Map<String, Account> settings = new HashMap<>();
+    settings.put("ACC1", account);
+
+    Statement stmt2 = statement("ACC1", tx(LocalDate.of(2026, 1, 4), "-50.00", "MERCHANT"));
+    List<Statement> result = service.deduplicateAndUpdate(List.of(stmt2), tempDir, settings);
+
+    assertThat(result.get(0).getTransactions()).hasSize(1);
+  }
+
+  @Test
+  void historyIsReplacedEachRun() {
+    // Run 1: transaction A
+    Statement run1 = statement("ACC1", tx(LocalDate.of(2026, 1, 1), "-50.00", "MERCHANT A"));
+    service.deduplicateAndUpdate(List.of(run1), tempDir, Collections.emptyMap());
+
+    // Run 2: transaction B only (A is gone from this download period)
+    Statement run2 = statement("ACC1", tx(LocalDate.of(2026, 1, 15), "-30.00", "MERCHANT B"));
+    service.deduplicateAndUpdate(List.of(run2), tempDir, Collections.emptyMap());
+
+    // Run 3: transaction A reappears — history only has run 2, so A is not a duplicate
+    Statement run3 = statement("ACC1", tx(LocalDate.of(2026, 1, 1), "-50.00", "MERCHANT A"));
+    List<Statement> result =
+        service.deduplicateAndUpdate(List.of(run3), tempDir, Collections.emptyMap());
+
+    assertThat(result.get(0).getTransactions()).hasSize(1);
+  }
+
+  // --- normalisation ---
+
+  @Test
+  void normalizesLabel() {
+    assertThat(service.normalize("  UBER  EATS!! ")).isEqualTo("uber eats");
+    assertThat(service.normalize(null)).isEqualTo("");
+    assertThat(service.normalize("Starbucks #42")).isEqualTo("starbucks 42");
+  }
+
+  // --- helpers ---
+
+  private Transaction tx(LocalDate date, String amount, String label) {
+    Transaction tx = new Transaction();
+    tx.setDate(date);
+    tx.setAmount(new BigDecimal(amount));
+    tx.setLabel(label);
+    tx.setType(Transaction.DEBIT_TYPE);
+    return tx;
+  }
+
+  private org.lolobored.bankstatements.model.HistoricalTransaction historical(
+      String date, String amount, String normalizedLabel) {
+    return new org.lolobored.bankstatements.model.HistoricalTransaction(
+        date,
+        amount,
+        normalizedLabel,
+        "2026-01-01",
+        normalizedLabel,
+        Transaction.DEBIT_TYPE,
+        null,
+        null);
+  }
+
+  private Statement statement(String accountNumber, Transaction... txs) {
+    Statement stmt = new Statement();
+    stmt.setAccountNumber(accountNumber);
+    stmt.setCurrency("SGD");
+    stmt.setAccountType(Statement.DEBIT_ACCOUNT);
+    for (Transaction tx : txs) stmt.addTransaction(tx);
+    return stmt;
+  }
+}

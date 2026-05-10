@@ -259,10 +259,32 @@ java -jar bank-statements-<VERSION>.jar --json=<path/to/config.json> --output=<o
 | `--date=<yyyy-MM-dd>` | Only include transactions on or after this date |
 | `--browser=<name>` | Browser to use: `chrome` (default, headless), `firefox` (headless), `safari` (visible window — useful as fallback) |
 | `--screenshots=<dir>` | Directory where error screenshots are saved on scraping failure. Defaults to `~/Downloads` |
+| `--history=<dir>` | Directory for the fuzzy-dedup history files. Defaults to `<output>/tx-history` |
 
 If none of the date options are provided, all available transactions are downloaded.
 
-A timestamped backup of each generated OFX is also saved under `<output>/tx-compare/` (last 30 kept) for easy reconciliation.
+### Fuzzy duplicate detection
+
+Each time the app runs it checks new transactions against a persisted history (one JSON file per account under `tx-history/`). A transaction is suppressed if it matches a previously exported one on **all three** of:
+
+- **Amount** — exact match
+- **Date** — within ±5 days (configurable per account with `dateTolerance`)
+- **Description** — the label is a substring of the historical one (or vice versa), **or** the Jaro-Winkler similarity exceeds 0.85 (configurable per account with `descriptionSimilarity`)
+
+This prevents Banktivity duplicates when a bank initially posts a transaction with a pending description or an approximate date that later settles to a slightly different value.
+
+Per-account tuning in your JSON config:
+
+```json
+{
+  "accountId": "32432432",
+  "banktivitySuffix": "metr",
+  "dateTolerance": 7,
+  "descriptionSimilarity": 0.80
+}
+```
+
+To reset the history for an account (e.g. after a fresh Banktivity import), delete the corresponding `<accountNumber>.json` file inside the `tx-history/` directory.
 
 ### Examples
 
