@@ -152,6 +152,105 @@ class TransactionDeduplicationServiceImplTest {
   }
 
   @Test
+  void tier2PicksClosestDateWhenMultipleCandidatesMatch() {
+    // History has two transactions with the same label/amount but different dates
+    Statement run1 =
+        statement(
+            "ACC1",
+            tx(LocalDate.of(2026, 1, 1), "-50.00", "MERCHANT"),
+            tx(LocalDate.of(2026, 1, 5), "-50.00", "MERCHANT"));
+    service.deduplicateAndUpdate(List.of(run1), tempDir, Collections.emptyMap());
+
+    // Downloaded transaction has a date of Jan 4 — closest history entry is Jan 5 (1 day away),
+    // not Jan 1 (3 days away); so the Jan 5 original should be emitted
+    Statement run2 = statement("ACC1", tx(LocalDate.of(2026, 1, 4), "-50.00", "MERCHANT NEW"));
+    List<Statement> result =
+        service.deduplicateAndUpdate(List.of(run2), tempDir, Collections.emptyMap());
+
+    assertThat(result.get(0).getTransactions()).hasSize(1);
+    Transaction matched = result.get(0).getTransactions().get(0);
+    assertThat(matched.getDate()).isEqualTo(LocalDate.of(2026, 1, 5));
+    assertThat(matched.getLabel()).isEqualTo("MERCHANT");
+  }
+
+  @Test
+  void twoIdenticalTransactionsSameDayBothPreservedAcrossRuns() {
+    // Two coffees on the same day in run 1
+    Statement run1 =
+        statement(
+            "ACC1",
+            tx(LocalDate.of(2026, 1, 1), "-5.00", "COFFEE SHOP"),
+            tx(LocalDate.of(2026, 1, 1), "-5.00", "COFFEE SHOP"));
+    service.deduplicateAndUpdate(List.of(run1), tempDir, Collections.emptyMap());
+
+    // Same two coffees re-downloaded in run 2
+    Statement run2 =
+        statement(
+            "ACC1",
+            tx(LocalDate.of(2026, 1, 1), "-5.00", "COFFEE SHOP"),
+            tx(LocalDate.of(2026, 1, 1), "-5.00", "COFFEE SHOP"));
+    List<Statement> result =
+        service.deduplicateAndUpdate(List.of(run2), tempDir, Collections.emptyMap());
+
+    assertThat(result.get(0).getTransactions()).hasSize(2);
+  }
+
+  @Test
+  void tier1ExactDateFuzzyDescriptionMatches() {
+    Statement run1 = statement("ACC1", tx(LocalDate.of(2026, 1, 1), "-50.00", "MERCHANT"));
+    service.deduplicateAndUpdate(List.of(run1), tempDir, Collections.emptyMap());
+
+    // Same date, description expanded — should match via Tier 1
+    Statement run2 = statement("ACC1", tx(LocalDate.of(2026, 1, 1), "-50.00", "MERCHANT PTE LTD"));
+    List<Statement> result =
+        service.deduplicateAndUpdate(List.of(run2), tempDir, Collections.emptyMap());
+
+    assertThat(result.get(0).getTransactions()).hasSize(1);
+    assertThat(result.get(0).getTransactions().get(0).getLabel()).isEqualTo("MERCHANT");
+    assertThat(result.get(0).getTransactions().get(0).getDate())
+        .isEqualTo(LocalDate.of(2026, 1, 1));
+  }
+
+  @Test
+  void tier2FuzzyDateFuzzyDescriptionFallbackMatches() {
+    Statement run1 = statement("ACC1", tx(LocalDate.of(2026, 1, 1), "-50.00", "MERCHANT"));
+    service.deduplicateAndUpdate(List.of(run1), tempDir, Collections.emptyMap());
+
+    // Date shifted AND description changed — Tier 1 misses, Tier 2 catches it
+    Statement run2 = statement("ACC1", tx(LocalDate.of(2026, 1, 4), "-50.00", "MERCHANT PTE LTD"));
+    List<Statement> result =
+        service.deduplicateAndUpdate(List.of(run2), tempDir, Collections.emptyMap());
+
+    assertThat(result.get(0).getTransactions()).hasSize(1);
+    assertThat(result.get(0).getTransactions().get(0).getLabel()).isEqualTo("MERCHANT");
+    assertThat(result.get(0).getTransactions().get(0).getDate())
+        .isEqualTo(LocalDate.of(2026, 1, 1));
+  }
+
+  @Test
+  void threeSameMerchantConsecutiveDaysAllPreservedAcrossRuns() {
+    // Three visits to the same coffee shop on consecutive days
+    Statement run1 =
+        statement(
+            "ACC1",
+            tx(LocalDate.of(2026, 5, 5), "-6.90", "DIMBULAH MBFC"),
+            tx(LocalDate.of(2026, 5, 6), "-6.90", "DIMBULAH MBFC"),
+            tx(LocalDate.of(2026, 5, 7), "-6.90", "DIMBULAH MBFC"));
+    service.deduplicateAndUpdate(List.of(run1), tempDir, Collections.emptyMap());
+
+    Statement run2 =
+        statement(
+            "ACC1",
+            tx(LocalDate.of(2026, 5, 5), "-6.90", "DIMBULAH MBFC"),
+            tx(LocalDate.of(2026, 5, 6), "-6.90", "DIMBULAH MBFC"),
+            tx(LocalDate.of(2026, 5, 7), "-6.90", "DIMBULAH MBFC"));
+    List<Statement> result =
+        service.deduplicateAndUpdate(List.of(run2), tempDir, Collections.emptyMap());
+
+    assertThat(result.get(0).getTransactions()).hasSize(3);
+  }
+
+  @Test
   void historyIsReplacedEachRun() {
     // Run 1: transaction A
     Statement run1 = statement("ACC1", tx(LocalDate.of(2026, 1, 1), "-50.00", "MERCHANT A"));

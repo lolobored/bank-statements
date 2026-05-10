@@ -50,7 +50,9 @@ public class TransactionDeduplicationServiceImpl implements TransactionDeduplica
               ? accountConfig.getDescriptionSimilarity()
               : DEFAULT_SIMILARITY_THRESHOLD;
 
-      List<HistoricalTransaction> previousHistory = loadHistory(historyDir, accountNumber);
+      // Mutable so matched entries are consumed and cannot match a second transaction
+      List<HistoricalTransaction> previousHistory =
+          new ArrayList<>(loadHistory(historyDir, accountNumber));
 
       Statement deduped = new Statement();
       deduped.setCurrency(statement.getCurrency());
@@ -59,11 +61,12 @@ public class TransactionDeduplicationServiceImpl implements TransactionDeduplica
 
       List<HistoricalTransaction> currentHistory = new ArrayList<>();
       for (Transaction tx : statement.getTransactions()) {
-        HistoricalTransaction match =
-            previousHistory.stream()
-                .filter(h -> isNearDuplicate(tx, h, dateTolerance, similarityThreshold))
-                .findFirst()
-                .orElse(null);
+        // Tier 1: exact date + fuzzy description
+        HistoricalTransaction match = findAndConsume(previousHistory, tx, 0, similarityThreshold);
+        // Tier 2: fuzzy date + fuzzy description — pick the closest date among candidates
+        if (match == null) {
+          match = findAndConsumeClosest(previousHistory, tx, dateTolerance, similarityThreshold);
+        }
         if (match != null) {
           logger.info(
               "Near-duplicate for account [{}]: {} {} \"{}\" — using original version",
@@ -84,6 +87,41 @@ public class TransactionDeduplicationServiceImpl implements TransactionDeduplica
     }
 
     return result;
+  }
+
+  private HistoricalTransaction findAndConsumeClosest(
+      List<HistoricalTransaction> history,
+      Transaction tx,
+      int dateTolerance,
+      double similarityThreshold) {
+    HistoricalTransaction best = null;
+    long bestDiff = Long.MAX_VALUE;
+    for (HistoricalTransaction h : history) {
+      if (isNearDuplicate(tx, h, dateTolerance, similarityThreshold)) {
+        long diff = Math.abs(ChronoUnit.DAYS.between(tx.getDate(), LocalDate.parse(h.getDate())));
+        if (diff < bestDiff) {
+          bestDiff = diff;
+          best = h;
+        }
+      }
+    }
+    if (best != null) history.remove(best);
+    return best;
+  }
+
+  private HistoricalTransaction findAndConsume(
+      List<HistoricalTransaction> history,
+      Transaction tx,
+      int dateTolerance,
+      double similarityThreshold) {
+    for (java.util.Iterator<HistoricalTransaction> it = history.iterator(); it.hasNext(); ) {
+      HistoricalTransaction h = it.next();
+      if (isNearDuplicate(tx, h, dateTolerance, similarityThreshold)) {
+        it.remove();
+        return h;
+      }
+    }
+    return null;
   }
 
   boolean isNearDuplicate(
