@@ -46,14 +46,11 @@ fi
 JSON="$SCRIPT_DIR/banks.json"
 OUTPUT="$HOME/Downloads"
 
-# Use the latest Java installed via SDKMAN if available; otherwise rely on PATH
-SDKMAN_JAVA="$HOME/.sdkman/candidates/java"
+# Use SDKMAN's current Java if available; otherwise rely on PATH
+SDKMAN_JAVA="$HOME/.sdkman/candidates/java/current"
 if [ -d "$SDKMAN_JAVA" ]; then
-  LATEST_JAVA=$(ls "$SDKMAN_JAVA" | grep -v '^current$' | sort -V | tail -1)
-  if [ -n "$LATEST_JAVA" ]; then
-    export JAVA_HOME="$SDKMAN_JAVA/$LATEST_JAVA"
-    export PATH="$JAVA_HOME/bin:$PATH"
-  fi
+  export JAVA_HOME="$SDKMAN_JAVA"
+  export PATH="$JAVA_HOME/bin:$PATH"
 fi
 if ! command -v java &>/dev/null; then
   echo "Java not found. Install Java 17+ via SDKMAN (https://sdkman.io) or any other method and ensure it is on your PATH."
