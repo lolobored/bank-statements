@@ -69,9 +69,22 @@ public class BankStatementsApplication implements ApplicationRunner {
   private static final int SAFARI_BROWSER = 2;
 
   private final Logger logger = LoggerFactory.getLogger(BankStatementsApplication.class);
+  private final Set<WebDriver> activeDrivers = ConcurrentHashMap.newKeySet();
 
   public static void main(String[] args) {
-    SpringApplication.run(BankStatementsApplication.class, args);
+    var ctx = SpringApplication.run(BankStatementsApplication.class, args);
+    var app = ctx.getBean(BankStatementsApplication.class);
+    Runtime.getRuntime()
+        .addShutdownHook(
+            new Thread(
+                () -> {
+                  for (WebDriver driver : app.activeDrivers) {
+                    try {
+                      driver.quit();
+                    } catch (Exception ignored) {
+                    }
+                  }
+                }));
   }
 
   @Override
@@ -214,13 +227,15 @@ public class BankStatementsApplication implements ApplicationRunner {
         tasks.add(
             () -> {
               WebDriver driver = createWebDriver(finalBrowserType, bankDownloadDir);
+              activeDrivers.add(driver);
               try {
                 return service.downloadStatements(driver, bank, bankDownloadDir.toString());
               } catch (Exception e) {
                 saveErrorScreenshot(driver, bank.getName(), finalScreenshotsDirectory);
                 throw e;
               } finally {
-                driver.close();
+                activeDrivers.remove(driver);
+                driver.quit();
               }
             });
       }
