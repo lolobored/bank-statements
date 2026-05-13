@@ -1,4 +1,4 @@
 #!/bin/sh
 set -e
-JAVA_HOME="$HOME/.sdkman/candidates/java/17.0.15-amzn" ./gradlew spotlessApply
+JAVA_HOME="$HOME/.sdkman/candidates/java/25-amzn" ./gradlew spotlessApply
 git add -u

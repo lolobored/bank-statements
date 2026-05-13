@@ -15,11 +15,11 @@ repositories {
 }
 
 lombok {
-  version("1.18.34")
+  version("1.18.38")
 }
 java {
   toolchain {
-    languageVersion = JavaLanguageVersion.of(17)
+    languageVersion = JavaLanguageVersion.of(25)
   }
 }
 
@@ -45,7 +45,7 @@ test {
 spotless {
   java {
     removeUnusedImports()
-    googleJavaFormat()
+    googleJavaFormat('1.27.0')
     target 'src/**/*.java'
   }
 }
