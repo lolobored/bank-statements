@@ -55,7 +55,6 @@ release {
   snapshotSuffix = '-SNAPSHOT'
   git {
     requireBranch.set('main')
-    pushToBranchPrefix.set('version-bump/')
   }
 }
 
