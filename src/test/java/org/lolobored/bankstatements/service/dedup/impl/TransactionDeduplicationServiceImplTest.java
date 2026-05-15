@@ -268,6 +268,55 @@ class TransactionDeduplicationServiceImplTest {
     assertThat(result.get(0).getTransactions()).hasSize(1);
   }
 
+  @Test
+  void exactMatchIsNotStolenByNewerFuzzyCandidate() {
+    // History has May 13. CSV arrives newest-first: May 14, May 13.
+    // Without two-pass, May 14 would steal the May 13 history entry via Tier 2 (1-day diff),
+    // leaving the real May 13 with no match and creating two May 13 entries.
+    Statement run1 = statement("ACC1", tx(LocalDate.of(2026, 5, 13), "-15.90", "PAUL MBLM"));
+    service.deduplicateAndUpdate(List.of(run1), tempDir, Collections.emptyMap());
+
+    // Newest-first order as OCBC delivers
+    Statement run2 =
+        statement(
+            "ACC1",
+            tx(LocalDate.of(2026, 5, 14), "-15.90", "PAUL MBLM"),
+            tx(LocalDate.of(2026, 5, 13), "-15.90", "PAUL MBLM"));
+    List<Statement> result =
+        service.deduplicateAndUpdate(List.of(run2), tempDir, Collections.emptyMap());
+
+    assertThat(result.get(0).getTransactions()).hasSize(2);
+    // May 13 must keep its original date (exact match from history)
+    assertThat(result.get(0).getTransactions().get(0).getDate())
+        .isEqualTo(LocalDate.of(2026, 5, 14));
+    assertThat(result.get(0).getTransactions().get(1).getDate())
+        .isEqualTo(LocalDate.of(2026, 5, 13));
+  }
+
+  @Test
+  void olderUnmatchedTransactionWinsFuzzyOverNewerOne() {
+    // History has Jan 1. CSV arrives newest-first: Jan 4 (new), Jan 3 (new).
+    // Both are unmatched in Pass 1. In Pass 2, Jan 3 (older) should win the fuzzy
+    // match against history Jan 1 (2 days away); Jan 4 (3 days away) should be new.
+    Statement run1 = statement("ACC1", tx(LocalDate.of(2026, 1, 1), "-50.00", "MERCHANT"));
+    service.deduplicateAndUpdate(List.of(run1), tempDir, Collections.emptyMap());
+
+    Statement run2 =
+        statement(
+            "ACC1",
+            tx(LocalDate.of(2026, 1, 4), "-50.00", "MERCHANT"),
+            tx(LocalDate.of(2026, 1, 3), "-50.00", "MERCHANT"));
+    List<Statement> result =
+        service.deduplicateAndUpdate(List.of(run2), tempDir, Collections.emptyMap());
+
+    assertThat(result.get(0).getTransactions()).hasSize(2);
+    // Jan 3 matched history Jan 1 — uses original date Jan 1
+    assertThat(result.get(0).getTransactions().get(0).getDate())
+        .isEqualTo(LocalDate.of(2026, 1, 4));
+    assertThat(result.get(0).getTransactions().get(1).getDate())
+        .isEqualTo(LocalDate.of(2026, 1, 1));
+  }
+
   // --- normalisation ---
 
   @Test

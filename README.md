@@ -265,13 +265,13 @@ If none of the date options are provided, all available transactions are downloa
 
 ### Fuzzy duplicate detection
 
-Each time the app runs it checks new transactions against a persisted history (one JSON file per account under `tx-history/`). A transaction is suppressed if it matches a previously exported one on **all three** of:
+Each time the app runs it checks new transactions against a persisted history (one JSON file per account under `tx-history/`). Matching runs in two passes:
 
-- **Amount** — exact match
-- **Date** — within ±5 days (configurable per account with `dateTolerance`)
-- **Description** — the label is a substring of the historical one (or vice versa), **or** the Jaro-Winkler similarity exceeds 0.85 (configurable per account with `descriptionSimilarity`)
+1. **Pass 1 — exact date:** every transaction in the download is first matched against history on exact date + fuzzy description (substring or Jaro-Winkler ≥ 0.85). All exact matches are claimed before any fuzzy-date matching starts, so a re-downloaded transaction can never steal the history entry that belongs to a same-day neighbour.
 
-This prevents Banktivity duplicates when a bank initially posts a transaction with a pending description or an approximate date that later settles to a slightly different value.
+2. **Pass 2 — fuzzy date:** transactions that found no exact match are then matched against remaining history entries within ±5 days (configurable per account with `dateTolerance`), using the same description check. This pass runs oldest-first so that a slightly date-shifted older transaction gets priority over a newer one.
+
+A matched transaction is suppressed from the output and replaced by its original (first-seen) version, preserving the stable date and label. This prevents Banktivity duplicates when a bank initially posts a transaction with a pending description or an approximate date that later settles to a slightly different value.
 
 Per-account tuning in your JSON config:
 

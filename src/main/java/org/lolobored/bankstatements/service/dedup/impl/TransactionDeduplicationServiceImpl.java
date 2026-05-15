@@ -59,14 +59,32 @@ public class TransactionDeduplicationServiceImpl implements TransactionDeduplica
       deduped.setAccountType(statement.getAccountType());
       deduped.setAccountNumber(accountNumber);
 
-      List<HistoricalTransaction> currentHistory = new ArrayList<>();
-      for (Transaction tx : statement.getTransactions()) {
-        // Tier 1: exact date + fuzzy description
-        HistoricalTransaction match = findAndConsume(previousHistory, tx, 0, similarityThreshold);
-        // Tier 2: fuzzy date + fuzzy description — pick the closest date among candidates
-        if (match == null) {
-          match = findAndConsumeClosest(previousHistory, tx, dateTolerance, similarityThreshold);
+      List<Transaction> transactions = statement.getTransactions();
+      HistoricalTransaction[] matchResults = new HistoricalTransaction[transactions.size()];
+
+      // Pass 1: exact date + fuzzy description across all transactions first, so that a
+      // transaction whose date exactly matches history is never stolen by an earlier-in-CSV
+      // newer transaction via the fuzzy pass.
+      for (int i = 0; i < transactions.size(); i++) {
+        matchResults[i] =
+            findAndConsume(previousHistory, transactions.get(i), 0, similarityThreshold);
+      }
+
+      // Pass 2: fuzzy date + fuzzy description only for those with no exact match.
+      // Iterate oldest-first (reverse of the newest-first CSV order) so that an older
+      // unmatched transaction gets first pick of nearby history entries over a newer one.
+      for (int i = transactions.size() - 1; i >= 0; i--) {
+        if (matchResults[i] == null) {
+          matchResults[i] =
+              findAndConsumeClosest(
+                  previousHistory, transactions.get(i), dateTolerance, similarityThreshold);
         }
+      }
+
+      List<HistoricalTransaction> currentHistory = new ArrayList<>();
+      for (int i = 0; i < transactions.size(); i++) {
+        Transaction tx = transactions.get(i);
+        HistoricalTransaction match = matchResults[i];
         if (match != null) {
           logger.info(
               "Near-duplicate for account [{}]: {} {} \"{}\" — using original version",
