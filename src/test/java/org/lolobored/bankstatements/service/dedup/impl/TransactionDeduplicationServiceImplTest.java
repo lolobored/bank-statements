@@ -85,20 +85,32 @@ class TransactionDeduplicationServiceImplTest {
     Statement stmt = statement("ACC1", tx(LocalDate.of(2026, 1, 1), "-50.00", "UBER EATS"));
 
     List<Statement> result =
-        service.deduplicateAndUpdate(List.of(stmt), tempDir, Collections.emptyMap());
+        service.deduplicateAndUpdate(List.of(stmt), tempDir, withDedup("ACC1"));
 
     assertThat(result.get(0).getTransactions()).hasSize(1);
     assertThat(new File(tempDir, "ACC1.json")).exists();
   }
 
   @Test
+  void dedupDisabledPassesThroughAllTransactions() {
+    // With dedup disabled: transactions pass through and no history file is written
+    Statement run1 = statement("ACC1", tx(LocalDate.of(2026, 1, 1), "-50.00", "UBER EATS"));
+    List<Statement> result =
+        service.deduplicateAndUpdate(List.of(run1), tempDir, Collections.emptyMap());
+
+    assertThat(result.get(0).getTransactions()).hasSize(1);
+    assertThat(result.get(0).getTransactions().get(0).getLabel()).isEqualTo("UBER EATS");
+    assertThat(new File(tempDir, "ACC1.json")).doesNotExist();
+  }
+
+  @Test
   void secondRunUsesOriginalDataForExactDuplicate() {
     Statement stmt1 = statement("ACC1", tx(LocalDate.of(2026, 1, 1), "-50.00", "UBER EATS"));
-    service.deduplicateAndUpdate(List.of(stmt1), tempDir, Collections.emptyMap());
+    service.deduplicateAndUpdate(List.of(stmt1), tempDir, withDedup("ACC1"));
 
     Statement stmt2 = statement("ACC1", tx(LocalDate.of(2026, 1, 1), "-50.00", "UBER EATS"));
     List<Statement> result =
-        service.deduplicateAndUpdate(List.of(stmt2), tempDir, Collections.emptyMap());
+        service.deduplicateAndUpdate(List.of(stmt2), tempDir, withDedup("ACC1"));
 
     assertThat(result.get(0).getTransactions()).hasSize(1);
     Transaction tx = result.get(0).getTransactions().get(0);
@@ -109,11 +121,11 @@ class TransactionDeduplicationServiceImplTest {
   @Test
   void secondRunUsesOriginalDataForNearDuplicateWithShiftedDateAndChangedLabel() {
     Statement stmt1 = statement("ACC1", tx(LocalDate.of(2026, 1, 1), "-50.00", "MERCHANT"));
-    service.deduplicateAndUpdate(List.of(stmt1), tempDir, Collections.emptyMap());
+    service.deduplicateAndUpdate(List.of(stmt1), tempDir, withDedup("ACC1"));
 
     Statement stmt2 = statement("ACC1", tx(LocalDate.of(2026, 1, 3), "-50.00", "MERCHANT PTE LTD"));
     List<Statement> result =
-        service.deduplicateAndUpdate(List.of(stmt2), tempDir, Collections.emptyMap());
+        service.deduplicateAndUpdate(List.of(stmt2), tempDir, withDedup("ACC1"));
 
     assertThat(result.get(0).getTransactions()).hasSize(1);
     Transaction tx = result.get(0).getTransactions().get(0);
@@ -141,6 +153,7 @@ class TransactionDeduplicationServiceImplTest {
 
     // Default tolerance is 5 days. With tolerance=0 a 3-day shift should NOT match.
     Account account = new Account();
+    account.setDedup(true);
     account.setDateTolerance(0);
     Map<String, Account> settings = new HashMap<>();
     settings.put("ACC1", account);
@@ -159,13 +172,13 @@ class TransactionDeduplicationServiceImplTest {
             "ACC1",
             tx(LocalDate.of(2026, 1, 1), "-50.00", "MERCHANT"),
             tx(LocalDate.of(2026, 1, 5), "-50.00", "MERCHANT"));
-    service.deduplicateAndUpdate(List.of(run1), tempDir, Collections.emptyMap());
+    service.deduplicateAndUpdate(List.of(run1), tempDir, withDedup("ACC1"));
 
     // Downloaded transaction has a date of Jan 4 — closest history entry is Jan 5 (1 day away),
     // not Jan 1 (3 days away); so the Jan 5 original should be emitted
     Statement run2 = statement("ACC1", tx(LocalDate.of(2026, 1, 4), "-50.00", "MERCHANT NEW"));
     List<Statement> result =
-        service.deduplicateAndUpdate(List.of(run2), tempDir, Collections.emptyMap());
+        service.deduplicateAndUpdate(List.of(run2), tempDir, withDedup("ACC1"));
 
     assertThat(result.get(0).getTransactions()).hasSize(1);
     Transaction matched = result.get(0).getTransactions().get(0);
@@ -181,7 +194,7 @@ class TransactionDeduplicationServiceImplTest {
             "ACC1",
             tx(LocalDate.of(2026, 1, 1), "-5.00", "COFFEE SHOP"),
             tx(LocalDate.of(2026, 1, 1), "-5.00", "COFFEE SHOP"));
-    service.deduplicateAndUpdate(List.of(run1), tempDir, Collections.emptyMap());
+    service.deduplicateAndUpdate(List.of(run1), tempDir, withDedup("ACC1"));
 
     // Same two coffees re-downloaded in run 2
     Statement run2 =
@@ -190,7 +203,7 @@ class TransactionDeduplicationServiceImplTest {
             tx(LocalDate.of(2026, 1, 1), "-5.00", "COFFEE SHOP"),
             tx(LocalDate.of(2026, 1, 1), "-5.00", "COFFEE SHOP"));
     List<Statement> result =
-        service.deduplicateAndUpdate(List.of(run2), tempDir, Collections.emptyMap());
+        service.deduplicateAndUpdate(List.of(run2), tempDir, withDedup("ACC1"));
 
     assertThat(result.get(0).getTransactions()).hasSize(2);
   }
@@ -198,12 +211,12 @@ class TransactionDeduplicationServiceImplTest {
   @Test
   void tier1ExactDateFuzzyDescriptionMatches() {
     Statement run1 = statement("ACC1", tx(LocalDate.of(2026, 1, 1), "-50.00", "MERCHANT"));
-    service.deduplicateAndUpdate(List.of(run1), tempDir, Collections.emptyMap());
+    service.deduplicateAndUpdate(List.of(run1), tempDir, withDedup("ACC1"));
 
     // Same date, description expanded — should match via Tier 1
     Statement run2 = statement("ACC1", tx(LocalDate.of(2026, 1, 1), "-50.00", "MERCHANT PTE LTD"));
     List<Statement> result =
-        service.deduplicateAndUpdate(List.of(run2), tempDir, Collections.emptyMap());
+        service.deduplicateAndUpdate(List.of(run2), tempDir, withDedup("ACC1"));
 
     assertThat(result.get(0).getTransactions()).hasSize(1);
     assertThat(result.get(0).getTransactions().get(0).getLabel()).isEqualTo("MERCHANT");
@@ -214,12 +227,12 @@ class TransactionDeduplicationServiceImplTest {
   @Test
   void tier2FuzzyDateFuzzyDescriptionFallbackMatches() {
     Statement run1 = statement("ACC1", tx(LocalDate.of(2026, 1, 1), "-50.00", "MERCHANT"));
-    service.deduplicateAndUpdate(List.of(run1), tempDir, Collections.emptyMap());
+    service.deduplicateAndUpdate(List.of(run1), tempDir, withDedup("ACC1"));
 
     // Date shifted AND description changed — Tier 1 misses, Tier 2 catches it
     Statement run2 = statement("ACC1", tx(LocalDate.of(2026, 1, 4), "-50.00", "MERCHANT PTE LTD"));
     List<Statement> result =
-        service.deduplicateAndUpdate(List.of(run2), tempDir, Collections.emptyMap());
+        service.deduplicateAndUpdate(List.of(run2), tempDir, withDedup("ACC1"));
 
     assertThat(result.get(0).getTransactions()).hasSize(1);
     assertThat(result.get(0).getTransactions().get(0).getLabel()).isEqualTo("MERCHANT");
@@ -236,7 +249,7 @@ class TransactionDeduplicationServiceImplTest {
             tx(LocalDate.of(2026, 5, 5), "-6.90", "DIMBULAH MBFC"),
             tx(LocalDate.of(2026, 5, 6), "-6.90", "DIMBULAH MBFC"),
             tx(LocalDate.of(2026, 5, 7), "-6.90", "DIMBULAH MBFC"));
-    service.deduplicateAndUpdate(List.of(run1), tempDir, Collections.emptyMap());
+    service.deduplicateAndUpdate(List.of(run1), tempDir, withDedup("ACC1"));
 
     Statement run2 =
         statement(
@@ -245,7 +258,7 @@ class TransactionDeduplicationServiceImplTest {
             tx(LocalDate.of(2026, 5, 6), "-6.90", "DIMBULAH MBFC"),
             tx(LocalDate.of(2026, 5, 7), "-6.90", "DIMBULAH MBFC"));
     List<Statement> result =
-        service.deduplicateAndUpdate(List.of(run2), tempDir, Collections.emptyMap());
+        service.deduplicateAndUpdate(List.of(run2), tempDir, withDedup("ACC1"));
 
     assertThat(result.get(0).getTransactions()).hasSize(3);
   }
@@ -274,7 +287,7 @@ class TransactionDeduplicationServiceImplTest {
     // Without two-pass, May 14 would steal the May 13 history entry via Tier 2 (1-day diff),
     // leaving the real May 13 with no match and creating two May 13 entries.
     Statement run1 = statement("ACC1", tx(LocalDate.of(2026, 5, 13), "-15.90", "PAUL MBLM"));
-    service.deduplicateAndUpdate(List.of(run1), tempDir, Collections.emptyMap());
+    service.deduplicateAndUpdate(List.of(run1), tempDir, withDedup("ACC1"));
 
     // Newest-first order as OCBC delivers
     Statement run2 =
@@ -283,7 +296,7 @@ class TransactionDeduplicationServiceImplTest {
             tx(LocalDate.of(2026, 5, 14), "-15.90", "PAUL MBLM"),
             tx(LocalDate.of(2026, 5, 13), "-15.90", "PAUL MBLM"));
     List<Statement> result =
-        service.deduplicateAndUpdate(List.of(run2), tempDir, Collections.emptyMap());
+        service.deduplicateAndUpdate(List.of(run2), tempDir, withDedup("ACC1"));
 
     assertThat(result.get(0).getTransactions()).hasSize(2);
     // May 13 must keep its original date (exact match from history)
@@ -299,7 +312,7 @@ class TransactionDeduplicationServiceImplTest {
     // Both are unmatched in Pass 1. In Pass 2, Jan 3 (older) should win the fuzzy
     // match against history Jan 1 (2 days away); Jan 4 (3 days away) should be new.
     Statement run1 = statement("ACC1", tx(LocalDate.of(2026, 1, 1), "-50.00", "MERCHANT"));
-    service.deduplicateAndUpdate(List.of(run1), tempDir, Collections.emptyMap());
+    service.deduplicateAndUpdate(List.of(run1), tempDir, withDedup("ACC1"));
 
     Statement run2 =
         statement(
@@ -307,7 +320,7 @@ class TransactionDeduplicationServiceImplTest {
             tx(LocalDate.of(2026, 1, 4), "-50.00", "MERCHANT"),
             tx(LocalDate.of(2026, 1, 3), "-50.00", "MERCHANT"));
     List<Statement> result =
-        service.deduplicateAndUpdate(List.of(run2), tempDir, Collections.emptyMap());
+        service.deduplicateAndUpdate(List.of(run2), tempDir, withDedup("ACC1"));
 
     assertThat(result.get(0).getTransactions()).hasSize(2);
     // Jan 3 matched history Jan 1 — uses original date Jan 1
@@ -327,6 +340,16 @@ class TransactionDeduplicationServiceImplTest {
   }
 
   // --- helpers ---
+
+  private Map<String, Account> withDedup(String... accountNumbers) {
+    Map<String, Account> map = new HashMap<>();
+    for (String id : accountNumbers) {
+      Account acc = new Account();
+      acc.setDedup(true);
+      map.put(id, acc);
+    }
+    return map;
+  }
 
   private Transaction tx(LocalDate date, String amount, String label) {
     Transaction tx = new Transaction();

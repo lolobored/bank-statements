@@ -41,12 +41,23 @@ public class TransactionDeduplicationServiceImpl implements TransactionDeduplica
       String accountNumber = statement.getAccountNumber();
       Account accountConfig = accountSettings.get(accountNumber);
 
+      boolean dedupEnabled = accountConfig != null && Boolean.TRUE.equals(accountConfig.getDedup());
+      if (!dedupEnabled) {
+        Statement passthrough = new Statement();
+        passthrough.setCurrency(statement.getCurrency());
+        passthrough.setAccountType(statement.getAccountType());
+        passthrough.setAccountNumber(accountNumber);
+        statement.getTransactions().forEach(passthrough::addTransaction);
+        result.add(passthrough);
+        continue;
+      }
+
       int dateTolerance =
-          (accountConfig != null && accountConfig.getDateTolerance() != null)
+          accountConfig.getDateTolerance() != null
               ? accountConfig.getDateTolerance()
               : DEFAULT_DATE_TOLERANCE;
       double similarityThreshold =
-          (accountConfig != null && accountConfig.getDescriptionSimilarity() != null)
+          accountConfig.getDescriptionSimilarity() != null
               ? accountConfig.getDescriptionSimilarity()
               : DEFAULT_SIMILARITY_THRESHOLD;
 

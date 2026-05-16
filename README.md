@@ -54,6 +54,7 @@ The application is driven by a JSON file defining the banks and accounts to proc
 | `type` | no | OCBC only — `DEBIT` or `CREDIT` |
 | `banktivitySuffix` | no | 4-character suffix appended to the account number in the OFX. Banktivity shows only the last 4 characters of an account number, so this makes it easy to identify accounts at a glance |
 | `currency` | no | ISO 4217 currency code (e.g. `EUR`, `CHF`, `SGD`). Overrides the bank's default currency. Set this when a bank holds accounts in multiple currencies |
+| `dedup` | no | Set to `true` to enable fuzzy duplicate detection for this account. Disabled by default |
 
 ### Sample configuration
 
@@ -265,7 +266,9 @@ If none of the date options are provided, all available transactions are downloa
 
 ### Fuzzy duplicate detection
 
-Each time the app runs it checks new transactions against a persisted history (one JSON file per account under `tx-history/`). Matching runs in two passes:
+Duplicate detection is **opt-in per account** — set `"dedup": true` on any account entry to enable it. Accounts without this flag have their transactions imported as-is, with no history written or read.
+
+When enabled, each run checks new transactions against a persisted history (one JSON file per account under `tx-history/`). Matching runs in two passes:
 
 1. **Pass 1 — exact date:** every transaction in the download is first matched against history on exact date + fuzzy description (substring or Jaro-Winkler ≥ 0.85). All exact matches are claimed before any fuzzy-date matching starts, so a re-downloaded transaction can never steal the history entry that belongs to a same-day neighbour.
 
@@ -279,6 +282,7 @@ Per-account tuning in your JSON config:
 {
   "accountId": "32432432",
   "banktivitySuffix": "metr",
+  "dedup": true,
   "dateTolerance": 7,
   "descriptionSimilarity": 0.80
 }
