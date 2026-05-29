@@ -15,6 +15,7 @@ public class OCBCDebitTransactionsPage {
 
   private static final By DOWNLOAD_BUTTON = By.xpath("//*[contains(text(),'Download')]");
   private static final By CSV_OPTION = By.xpath("//*[contains(text(),'CSV')]");
+  private static final By LOADING_BACKDROP = By.className("app-loader-backdrop");
 
   private static final int RENDER_PAUSE_MS = 500;
 
@@ -32,6 +33,14 @@ public class OCBCDebitTransactionsPage {
     logger.debug(
         "[TIMING] OCBCDebit: initial render sleep (budget {}ms): {}ms",
         RENDER_PAUSE_MS,
+        System.currentTimeMillis() - t0);
+
+    // Brief pause so the loading backdrop has time to appear before we check for it
+    Thread.sleep(300);
+    t0 = System.currentTimeMillis();
+    wait.until(ExpectedConditions.invisibilityOfElementLocated(LOADING_BACKDROP));
+    logger.debug(
+        "[TIMING] OCBCDebit: wait for loading backdrop gone: {}ms",
         System.currentTimeMillis() - t0);
 
     t0 = System.currentTimeMillis();
