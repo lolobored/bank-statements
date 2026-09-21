@@ -1,10 +1,10 @@
 package org.lolobored.bankstatements.service.scrapers.pages.uob;
 
 import java.io.IOException;
-import java.util.List;
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
@@ -14,10 +14,7 @@ public class UOBAccountsPage {
 
   private static final Logger logger = LoggerFactory.getLogger(UOBAccountsPage.class);
 
-  private static final By ACCOUNT_TILES = By.className("color-account");
-  private static final By BACK_DASHBOARD = By.className("uob-dashboard");
-
-  private static final int ACCOUNT_CLICK_PAUSE_MS = 500;
+  private static final By BACK_TO_ACCOUNTS = By.xpath("//a[normalize-space()='Accounts']");
 
   private final WebDriver driver;
   private final WebDriverWait wait;
@@ -27,32 +24,37 @@ public class UOBAccountsPage {
     this.wait = wait;
   }
 
-  public void openAccount(String accountId) throws IOException, InterruptedException {
+  /**
+   * Opens the account tile matching the given id. The dashboard shows the account number with
+   * spaces (e.g. "422 323 964 6"), so the match ignores spaces and dashes; the account name (e.g.
+   * "One Account") is accepted too.
+   */
+  public void openAccount(String accountId) throws IOException {
+    String trimmed = accountId.trim();
+    By accountTile =
+        By.xpath(
+            "//*[translate(normalize-space(text()), ' -', '')='"
+                + trimmed.replaceAll("[ -]", "")
+                + "' or normalize-space(text())='"
+                + trimmed
+                + "']");
+
     long t0 = System.currentTimeMillis();
-    wait.until(ExpectedConditions.visibilityOfElementLocated(ACCOUNT_TILES));
-    logger.debug(
-        "[TIMING] UOBAccounts: wait for account tiles visible: {}ms",
-        System.currentTimeMillis() - t0);
-
-    List<WebElement> accounts = driver.findElements(ACCOUNT_TILES);
-
-    for (WebElement account : accounts) {
-      if (accountId.trim().equalsIgnoreCase(account.getText().trim())) {
-        t0 = System.currentTimeMillis();
-        Thread.sleep(ACCOUNT_CLICK_PAUSE_MS);
-        logger.debug(
-            "[TIMING] UOBAccounts: pre-click sleep (budget {}ms): {}ms",
-            ACCOUNT_CLICK_PAUSE_MS,
-            System.currentTimeMillis() - t0);
-        account.click();
-        return;
-      }
+    try {
+      wait.until(ExpectedConditions.elementToBeClickable(accountTile));
+    } catch (TimeoutException e) {
+      throw new IOException("Unable to find account [" + accountId + "] on the page", e);
     }
-
-    throw new IOException("Unable to find account [" + accountId + "] on the page");
+    logger.debug(
+        "[TIMING] UOBAccounts: wait for account tile clickable: {}ms",
+        System.currentTimeMillis() - t0);
+    driver.findElement(accountTile).click();
   }
 
   public void goBackToDashboard() {
-    driver.findElement(BACK_DASHBOARD).click();
+    // the download button sits far down the page and the sticky header would cover the breadcrumb
+    ((JavascriptExecutor) driver).executeScript("window.scrollTo(0, 0)");
+    wait.until(ExpectedConditions.elementToBeClickable(BACK_TO_ACCOUNTS));
+    driver.findElement(BACK_TO_ACCOUNTS).click();
   }
 }

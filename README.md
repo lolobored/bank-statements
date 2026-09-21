@@ -343,5 +343,7 @@ Account numbers and types are detected automatically during scraping. The `accou
 | Comm Bank | Account number from the webpage | Always `DEBIT` |
 | Westpac | Account number from the webpage | Always `DEBIT` |
 | Credit Mutuel | From the CSV filename | Always `DEBIT` |
-| UOB | Single account, no multi-account support | Always `DEBIT` |
+| UOB | Matched against the account number (spaces and dashes ignored) or account name shown on the dashboard | Always `DEBIT` |
 | OCBC | Matched against `accountName` in JSON config | Set by `type` in JSON config |
+
+**UOB:** downloads the *Download as Excel* statement from the account's Transactions section once per account (clicking the Transactions tab first when UOB shows the narrow tabbed layout), using UOB's default period (last 60 days, so it always covers the current and previous month). Approve the push notification on your phone when prompted; the optional "Money lock" promotion is dismissed automatically and a "logged out" page (login detected elsewhere) is handled by logging in again.

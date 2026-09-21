@@ -45,25 +45,14 @@ public class UOBServiceImpl implements UOBService {
     for (Account bankAccount : bank.getAccounts()) {
       accountsPage.openAccount(bankAccount.getAccountId());
 
-      transactionsPage.downloadCurrentMonth();
-      String currentFile = FileUtility.getDownloadedFilename(downloads, bank.getWaitTime());
-      Statement current =
+      transactionsPage.downloadStatement();
+      String file = FileUtility.getDownloadedFilename(downloads, bank.getWaitTime());
+      Statement statement =
           uobxlsConversionService.convertTableToTransactions(
               bankAccount.getAccountId(),
               Statement.DEBIT_ACCOUNT,
-              downloads.getAbsolutePath() + "/" + currentFile);
-      FileUtils.deleteDirectory(downloads);
-      downloads.mkdirs();
-
-      transactionsPage.downloadPreviousMonth();
-      String prevFile = FileUtility.getDownloadedFilename(downloads, bank.getWaitTime());
-      Statement previous =
-          uobxlsConversionService.convertTableToTransactions(
-              bankAccount.getAccountId(),
-              Statement.DEBIT_ACCOUNT,
-              downloads.getAbsolutePath() + "/" + prevFile);
-      current.getTransactions().addAll(previous.getTransactions());
-      statements.add(current);
+              downloads.getAbsolutePath() + "/" + file);
+      statements.add(statement);
       FileUtils.deleteDirectory(downloads);
       downloads.mkdirs();
 
