@@ -3,8 +3,8 @@ plugins {
   id 'java'
   id "io.franzbecker.gradle-lombok" version "5.0.0"
   id 'org.springframework.boot' version '4.1.1'
-  id 'com.diffplug.spotless' version '8.10.2'
-  id 'net.researchgate.release' version '3.1.0'
+  id 'com.diffplug.spotless' version '8.10.3'
+  id 'net.researchgate.release' version '3.2.0'
 }
 
 group 'org.lolobored'
@@ -29,10 +29,10 @@ configurations {
 }
 
 dependencies {
-  spotlessGoogleJavaFormat 'com.google.googlejavaformat:google-java-format:1.36.1'
+  spotlessGoogleJavaFormat 'com.google.googlejavaformat:google-java-format:1.37.0'
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter', version: '4.1.1'
-  implementation group: 'org.seleniumhq.selenium', name: 'selenium-java', version: '4.49.0'
-  implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.20.0'
+  implementation group: 'org.seleniumhq.selenium', name: 'selenium-java', version: '4.50.0'
+  implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.21.0'
   implementation group: 'org.apache.commons', name: 'commons-text', version: '1.15.0'
   implementation group: 'commons-io', name: 'commons-io', version: '2.22.0'
   implementation group: 'org.apache.commons', name: 'commons-csv', version: '1.14.1'
