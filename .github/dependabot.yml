@@ -11,3 +11,7 @@ updates:
         update-types:
           - minor
           - patch
+    ignore:
+      # 1.37.0 breaks Spotless (diffplug/spotless#3126); fixed upstream, wait for 1.37.1+
+      - dependency-name: "com.google.googlejavaformat:google-java-format"
+        versions: ["1.37.0"]
