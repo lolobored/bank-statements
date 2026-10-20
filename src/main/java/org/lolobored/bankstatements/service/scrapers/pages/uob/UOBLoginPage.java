@@ -1,8 +1,6 @@
 package org.lolobored.bankstatements.service.scrapers.pages.uob;
 
-import java.time.Duration;
 import org.openqa.selenium.By;
-import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -19,14 +17,8 @@ public class UOBLoginPage {
   // UOB shows this page when a login is detected from another device or browser
   private static final By LOG_IN_AGAIN_BUTTON =
       By.xpath("//button[normalize-space()='Log in again']");
-  // Optional "Money lock" promotion shown on the dashboard after login
-  private static final By MONEY_LOCK_DONT_SHOW_AGAIN =
-      By.xpath("//div[@role='dialog']//input[@type='checkbox']");
-  private static final By MONEY_LOCK_SET_LATER =
-      By.xpath("//div[@role='dialog']//button[contains(normalize-space(), 'Set later')]");
 
   private static final String DASHBOARD_URL_FRAGMENT = "accountsDashboard";
-  private static final Duration MONEY_LOCK_CHECK_WAIT = Duration.ofSeconds(5);
 
   private final WebDriver driver;
   private final WebDriverWait wait;
@@ -69,19 +61,5 @@ public class UOBLoginPage {
     logger.debug(
         "[TIMING] UOBLogin: wait for MFA approval and dashboard: {}ms",
         System.currentTimeMillis() - t0);
-
-    dismissMoneyLockDialogIfPresent();
-  }
-
-  private void dismissMoneyLockDialogIfPresent() {
-    try {
-      new WebDriverWait(driver, MONEY_LOCK_CHECK_WAIT)
-          .until(ExpectedConditions.elementToBeClickable(MONEY_LOCK_SET_LATER));
-      driver.findElement(MONEY_LOCK_DONT_SHOW_AGAIN).click();
-      driver.findElement(MONEY_LOCK_SET_LATER).click();
-      logger.debug("UOBLogin: dismissed Money lock dialog");
-    } catch (TimeoutException ignored) {
-      logger.debug("UOBLogin: no Money lock dialog");
-    }
   }
 }
