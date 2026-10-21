@@ -169,6 +169,8 @@ The script expects `banks.json` and the jar to live alongside it.
 
 Chrome and Firefox run headless (no visible window). Safari runs in a visible window and is useful as a fallback when a bank's login flow doesn't behave correctly in headless mode.
 
+The matching driver (chromedriver / geckodriver) is resolved automatically by Selenium Manager on every run, based on the browser version currently installed, and cached under `~/.cache/selenium`. No manual driver install is needed, and browser auto-updates are picked up immediately (a driver/browser version mismatch can make bank logins fail, e.g. UOB rejecting an approved push notification).
+
 ```bash
 # Headless Chrome (default)
 ./download-ofx --monthly
@@ -346,4 +348,4 @@ Account numbers and types are detected automatically during scraping. The `accou
 | UOB | Matched against the account number (spaces and dashes ignored) or account name shown on the dashboard | Always `DEBIT` |
 | OCBC | Matched against `accountName` in JSON config | Set by `type` in JSON config |
 
-**UOB:** downloads the *Download as Excel* statement from the account's Transactions section once per account (clicking the Transactions tab first when UOB shows the narrow tabbed layout), using UOB's default period (last 60 days, so it always covers the current and previous month). Approve the push notification on your phone when prompted; the optional "Money lock" promotion is dismissed automatically and a "logged out" page (login detected elsewhere) is handled by logging in again.
+**UOB:** downloads the *Download as Excel* statement from the account's Transactions section once per account (clicking the Transactions tab first when UOB shows the narrow tabbed layout), using UOB's default period (last 60 days, so it always covers the current and previous month). Approve the push notification on your phone when prompted; the optional "Money lock" promotion is dismissed automatically and a "logged out" page (login detected elsewhere) is handled by logging in again. UOB's login form sometimes fails to load and leaves a blank page; the page is then reloaded automatically (up to 3 attempts).

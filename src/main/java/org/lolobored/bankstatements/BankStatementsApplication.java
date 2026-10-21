@@ -2,7 +2,6 @@ package org.lolobored.bankstatements;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.github.bonigarcia.wdm.WebDriverManager;
 import java.io.File;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -162,16 +161,8 @@ public class BankStatementsApplication implements ApplicationRunner {
       }
     }
 
-    // Set up the driver binary once before spawning parallel tasks
-    switch (browserType) {
-      case CHROME_BROWSER:
-        WebDriverManager.chromedriver().setup();
-        break;
-      case FIREFOX_BROWSER:
-        WebDriverManager.firefoxdriver().setup();
-        break;
-    }
-
+    // Driver binaries are resolved by Selenium Manager on each driver creation, matching the
+    // installed browser version (WebDriverManager cached a stale Chrome version after updates)
     try {
       ObjectMapper objectMapper = new ObjectMapper();
       List<Bank> banks =
