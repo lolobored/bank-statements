@@ -3,7 +3,7 @@ plugins {
   id 'java'
   id "io.franzbecker.gradle-lombok" version "5.0.0"
   id 'org.springframework.boot' version '4.1.2'
-  id 'com.diffplug.spotless' version '8.10.4'
+  id 'com.diffplug.spotless' version '8.11.0'
   id 'net.researchgate.release' version '3.2.0'
 }
 
